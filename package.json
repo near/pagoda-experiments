@@ -1,0 +1,23 @@
+{
+  "name": "pagoda-experiments",
+  "version": "0.1.0",
+  "private": true,
+  "description": "This monorepo contains multiple product experiments built on the blockchain. These products will be aimed at a mix of end users and developers.",
+  "scripts": {
+    "pre-commit": "pnpm -r pre-commit",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/near/pagoda-experiments.git"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@9.1.1",
+  "devDependencies": {
+    "husky": "^9.0.11"
+  }
+}
