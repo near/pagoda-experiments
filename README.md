@@ -31,3 +31,13 @@ pnpm dev
 ```
 
 _NOTE: You'll most likely see a warning when starting up the server: `React does not recognize the fetchPriority prop`. You can safely ignore this for now. There's a fix for Next JS that hasn't been released quite yet: https://github.com/vercel/next.js/issues/65161_
+
+## Contributing
+
+Since we're in the early MVP phase and will be moving fast, we can simply create feature branches based off of `main` and open up PR's that will merge directly to `main`. Once the project matures, we'll introduce a `develop` branch and preview deploy environment.
+
+## Deployment
+
+TODO: https://github.com/near/pagoda-experiments/issues/16
+
+This project currently doesn't deploy anywhere.
