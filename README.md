@@ -30,4 +30,4 @@ cd ./apps/nft-ticketing
 pnpm dev
 ```
 
-_NOTE: You'll most likely see a warning when starting up the server: `React does not recognize the fetchPriority prop`. You can safely ignore this for now. There's a fix in place on the Next JS project that hasn't been released quite yet: https://github.com/vercel/next.js/issues/65161_
+_NOTE: You'll most likely see a warning when starting up the server: `React does not recognize the fetchPriority prop`. You can safely ignore this for now. There's a fix for Next JS that hasn't been released quite yet: https://github.com/vercel/next.js/issues/65161_
