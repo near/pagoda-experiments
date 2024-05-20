@@ -10,7 +10,7 @@
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "start": "next start",
-    "pre-commit": "pnpm format && pnpm lint"
+    "pre-commit": "pnpm format && pnpm lint --max-warnings 0"
   },
   "dependencies": {
     "@pagoda/ui": "workspace:*",

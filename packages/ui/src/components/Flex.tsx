@@ -1,7 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 
-import type { Align, ThemeGap, Justify, Stack } from '../types';
-
+import type { Align, Justify, Stack, ThemeGap } from '../types';
 import s from './Flex.module.scss';
 
 type Props = {

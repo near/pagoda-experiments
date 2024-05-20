@@ -7,7 +7,7 @@
     "format:fix": "prettier --config ../../.prettierrc.json --write --ignore-path ../../.gitignore .",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
-    "pre-commit": "pnpm format && pnpm lint"
+    "pre-commit": "pnpm format && pnpm lint --max-warnings 0"
   },
   "peerDependencies": {
     "next": "^14",

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { ButtonHTMLAttributes, ReactElement } from 'react';
 import { forwardRef } from 'react';
+
 import s from './Button.module.scss';
 
 type Fill = 'solid' | 'outline' | 'ghost';
