@@ -1,9 +1,11 @@
 {
-  "name": "pagoda-experiments",
+  "name": "@pagoda/experiments",
   "version": "0.1.0",
   "private": true,
   "description": "This monorepo contains multiple product experiments built on the blockchain. These products will be aimed at a mix of end users and developers.",
   "scripts": {
+    "format:fix": "pnpm -r format:fix",
+    "lint:fix": "pnpm -r lint:fix",
     "pre-commit": "pnpm -r pre-commit",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky"
