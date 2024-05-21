@@ -1,6 +1,6 @@
 import { CSSProperties, ReactNode } from 'react';
 
-import { ThemeColor, ThemeFontSize } from '../types';
+import { ThemeColor, ThemeFontSize } from '../utils/types';
 import s from './Text.module.scss';
 
 type Tag = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'span';
@@ -20,19 +20,31 @@ type Props = {
   as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'span';
   children: ReactNode;
   clampLines?: number;
+  className?: string;
   color?: ThemeColor;
+  id?: string;
   size?: ThemeFontSize;
   style?: CSSProperties;
   weight?: string | number;
 };
 
-export const Text = ({ as = 'p', children, clampLines, color, size, style, weight }: Props) => {
+export const Text = ({
+  as = 'p',
+  children,
+  clampLines,
+  className = '',
+  color,
+  size,
+  style,
+  weight,
+  ...props
+}: Props) => {
   const Tag = as;
   const defaultSize = defaultSizes[as];
 
   return (
     <Tag
-      className={s.text}
+      className={`${s.text} ${className}`}
       data-clamp-lines={clampLines}
       data-size={size || defaultSize}
       style={{
@@ -41,6 +53,7 @@ export const Text = ({ as = 'p', children, clampLines, color, size, style, weigh
         WebkitLineClamp: clampLines,
         ...style,
       }}
+      {...props}
     >
       {children}
     </Tag>

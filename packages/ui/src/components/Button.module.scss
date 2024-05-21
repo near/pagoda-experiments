@@ -17,7 +17,7 @@
   border: 1px solid;
   box-shadow: 0 0 0 0px var(--violet4);
   cursor: pointer;
-  transition: all 200ms;
+  transition: all var(--transition-speed);
   text-decoration: none !important;
   width: var(--button-width);
   height: var(--button-height);
@@ -266,15 +266,11 @@
 }
 
 .icon {
-  display: flex;
   flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
   width: var(--button-size-icon);
   height: var(--button-size-icon);
   color: var(--button-color-icon);
-  width: var(--button-icon-size);
-  height: var(--button-icon-size);
+  transition: all var(--transition-speed);
 
   svg {
     display: block;

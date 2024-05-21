@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 
-import type { Align, Justify, ThemeGap } from '../types';
+import type { Align, Justify, ThemeGap } from '../utils/types';
 import s from './Grid.module.scss';
 
 type Props = {

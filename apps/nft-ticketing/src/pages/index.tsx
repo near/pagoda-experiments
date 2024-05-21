@@ -1,32 +1,58 @@
-import { Button } from '@pagoda/ui/src/components/Button';
 import { Container } from '@pagoda/ui/src/components/Container';
-import { Flex } from '@pagoda/ui/src/components/Flex';
 import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
+import * as Tabs from '@pagoda/ui/src/components/Tabs';
 import { Text } from '@pagoda/ui/src/components/Text';
-import { Horse } from '@phosphor-icons/react';
+import { Horse, Pizza } from '@phosphor-icons/react';
+import { useRouter } from 'next/router';
 
 import { useDefaultLayout } from '@/hooks/useLayout';
 import { NextPageWithLayout } from '@/types/next';
 
 const Home: NextPageWithLayout = () => {
+  const router = useRouter();
+  const selectedTab = router.query.tab as string;
+
   return (
     <Container size="s">
-      <Flex stack align="center" gap="l">
-        <Text as="h1">Home</Text>
+      <Text as="h1">Home</Text>
 
-        <Text color="green10" clampLines={2}>
-          Some Text afs fads dsf adsf dsfas sdfasdfdsfasd fdsaf asdf f Some Text afs fads dsf adsf dsfas sdfasdfdsfasd
-          fdsaf asdf f Some Text afs fads dsf adsf dsfas sdfasdfdsfasd fdsaf asdf f Some Text afs fads dsf adsf dsfas
-          sdfasdfdsfasd fdsaf asdf f Some Text afs fads dsf adsf dsfas sdfasdfdsfasd fdsaf asdf fSome Text afs fads dsf
-          adsf dsfas sdfasdfdsfasd fdsaf asdf fSome Text afs fads dsf adsf dsfas sdfasdfdsfasd fdsaf asdf fSome Text afs
-          fads dsf adsf dsfas sdfasdfdsfasd fdsaf asdf fSome Text afs fads dsf adsf dsfas sdfasdfdsfasd fdsaf asdf fSome
-          Text afs fads dsf adsf dsfas sdfasdfdsfasd fdsaf asdf f
-        </Text>
+      <Tabs.Root value={selectedTab}>
+        <Tabs.List>
+          <Tabs.Trigger href="?tab=one" value="one">
+            <SvgIcon icon={<Horse fill="bold" />} />
+            Tab One
+          </Tabs.Trigger>
 
-        <SvgIcon icon={<Horse weight="duotone" />} color="red10" size="xl" />
+          <Tabs.Trigger href="?tab=two" value="two">
+            <SvgIcon icon={<Pizza fill="bold" />} />
+            Tab Two
+          </Tabs.Trigger>
 
-        <Button fill="outline" iconLeft={<Horse weight="fill" />} label="Click Me" size="large" />
-      </Flex>
+          <Tabs.Trigger href="?tab=three" value="three">
+            Tab Three With No Icon
+          </Tabs.Trigger>
+
+          <Tabs.Trigger href="?tab=four" value="four">
+            Tab Four With No Icon
+          </Tabs.Trigger>
+        </Tabs.List>
+
+        <Tabs.Content value="one">
+          <Text>Content one.</Text>
+        </Tabs.Content>
+
+        <Tabs.Content value="two">
+          <Text>Content two.</Text>
+        </Tabs.Content>
+
+        <Tabs.Content value="three">
+          <Text>Content three.</Text>
+        </Tabs.Content>
+
+        <Tabs.Content value="four">
+          <Text>Content four.</Text>
+        </Tabs.Content>
+      </Tabs.Root>
     </Container>
   );
 };

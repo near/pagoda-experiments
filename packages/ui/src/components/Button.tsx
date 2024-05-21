@@ -9,17 +9,15 @@ type Size = 'small' | 'default' | 'large';
 type Variant = 'primary' | 'secondary' | 'affirmative' | 'destructive';
 
 type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'size'> & {
-  disabled?: boolean;
   fill?: Fill;
   href?: string;
   target?: string;
-  icon?: ReactElement; // TODO
-  iconLeft?: ReactElement; // TODO
-  iconRight?: ReactElement; // TODO
+  icon?: ReactElement;
+  iconLeft?: ReactElement;
+  iconRight?: ReactElement;
   label: string;
   loading?: boolean;
   size?: Size;
-  type?: 'button' | 'submit';
   variant?: Variant;
 };
 
@@ -55,10 +53,10 @@ export const Button = forwardRef<HTMLButtonElement, Props>(
       conditionalAttributes['aria-label'] = label;
     }
 
-    const ButtonElement: any = href ? Link : 'button';
+    const Element: any = href ? Link : 'button';
 
     return (
-      <ButtonElement
+      <Element
         className={`${s.button} ${className}`}
         data-icon={!!icon}
         data-fill={fill}
@@ -80,7 +78,7 @@ export const Button = forwardRef<HTMLButtonElement, Props>(
             </>
           )}
         </span>
-      </ButtonElement>
+      </Element>
     );
   },
 );

@@ -1,6 +1,7 @@
 export type Align = 'start' | 'end' | 'center' | 'stretch';
 export type Justify = 'start' | 'end' | 'center' | 'stretch' | 'space-around' | 'space-between' | 'space-evenly';
 export type Stack = true | false | 'phone' | 'tablet';
+export type InputVariant = 'default' | 'success' | 'error';
 
 export type ThemeIconSize = 'xxs' | 'xs' | 's' | 'm' | 'l' | 'xl';
 export type ThemeGap = 'none' | 'xs' | 's' | 'm' | 'l' | 'xl';
