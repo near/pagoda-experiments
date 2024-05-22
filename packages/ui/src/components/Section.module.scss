@@ -1,0 +1,12 @@
+.section {
+  padding: var(--gap-l);
+  border-bottom: 1px solid var(--sand6);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  @media (max-width: 600px) {
+    padding: var(--gap-m);
+  }
+}

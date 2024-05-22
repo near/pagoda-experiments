@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { ButtonHTMLAttributes, ReactElement } from 'react';
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, HTMLAttributes, ReactElement } from 'react';
 import { forwardRef } from 'react';
 
 import s from './Button.module.scss';
@@ -11,7 +11,7 @@ type Variant = 'primary' | 'secondary' | 'affirmative' | 'destructive';
 type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'size'> & {
   fill?: Fill;
   href?: string;
-  target?: string;
+  target?: AnchorHTMLAttributes<HTMLAnchorElement>['target'];
   icon?: ReactElement;
   iconLeft?: ReactElement;
   iconRight?: ReactElement;

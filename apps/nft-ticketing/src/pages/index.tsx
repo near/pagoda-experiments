@@ -1,13 +1,13 @@
 import * as Accordion from '@pagoda/ui/src/components/Accordion';
+import { Badge } from '@pagoda/ui/src/components/Badge';
 import { Button } from '@pagoda/ui/src/components/Button';
-import { Container } from '@pagoda/ui/src/components/Container';
 import * as Dialog from '@pagoda/ui/src/components/Dialog';
 import { Flex } from '@pagoda/ui/src/components/Flex';
+import { Section } from '@pagoda/ui/src/components/Section';
 import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
 import * as Tabs from '@pagoda/ui/src/components/Tabs';
 import { Text } from '@pagoda/ui/src/components/Text';
 import { openToast } from '@pagoda/ui/src/components/Toast';
-import { Tooltip } from '@pagoda/ui/src/components/Tooltip';
 import { Horse, Pizza } from '@phosphor-icons/react';
 import { useRouter } from 'next/router';
 
@@ -19,44 +19,55 @@ const Home: NextPageWithLayout = () => {
   const selectedTab = router.query.tab as string;
 
   return (
-    <Container>
-      <Flex stack>
-        <Tooltip content="Hello there!">
-          <Text as="h1">Home</Text>
-        </Tooltip>
+    <>
+      <Section>
+        <Text as="h1">Home</Text>
+      </Section>
 
-        <Button
-          label="Open Toast"
-          variant="secondary"
-          fill="outline"
-          onClick={() => {
-            openToast({
-              type: 'info',
-              title: 'My Error',
-              description: 'This is a longer description about the toast. Do you like it?',
-              action: () => alert(1),
-              actionText: 'Click Me',
-            });
-          }}
-        />
+      <Section>
+        <Flex align="center" wrap>
+          <Button
+            label="Open Toast"
+            variant="secondary"
+            fill="outline"
+            onClick={() => {
+              openToast({
+                type: 'info',
+                title: 'My Error',
+                description: 'This is a longer description about the toast. Do you like it?',
+                action: () => alert(1),
+                actionText: 'Click Me',
+              });
+            }}
+          />
 
-        <Dialog.Root>
-          <Dialog.Trigger asChild>
-            <Button label="Open Dialog" variant="secondary" fill="outline" />
-          </Dialog.Trigger>
+          <Dialog.Root>
+            <Dialog.Trigger asChild>
+              <Button label="Open Dialog" variant="secondary" fill="outline" />
+            </Dialog.Trigger>
 
-          <Dialog.Content title="My Dialog">
-            <Text>Some content here.</Text>
-            <Text>More content over there.</Text>
-            <Text>Some content here.</Text>
-            <Text>More content over there.</Text>
-            <Text>Some content here.</Text>
-            <Text>More content over there.</Text>
-            <Text>Some content here.</Text>
-            <Text>More content over there.</Text>
-            <Text>Some content here.</Text>
-          </Dialog.Content>
-        </Dialog.Root>
+            <Dialog.Content title="My Dialog">
+              <Text>Some content here.</Text>
+              <Text>More content over there.</Text>
+              <Text>Some content here.</Text>
+              <Text>More content over there.</Text>
+              <Text>Some content here.</Text>
+              <Text>More content over there.</Text>
+              <Text>Some content here.</Text>
+              <Text>More content over there.</Text>
+              <Text>Some content here.</Text>
+            </Dialog.Content>
+          </Dialog.Root>
+        </Flex>
+
+        <Flex align="center" wrap>
+          <Badge iconLeft={<Horse fill="bold" />} label="My Badge" />
+          <Badge label="My Badge" variant="neutral" />
+          <Badge label="My Badge" variant="alert" />
+          <Badge label="My Badge" variant="success" />
+          <Badge label="23" variant="warning" count />
+          <Badge label="Click Me" variant="warning" onClick={() => console.log(1)} />
+        </Flex>
 
         <Tabs.Root value={selectedTab}>
           <Tabs.List>
@@ -116,8 +127,8 @@ const Home: NextPageWithLayout = () => {
             </Accordion.Content>
           </Accordion.Item>
         </Accordion.Root>
-      </Flex>
-    </Container>
+      </Section>
+    </>
   );
 };
 

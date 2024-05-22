@@ -38,6 +38,7 @@
   all: unset;
   box-sizing: border-box;
   display: inline-flex;
+  flex-grow: 0;
 }
 
 .arrowBorder {
