@@ -13,10 +13,19 @@ type Props = {
   style?: CSSProperties;
 };
 
-export const SvgIcon = ({ color = 'current', icon, noFill, noStroke, size = 's', style, ...props }: Props) => {
+export const SvgIcon = ({
+  className = '',
+  color = 'current',
+  icon,
+  noFill,
+  noStroke,
+  size = 's',
+  style,
+  ...props
+}: Props) => {
   return (
     <div
-      className={s.svgIcon}
+      className={`${s.svgIcon} ${className}`}
       data-color={color}
       data-icon
       data-size={size}

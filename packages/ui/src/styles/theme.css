@@ -30,6 +30,7 @@
   --text-3xl: 700 42px/1.3 'FK Grotesk', 'Mona Sans', sans-serif;
 
   --black: hsl(0, 0%, 0%);
+  --blackA0: hsla(0, 0%, 0%, 0);
   --blackA1: hsla(0, 0%, 0%, 0.012);
   --blackA2: hsla(0, 0%, 0%, 0.027);
   --blackA3: hsla(0, 0%, 0%, 0.047);
@@ -44,6 +45,7 @@
   --blackA12: hsla(0, 0%, 0%, 0.91);
 
   --white: hsl(0, 0%, 100%);
+  --whiteA0: hsla(0, 0%, 100%, 0);
   --whiteA1: hsla(0, 0%, 100%, 0);
   --whiteA2: hsla(0, 0%, 100%, 0.013);
   --whiteA3: hsla(0, 0%, 100%, 0.034);

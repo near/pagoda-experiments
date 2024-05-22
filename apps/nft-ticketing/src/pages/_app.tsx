@@ -2,6 +2,7 @@ import '@pagoda/ui/src/styles/reset.css';
 import '@pagoda/ui/src/styles/theme.css';
 import '@pagoda/ui/src/styles/globals.css';
 
+import { Toaster } from '@pagoda/ui/src/components/Toast';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 
@@ -25,6 +26,8 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
       </Head>
 
       {getLayout(<Component {...pageProps} />)}
+
+      <Toaster />
     </>
   );
 }
