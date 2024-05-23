@@ -12,7 +12,7 @@ importers:
         specifier: ^9.0.11
         version: 9.0.11
 
-  apps/nft-ticketing:
+  apps/ticketing:
     dependencies:
       '@pagoda/ui':
         specifier: workspace:*

@@ -4,7 +4,7 @@ This monorepo contains multiple product experiments built on the blockchain. The
 
 ## Products
 
-- NFT Ticketing: https://github.com/near/near-discovery/issues/1165
+- Ticketing: https://github.com/near/near-discovery/issues/1165
 
 ## Getting Started
 
@@ -26,7 +26,7 @@ pnpm i
 Then navigate to a specific app and start up the development server:
 
 ```
-cd ./apps/nft-ticketing
+cd ./apps/ticketing
 pnpm dev
 ```
 

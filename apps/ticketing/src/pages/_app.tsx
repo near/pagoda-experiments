@@ -22,7 +22,7 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
         <link rel="manifest" href="manifest.json" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        <title>NFT Ticketing</title>
+        <title>Ticketing</title>
       </Head>
 
       {getLayout(<Component {...pageProps} />)}
