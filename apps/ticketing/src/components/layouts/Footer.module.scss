@@ -1,0 +1,25 @@
+.footer {
+  background: var(--sand3);
+  padding: var(--gap-m);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-s);
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--sand10);
+  cursor: pointer;
+  outline: none;
+  transition: all var(--transition-speed);
+
+  svg {
+    height: 1rem;
+  }
+
+  &:hover,
+  &:focus-visible {
+    color: var(--sand12);
+  }
+}

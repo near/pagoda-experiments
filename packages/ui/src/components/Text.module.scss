@@ -1,4 +1,6 @@
 .text {
+  text-wrap: pretty;
+
   &[data-clamp-lines] {
     display: -webkit-box;
     overflow: hidden;

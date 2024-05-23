@@ -1,162 +1,118 @@
-import * as Accordion from '@pagoda/ui/src/components/Accordion';
-import { Badge } from '@pagoda/ui/src/components/Badge';
 import { Button } from '@pagoda/ui/src/components/Button';
-import { Checkbox, CheckboxGroup } from '@pagoda/ui/src/components/Checkbox';
-import * as Dialog from '@pagoda/ui/src/components/Dialog';
+import { Card } from '@pagoda/ui/src/components/Card';
 import { Flex } from '@pagoda/ui/src/components/Flex';
+import { Grid } from '@pagoda/ui/src/components/Grid';
+import { HR } from '@pagoda/ui/src/components/HorizontalRule';
 import { Section } from '@pagoda/ui/src/components/Section';
 import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
-import { Switch } from '@pagoda/ui/src/components/Switch';
-import * as Tabs from '@pagoda/ui/src/components/Tabs';
 import { Text } from '@pagoda/ui/src/components/Text';
-import { openToast } from '@pagoda/ui/src/components/Toast';
-import { useDebouncedValue } from '@pagoda/ui/src/hooks/debounce';
-import { Horse, Pizza } from '@phosphor-icons/react';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { CalendarDots, HandPeace, Plus, Ticket } from '@phosphor-icons/react';
 
 import { useDefaultLayout } from '@/hooks/useLayout';
 import { NextPageWithLayout } from '@/types/next';
 
 const Home: NextPageWithLayout = () => {
-  const router = useRouter();
-  const selectedTab = router.query.tab as string;
-
-  const [switchValue, setSwitchValue] = useState(false);
-  const debouncedSwitchValue = useDebouncedValue(switchValue, 300);
-
-  useEffect(() => {
-    console.log(debouncedSwitchValue);
-  }, [debouncedSwitchValue]);
-
   return (
     <>
-      <Section>
-        <Text as="h1">Home</Text>
+      <Section
+        style={{
+          background: 'linear-gradient(to right, var(--violet9), var(--cyan10))',
+        }}
+      >
+        <img
+          src="/images/hero-background.jpg"
+          alt=""
+          style={{
+            position: 'absolute',
+            zIndex: 0,
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            opacity: 0.1,
+            filter: 'saturate(0%) blur(2px)',
+          }}
+        />
 
-        <CheckboxGroup aria-label="My Group">
-          <Flex as="label" align="center" gap="s">
-            <Checkbox type="radio" name="myRadio" value="1" />
-            My Checkbox 1
+        <Flex stack gap="xl" gapTablet="l" style={{ zIndex: 5 }}>
+          <Flex stack gap="s" style={{ textAlign: 'center' }}>
+            <Text as="h1" color="white">
+              Easy, robust ticketing for any event
+            </Text>
+            <Text size="text-2xl" weight={400} color="violet12">
+              ...without the crazy fees
+            </Text>
           </Flex>
 
-          <Flex as="label" align="center" gap="s">
-            <Checkbox type="radio" name="myRadio" value="2" />
-            My Checkbox 2
-          </Flex>
-        </CheckboxGroup>
+          <Grid columns="1fr 1fr 1fr" columnsTablet="1fr 1fr" columnsPhone="1fr" style={{ textAlign: 'center' }}>
+            <Card style={{ backgroundColor: 'var(--whiteA4)', backdropFilter: 'blur(15px)' }}>
+              <Flex stack align="center">
+                <SvgIcon icon={<CalendarDots weight="thin" />} color="violet12" size="m" />
+                <Text color="white">
+                  Manage any number of events with configurable ticket purchasing, resale, and refund rules.
+                </Text>
+              </Flex>
+            </Card>
 
-        <Switch iconOn={<Horse weight="bold" />} checked={switchValue} onCheckedChange={setSwitchValue} />
+            <Card style={{ backgroundColor: 'var(--whiteA4)', backdropFilter: 'blur(15px)' }}>
+              <Flex stack align="center">
+                <SvgIcon icon={<Ticket weight="thin" />} color="violet12" size="m" />
+                <Text color="white">
+                  Scan and verify tickets at your event. Ticket holders will receive a proof of attendance.
+                </Text>
+              </Flex>
+            </Card>
 
-        <Flex as="label" align="center">
-          Turbo Mode (Label On Right)
-          <Switch />
+            <Card style={{ backgroundColor: 'var(--whiteA4)', backdropFilter: 'blur(15px)' }}>
+              <Flex stack align="center">
+                <SvgIcon icon={<HandPeace weight="thin" />} color="violet12" size="m" />
+                <Text color="white">Combat scalpers and prioritize ticket sales for previous attendees.</Text>
+              </Flex>
+            </Card>
+          </Grid>
         </Flex>
       </Section>
 
       <Section>
-        <Flex align="center" wrap>
-          <Button
-            label="Open Toast"
-            variant="secondary"
-            fill="outline"
-            onClick={() => {
-              openToast({
-                type: 'info',
-                title: 'My Error',
-                description: 'This is a longer description about the toast. Do you like it?',
-                action: () => alert(1),
-                actionText: 'Click Me',
-              });
-            }}
-          />
+        <Grid columns="1fr 1fr" gap="xl" columnsTablet="1fr">
+          <Flex stack align="start">
+            <Text as="h2">Event Producer</Text>
 
-          <Dialog.Root>
-            <Dialog.Trigger asChild>
-              <Button label="Open Dialog" variant="secondary" fill="outline" />
-            </Dialog.Trigger>
+            <Text>
+              Sign in to start creating and managing your events. After {`you've`} created an event, {`you'll`} be able
+              to share a special link with your attendees and fans for them to purchase tickets.
+            </Text>
 
-            <Dialog.Content title="My Dialog">
-              <Text>Some content here.</Text>
-              <Text>More content over there.</Text>
-              <Text>Some content here.</Text>
-              <Text>More content over there.</Text>
-              <Text>Some content here.</Text>
-              <Text>More content over there.</Text>
-              <Text>Some content here.</Text>
-              <Text>More content over there.</Text>
-              <Text>Some content here.</Text>
-            </Dialog.Content>
-          </Dialog.Root>
-        </Flex>
+            <Text size="text-xs" color="sand9">
+              Depending on how you configure the event, {`they'll`} be able to transfer, resell, or request a refund.
+            </Text>
 
-        <Flex align="center" wrap>
-          <Badge iconLeft={<Horse fill="bold" />} label="My Badge" />
-          <Badge label="My Badge" variant="neutral" />
-          <Badge label="My Badge" variant="alert" />
-          <Badge label="My Badge" variant="success" />
-          <Badge label="23" variant="warning" count />
-          <Badge label="Click Me" variant="warning" onClick={() => console.log(1)} />
-        </Flex>
+            <HR />
 
-        <Tabs.Root value={selectedTab}>
-          <Tabs.List>
-            <Tabs.Trigger href="?tab=one" value="one">
-              <SvgIcon icon={<Horse fill="bold" />} />
-              Tab One
-            </Tabs.Trigger>
+            <Flex wrap>
+              <Button iconLeft={<Plus weight="regular" />} variant="affirmative" label="Create Event" />
+              <Button iconLeft={<CalendarDots weight="regular" />} label="Manage Events" />
+            </Flex>
+          </Flex>
 
-            <Tabs.Trigger href="?tab=two" value="two">
-              <SvgIcon icon={<Pizza fill="bold" />} />
-              Tab Two
-            </Tabs.Trigger>
+          <Flex stack align="start">
+            <Text as="h2">Attendee</Text>
 
-            <Tabs.Trigger href="?tab=three" value="three">
-              Tab Three With No Icon
-            </Tabs.Trigger>
+            <Text>
+              The event producer will share a special link with you to purchase tickets for their event. If {`you've`}{' '}
+              already purchased tickets, sign in to view and manage your tickets.
+            </Text>
 
-            <Tabs.Trigger href="?tab=four" value="four">
-              Tab Four With No Icon
-            </Tabs.Trigger>
-          </Tabs.List>
+            <Text size="text-xs" color="sand9">
+              Depending on how the producer configured the event, {`you'll`} be able to transfer, resell, or refund your
+              tickets.
+            </Text>
 
-          <Tabs.Content value="one">
-            <Text>Content one.</Text>
-          </Tabs.Content>
+            <HR />
 
-          <Tabs.Content value="two">
-            <Text>Content two.</Text>
-          </Tabs.Content>
-
-          <Tabs.Content value="three">
-            <Text>Content three.</Text>
-          </Tabs.Content>
-
-          <Tabs.Content value="four">
-            <Text>Content four.</Text>
-          </Tabs.Content>
-        </Tabs.Root>
-
-        <Accordion.Root type="multiple">
-          <Accordion.Item value="one">
-            <Accordion.Trigger>First Section</Accordion.Trigger>
-
-            <Accordion.Content>
-              <Text>Content 1</Text>
-              <Text>Content 1</Text>
-              <Text>Content 1</Text>
-            </Accordion.Content>
-          </Accordion.Item>
-
-          <Accordion.Item value="two">
-            <Accordion.Trigger>Second Section</Accordion.Trigger>
-
-            <Accordion.Content>
-              <Text>Content 2</Text>
-              <Text>Content 2</Text>
-            </Accordion.Content>
-          </Accordion.Item>
-        </Accordion.Root>
+            <Button iconLeft={<Ticket weight="regular" />} label="View Your Tickets" />
+          </Flex>
+        </Grid>
       </Section>
     </>
   );

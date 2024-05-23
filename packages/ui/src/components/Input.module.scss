@@ -147,6 +147,7 @@
   padding: 0;
   color: var(--sand12);
   font: var(--text-base);
+  font-size: 16px; // Make sure we always use 16px to prevent iOS auto-zoom
   outline: none !important;
   text-align: left;
   transition:
@@ -156,6 +157,7 @@
   &::placeholder {
     color: var(--sand10);
     font: var(--text-base);
+    font-size: 16px; // Make sure we always use 16px to prevent iOS auto-zoom
     opacity: 1;
   }
 
@@ -173,7 +175,7 @@
     padding: 8px 12px;
     height: unset;
     min-height: 5.5rem;
-    field-sizing: content; // https://caniuse.com/?search=field-sizing
+    field-sizing: content; // Progressive enhancement for browsers that support it: https://caniuse.com/?search=field-sizing
   }
 
   &::-webkit-inner-spin-button,

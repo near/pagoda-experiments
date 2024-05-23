@@ -1,19 +1,21 @@
 import { type ReactNode } from 'react';
 
-import s from './styles.module.scss';
+import s from './DefaultLayout.module.scss';
+import { Footer } from './Footer';
+import { Header } from './Header';
 
-interface Props {
+type Props = {
   children: ReactNode;
-}
+};
 
-export function DefaultLayout({ children }: Props) {
+export const DefaultLayout = ({ children }: Props) => {
   return (
     <div className={s.wrapper}>
-      <header>Header</header>
+      <Header />
 
       <main className={s.content}>{children}</main>
 
-      <footer>Footer</footer>
+      <Footer />
     </div>
   );
-}
+};

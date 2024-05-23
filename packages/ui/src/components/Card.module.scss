@@ -1,0 +1,24 @@
+.card {
+  --card-color-background: var(--white);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-m);
+  padding: var(--gap-m);
+  border-radius: 6px;
+  box-shadow: var(--shadow-card);
+  background-color: var(--card-color-background);
+  outline: none;
+  transition: all var(--transition-speed);
+
+  &[role='button'] {
+    cursor: pointer;
+
+    &:hover {
+      box-shadow: 0px 1px 3px 3px rgba(0, 0, 0, 0.1);
+    }
+    &:focus-visible {
+      box-shadow: 0 0 0 4px var(--violet4);
+    }
+  }
+}

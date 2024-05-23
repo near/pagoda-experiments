@@ -28,6 +28,7 @@ export const Grid = ({
   gapTablet,
   justify,
   stretch,
+  style: styleOverrides,
   ...props
 }: Props) => {
   const style = {
@@ -45,7 +46,10 @@ export const Grid = ({
       data-gap-tablet={gapTablet}
       data-justify={justify}
       data-stretch={stretch}
-      style={style}
+      style={{
+        ...styleOverrides,
+        ...style,
+      }}
       {...props}
     >
       {children}
