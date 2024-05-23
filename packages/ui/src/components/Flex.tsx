@@ -5,6 +5,7 @@ import s from './Flex.module.scss';
 
 type Props = {
   align?: Align;
+  as?: 'div' | 'label' | 'span';
   children: ReactNode;
   className?: string;
   gap?: ThemeGap;
@@ -20,6 +21,7 @@ type Props = {
 
 export const Flex = ({
   align,
+  as = 'div',
   children,
   className = '',
   gap = 'm',
@@ -31,8 +33,10 @@ export const Flex = ({
   wrap,
   ...props
 }: Props) => {
+  const Element = as;
+
   return (
-    <div
+    <Element
       className={`${s.flex} ${className}`}
       data-align={align}
       data-gap={gap}
@@ -45,6 +49,6 @@ export const Flex = ({
       {...props}
     >
       {children}
-    </div>
+    </Element>
   );
 };

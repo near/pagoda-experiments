@@ -11,13 +11,15 @@ import { Badge } from '@pagoda/ui/src/components/Badge';
 <Badge label="My Badge" variant="success" />
 ```
 
-For displaying a number with fully rounded corners, apply the `count` prop:
+For displaying a number with fully rounded corners and bold font, apply the `count` prop:
 
 ```tsx
 <Badge label="23" count />
 ```
 
-Badges will typically be a readonly element. However, there are times where it can make sense to make them clickable. Simply add an `onClick` handler and `hover/focus` styles will automatically be applied:
+## Chip (Clickable Badge)
+
+Badges will typically be a readonly element. However, there are times where it can make sense to make them clickable. Simply add an `onClick` handler and `hover/focus` styles will automatically be applied (and the borders will be fully rounded):
 
 ```tsx
 <Badge label="Click Me" onClick={() => console.log(1)} />

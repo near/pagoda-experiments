@@ -22,12 +22,14 @@
   transition: all var(--transition-speed);
 
   &[role='button'] {
+    border-radius: 100px;
     cursor: pointer;
+
     &:hover {
       box-shadow: 0px 1px 3px 3px rgba(0, 0, 0, 0.1);
     }
-    &:focus {
-      box-shadow: 0 0 0 4px var(--violet4);
+    &:focus-visible {
+      box-shadow: 0 0 0 2px var(--violet4);
     }
   }
 
