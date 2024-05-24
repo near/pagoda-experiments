@@ -6,6 +6,22 @@
     border-bottom: none;
   }
 
+  &[data-grow] {
+    &,
+    > div,
+    > div > div {
+      // The div selectors target the wrapping container and flex elements
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: stretch;
+      flex-grow: 1;
+    }
+  }
+  &[data-grow='screen-height'] {
+    min-height: calc(100svh - var(--header-height));
+  }
+
   @media (max-width: 600px) {
     padding: var(--gap-l) var(--gap-m);
   }

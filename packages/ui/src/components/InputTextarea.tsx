@@ -14,7 +14,7 @@ type Props = InputHTMLAttributes<HTMLTextAreaElement> & {
 };
 
 export const InputTextarea = forwardRef<HTMLTextAreaElement, Props>(
-  ({ assistive, error, label, name, placeholder, style, success, ...props }, ref) => {
+  ({ assistive, error, label, name, style, success, ...props }, ref) => {
     const assistiveTextId = `${name}-assistive-text`;
     const variant: InputVariant = error ? 'error' : success ? 'success' : 'default';
 

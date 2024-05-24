@@ -12,12 +12,13 @@ type Props = {
   className?: string;
   id?: string;
   gap?: ThemeGap;
+  grow?: 'available' | 'screen-height';
   style?: CSSProperties;
 };
 
-export const Section = ({ children, className = '', gap = 'l', ...props }: Props) => {
+export const Section = ({ children, className = '', gap = 'l', grow, ...props }: Props) => {
   return (
-    <section className={`${s.section} ${className}`} {...props}>
+    <section className={`${s.section} ${className}`} data-grow={grow} {...props}>
       <Container>
         <Flex stack gap={gap}>
           {children}

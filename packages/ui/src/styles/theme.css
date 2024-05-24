@@ -9,6 +9,11 @@
   --gap-l: 2rem;
   --gap-xl: 4rem;
 
+  --header-height: 70px;
+  @media (max-width: 600px) {
+    --header-height: 54px;
+  }
+
   --container-width-xs: 20rem;
   --container-width-s: 30rem;
   --container-width-m: 50rem;

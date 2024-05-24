@@ -16,7 +16,10 @@ const Home: NextPageWithLayout = () => {
     <>
       <Section
         style={{
+          position: 'relative',
           background: 'linear-gradient(to right, var(--violet9), var(--cyan10))',
+          border: 'none',
+          overflow: 'hidden',
         }}
       >
         <img
