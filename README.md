@@ -8,7 +8,7 @@ This monorepo contains multiple product experiments built on the blockchain. The
 
 ## Packages
 
-- Pagoda UI (`packages/ui`). Our DIG components have been ported over and refactored into a shareable package for all of our apps in this monorepo. We'll continue to add more components to this package as we discover new components that should be reusable between apps.
+- Pagoda UI (`packages/ui`). Our DIG components have been ported over and refactored into a shareable package for all of our apps in this monorepo. We'll continue to add more components to this package as we discover new components that should be reusable between apps. Each component should have a corresponding `README.md` file that gives examples and options for using the component.
 
 ## Getting Started
 
