@@ -16,20 +16,27 @@ This project requires [pnpm](https://pnpm.io/installation) version `9.1.1`. The 
 
 This project also requires Node 20. If you use `nvm`, simply run:
 
-```
+```bash
 nvm install
 nvm use
 ```
 
+Make sure you have the correct version of `pnpm` installed:
+
+```bash
+pnpm -v # This should output 9.1.1
+npm install -g pnpm@9.1.1 # Install the correct version if needed
+```
+
 Install all dependencies in the monorepo root:
 
-```
+```bash
 pnpm i
 ```
 
 Then navigate to a specific app and start up the development server:
 
-```
+```bash
 cd ./apps/ticketing
 pnpm dev
 ```
@@ -41,6 +48,16 @@ Since each app compiles imports from `packages/ui` on its own via Next JS's [ext
 ## Contributing
 
 Since we're in the early MVP phase and will be moving fast, we can simply create feature branches based off of `main` and open up PR's that will merge directly to `main`. Once the project matures, we'll introduce a `develop` branch and preview deploy environment.
+
+Whenever you commit, our [Husky](https://typicode.github.io/husky/) plugin will run the `pre-commit` command to run Prettier and ES Lint. It will exit with a warning if any issues are reported. You can resolve fixable issues from the project root:
+
+```bash
+pnpm format:fix
+pnpm lint:fix
+git add -A
+```
+
+TODO: Update the `pre-commit` command to only run against files that have been staged for your current commit. Right now it runs against the entire project.
 
 ## Deployment
 
