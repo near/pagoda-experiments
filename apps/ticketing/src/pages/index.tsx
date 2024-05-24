@@ -44,29 +44,31 @@ const Home: NextPageWithLayout = () => {
             </Text>
           </Flex>
 
-          <Grid columns="1fr 1fr 1fr" columnsTablet="1fr 1fr" columnsPhone="1fr" style={{ textAlign: 'center' }}>
-            <Card style={{ backgroundColor: 'var(--whiteA4)', backdropFilter: 'blur(15px)' }}>
-              <Flex stack align="center">
-                <SvgIcon icon={<CalendarDots weight="thin" />} color="violet12" size="m" />
-                <Text color="white">
+          <Grid columns="1fr 1fr 1fr" columnsTablet="1fr 1fr" columnsPhone="1fr" gap="l" gapPhone="m">
+            <Card>
+              <Flex style={{ margin: 'auto 0' }} align="center">
+                <SvgIcon icon={<CalendarDots weight="duotone" />} color="violet8" size="m" />
+                <Text color="violet12" size="text-s">
                   Manage any number of events with configurable ticket purchasing, resale, and refund rules.
                 </Text>
               </Flex>
             </Card>
 
-            <Card style={{ backgroundColor: 'var(--whiteA4)', backdropFilter: 'blur(15px)' }}>
-              <Flex stack align="center">
-                <SvgIcon icon={<Ticket weight="thin" />} color="violet12" size="m" />
-                <Text color="white">
+            <Card>
+              <Flex style={{ margin: 'auto 0' }} align="center">
+                <SvgIcon icon={<Ticket weight="duotone" />} color="violet8" size="m" />
+                <Text color="violet12" size="text-s">
                   Scan and verify tickets at your event. Ticket holders will receive a proof of attendance.
                 </Text>
               </Flex>
             </Card>
 
-            <Card style={{ backgroundColor: 'var(--whiteA4)', backdropFilter: 'blur(15px)' }}>
-              <Flex stack align="center">
-                <SvgIcon icon={<HandPeace weight="thin" />} color="violet12" size="m" />
-                <Text color="white">Combat scalpers and prioritize ticket sales for previous attendees.</Text>
+            <Card>
+              <Flex style={{ margin: 'auto 0' }} align="center">
+                <SvgIcon icon={<HandPeace weight="duotone" />} color="violet8" size="m" />
+                <Text color="violet12" size="text-s">
+                  Combat scalpers and prioritize ticket sales for previous attendees.
+                </Text>
               </Flex>
             </Card>
           </Grid>
