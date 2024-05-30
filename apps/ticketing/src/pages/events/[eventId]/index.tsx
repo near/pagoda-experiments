@@ -66,6 +66,8 @@ const EventDetails: NextPageWithLayout = () => {
         <title>{event.name}</title>
       </Head>
 
+      {/* NOTE: We'll need to make sure the event details are loaded on the server side to properly support social share previews for this event */}
+
       <MetaTags
         title={event.name}
         description={`${event.location} on ${displayEventDate(event)?.date}${event.startTime ? ` at ${displayEventDate(event)?.time}` : undefined}`}

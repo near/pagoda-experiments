@@ -106,6 +106,14 @@ const Events: NextPageWithLayout = () => {
           </Table.Head>
 
           <Table.Body>
+            {!events && <Table.PlaceholderRows />}
+
+            {events?.length === 0 && (
+              <Table.Row>
+                <Table.Cell colSpan={100}>No events have been created yet.</Table.Cell>
+              </Table.Row>
+            )}
+
             {events.map((event) => (
               <Table.Row key={event.id} onClick={() => router.push(`/events/${event.id}`)}>
                 <Table.Cell style={{ minWidth: '9rem' }}>
