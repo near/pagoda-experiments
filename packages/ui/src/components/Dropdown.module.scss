@@ -7,6 +7,7 @@
   padding: 4px;
   box-shadow: var(--shadow-card);
   animation-duration: var(--transition-speed);
+  z-index: 2000;
   will-change: transform, opacity;
 
   &:has(.section) {

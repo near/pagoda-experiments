@@ -9,12 +9,13 @@ import { Text } from '@pagoda/ui/src/components/Text';
 import { CalendarDots, HandPeace, Plus, Ticket } from '@phosphor-icons/react';
 
 import { useDefaultLayout } from '@/hooks/useLayout';
-import { NextPageWithLayout } from '@/types/next';
+import { NextPageWithLayout } from '@/utils/types';
 
 const Home: NextPageWithLayout = () => {
   return (
     <>
       <Section
+        grow="available"
         style={{
           position: 'relative',
           background: 'linear-gradient(to right, var(--violet9), var(--cyan10))',
@@ -37,7 +38,7 @@ const Home: NextPageWithLayout = () => {
           }}
         />
 
-        <Flex stack gap="xl" gapTablet="l" style={{ zIndex: 5 }}>
+        <Flex stack gap="xl" gapTablet="l" style={{ zIndex: 5, margin: 'auto' }}>
           <Flex stack gap="s" style={{ textAlign: 'center' }}>
             <Text as="h1" color="white">
               Easy, robust ticketing for any event
@@ -50,7 +51,7 @@ const Home: NextPageWithLayout = () => {
           <Grid columns="1fr 1fr 1fr" columnsTablet="1fr 1fr" columnsPhone="1fr" gap="l" gapPhone="m">
             <Card>
               <Flex style={{ margin: 'auto 0' }} align="center">
-                <SvgIcon icon={<CalendarDots weight="duotone" />} color="violet8" size="m" />
+                <SvgIcon icon={<CalendarDots />} color="violet8" size="m" />
                 <Text color="violet12" size="text-s">
                   Manage any number of events with configurable ticket purchasing, resale, and refund rules.
                 </Text>
@@ -59,7 +60,7 @@ const Home: NextPageWithLayout = () => {
 
             <Card>
               <Flex style={{ margin: 'auto 0' }} align="center">
-                <SvgIcon icon={<Ticket weight="duotone" />} color="violet8" size="m" />
+                <SvgIcon icon={<Ticket />} color="violet8" size="m" />
                 <Text color="violet12" size="text-s">
                   Scan and verify tickets at your event. Ticket holders will receive a proof of attendance.
                 </Text>
@@ -68,7 +69,7 @@ const Home: NextPageWithLayout = () => {
 
             <Card>
               <Flex style={{ margin: 'auto 0' }} align="center">
-                <SvgIcon icon={<HandPeace weight="duotone" />} color="violet8" size="m" />
+                <SvgIcon icon={<HandPeace />} color="violet8" size="m" />
                 <Text color="violet12" size="text-s">
                   Combat scalpers and prioritize ticket sales for previous attendees.
                 </Text>
@@ -88,15 +89,11 @@ const Home: NextPageWithLayout = () => {
               to share a special link with your attendees and fans for them to purchase tickets.
             </Text>
 
-            <Text size="text-xs" color="sand9">
-              Depending on how you configure the event, {`they'll`} be able to transfer, resell, or request a refund.
-            </Text>
-
             <HR />
 
             <Flex wrap>
-              <Button iconLeft={<Plus weight="regular" />} variant="affirmative" label="Create Event" />
-              <Button iconLeft={<CalendarDots weight="regular" />} label="Manage Events" />
+              <Button iconLeft={<Plus />} variant="affirmative" label="Create Event" size="large" />
+              <Button iconLeft={<CalendarDots />} label="Manage Events" size="large" />
             </Flex>
           </Flex>
 
@@ -105,17 +102,14 @@ const Home: NextPageWithLayout = () => {
 
             <Text>
               The event producer will share a special link with you to purchase tickets for their event. If {`you've`}{' '}
-              already purchased tickets, sign in to view and manage your tickets.
+              already purchased tickets, you can view and manage your tickets by visiting the special link that was
+              emailed to you upon purchase.
             </Text>
 
-            <Text size="text-xs" color="sand9">
+            <Text>
               Depending on how the producer configured the event, {`you'll`} be able to transfer, resell, or refund your
               tickets.
             </Text>
-
-            <HR />
-
-            <Button iconLeft={<Ticket weight="regular" />} label="View Your Tickets" />
           </Flex>
         </Grid>
       </Section>

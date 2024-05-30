@@ -1,5 +1,5 @@
 import { MagnifyingGlass } from '@phosphor-icons/react';
-import type { FormEventHandler, InputHTMLAttributes, ReactElement } from 'react';
+import type { ComponentPropsWithRef, FormEventHandler, ReactElement } from 'react';
 import { forwardRef } from 'react';
 
 import type { NumberInputHandlerOptions } from '../utils/input-handlers';
@@ -8,7 +8,7 @@ import { InputVariant } from '../utils/types';
 import { AssistiveText } from './AssistiveText';
 import s from './Input.module.scss';
 
-type Props = InputHTMLAttributes<HTMLInputElement> & {
+type Props = ComponentPropsWithRef<'input'> & {
   assistive?: string;
   error?: string;
   iconLeft?: ReactElement;

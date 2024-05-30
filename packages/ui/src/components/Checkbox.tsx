@@ -1,9 +1,9 @@
 import { Check } from '@phosphor-icons/react';
-import { forwardRef, InputHTMLAttributes } from 'react';
+import { type ComponentPropsWithRef, forwardRef } from 'react';
 
 import s from './Checkbox.module.scss';
 
-type Props = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & {
+type Props = Omit<ComponentPropsWithRef<'input'>, 'type'> & {
   type?: 'checkbox' | 'radio';
 };
 
