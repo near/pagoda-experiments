@@ -1,11 +1,11 @@
-import type { InputHTMLAttributes } from 'react';
+import type { ComponentPropsWithRef } from 'react';
 import { forwardRef } from 'react';
 
 import { InputVariant } from '../utils/types';
 import { AssistiveText } from './AssistiveText';
 import s from './Input.module.scss';
 
-type Props = InputHTMLAttributes<HTMLTextAreaElement> & {
+type Props = ComponentPropsWithRef<'textarea'> & {
   assistive?: string;
   error?: string;
   label?: string;

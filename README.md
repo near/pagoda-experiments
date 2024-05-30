@@ -45,6 +45,14 @@ _NOTE: You'll most likely see a warning when starting up the server: `React does
 
 Since each app compiles imports from `packages/ui` on its own via Next JS's [externalDir](https://stackoverflow.com/a/72842944) config option, you don't need to run any additional commands when needing to make changes inside `packages/ui`. Simply boot up one of the development servers inside the `apps` folder. Any changes to `packages/ui` will be detected and hot reloaded automatically by the Next JS development server.
 
+### Environment Variables
+
+If the app you're developing against contains an `.env.example` config file, make a copy of it to configure your own variable values locally:
+
+```bash
+cp .env.example .env.local
+```
+
 ## Contributing
 
 Since we're in the early MVP phase and will be moving fast, we can simply create feature branches based off of `main` and open up PR's that will merge directly to `main`. Once the project matures, we'll introduce a `develop` branch and preview deploy environment.

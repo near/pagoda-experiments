@@ -13,11 +13,20 @@
     "pre-commit": "pnpm format && pnpm lint --max-warnings 0"
   },
   "dependencies": {
+    "@near-wallet-selector/core": "^8.9.7",
+    "@near-wallet-selector/here-wallet": "8.9.7",
+    "@near-wallet-selector/meteor-wallet": "^8.9.7",
+    "@near-wallet-selector/modal-ui": "^8.9.7",
+    "@near-wallet-selector/my-near-wallet": "^8.9.7",
+    "@near-wallet-selector/nightly": "^8.9.7",
+    "@near-wallet-selector/sender": "^8.9.7",
     "@pagoda/ui": "workspace:*",
     "@phosphor-icons/react": "^2.1.5",
+    "near-api-js": "2.1.4",
     "next": "^14",
     "react": "^18",
     "react-dom": "^18",
+    "react-hook-form": "^7.51.5",
     "sass": "^1.77.2",
     "zustand": "^4.5.2"
   },

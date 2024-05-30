@@ -1,9 +1,9 @@
-import { Button } from '@pagoda/ui/src/components/Button';
 import { Container } from '@pagoda/ui/src/components/Container';
 import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
-import { QrCode } from '@phosphor-icons/react';
+import { CalendarDots, Plus, QrCode } from '@phosphor-icons/react';
 import Link from 'next/link';
 
+import { AccountDropdown } from '../AccountDropdown';
 import s from './Header.module.scss';
 
 export const Header = () => {
@@ -15,15 +15,19 @@ export const Header = () => {
           Ticketing
         </Link>
 
-        <Link href="/events" className={s.link}>
-          <span>Manage </span>Events
-        </Link>
+        <div className={s.links}>
+          <Link href="/events/new" className={s.link}>
+            <SvgIcon icon={<Plus weight="regular" />} />
+            <span>Create Event</span>
+          </Link>
 
-        <Link href="/tickets" className={s.link}>
-          <span>Your </span>Tickets
-        </Link>
+          <Link href="/events" className={s.link}>
+            <SvgIcon icon={<CalendarDots weight="regular" />} />
+            <span>Manage Events</span>
+          </Link>
+        </div>
 
-        <Button size="small" label="Sign In" />
+        <AccountDropdown />
       </Container>
     </header>
   );

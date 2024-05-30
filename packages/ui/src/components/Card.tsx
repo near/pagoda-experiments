@@ -1,8 +1,8 @@
-import { forwardRef, type HTMLAttributes } from 'react';
+import { type ComponentPropsWithRef, forwardRef } from 'react';
 
 import s from './Card.module.scss';
 
-type Props = HTMLAttributes<HTMLDivElement>;
+type Props = ComponentPropsWithRef<'div'>;
 
 export const Card = forwardRef<HTMLDivElement, Props>(({ className = '', ...props }, ref) => {
   return (

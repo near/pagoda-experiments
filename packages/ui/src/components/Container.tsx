@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 import s from './Container.module.scss';
 
@@ -8,12 +8,9 @@ type Props = {
   children: ReactNode;
   className?: string;
   size?: ContainerSize;
+  style?: CSSProperties;
 };
 
-export const Container = ({ children, className = '', size = 'l' }: Props) => {
-  return (
-    <div className={`${s.container} ${className}`} data-size={size}>
-      {children}
-    </div>
-  );
+export const Container = ({ className = '', size = 'l', ...props }: Props) => {
+  return <div className={`${s.container} ${className}`} data-size={size} {...props} />;
 };
