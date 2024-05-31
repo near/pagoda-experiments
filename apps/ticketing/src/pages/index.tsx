@@ -92,8 +92,8 @@ const Home: NextPageWithLayout = () => {
             <HR />
 
             <Flex wrap>
-              <Button iconLeft={<Plus />} variant="affirmative" label="Create Event" size="large" />
-              <Button iconLeft={<CalendarDots />} label="Manage Events" size="large" />
+              <Button iconLeft={<Plus />} variant="affirmative" label="Create Event" size="large" href="/events/new" />
+              <Button iconLeft={<CalendarDots />} label="Manage Events" size="large" href="/events" />
             </Flex>
           </Flex>
 
