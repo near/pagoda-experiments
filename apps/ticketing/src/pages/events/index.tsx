@@ -28,7 +28,7 @@ const Events: NextPageWithLayout = () => {
 
   const events: EventDetails[] = [
     {
-      id: 1,
+      id: '1',
       name: 'Some Cool Event Name',
       date: '2024-03-05',
       location: '1234 W Cool St, Denver, CO',
@@ -39,7 +39,7 @@ const Events: NextPageWithLayout = () => {
       },
     },
     {
-      id: 2,
+      id: '2',
       name: 'Another Event Name',
       location: '3455 S Awesome St, San Francisco, CA',
       date: '2024-10-14',

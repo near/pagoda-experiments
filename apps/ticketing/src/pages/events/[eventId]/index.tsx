@@ -20,7 +20,6 @@ import {
   XLogo,
   YoutubeLogo,
 } from '@phosphor-icons/react';
-import Head from 'next/head';
 import { useRouter } from 'next/router';
 
 import { useDefaultLayout } from '@/hooks/useLayout';
@@ -36,7 +35,7 @@ const EventDetails: NextPageWithLayout = () => {
   const canEditEvent = !!account; // TODO: Determine when the signed in wallet owns the wallet
 
   const event: EventDetails = {
-    id: 1,
+    id: '1',
     name: 'Some Cool Event Name',
     location: '1234 W Cool St, Denver, CO',
     date: '2024-10-14',
@@ -62,10 +61,6 @@ const EventDetails: NextPageWithLayout = () => {
 
   return (
     <>
-      <Head>
-        <title>{event.name}</title>
-      </Head>
-
       {/* NOTE: We'll need to make sure the event details are loaded on the server side to properly support social share previews for this event */}
 
       <MetaTags
