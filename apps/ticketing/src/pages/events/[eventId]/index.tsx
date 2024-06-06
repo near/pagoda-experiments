@@ -65,7 +65,7 @@ const EventDetails: NextPageWithLayout = () => {
 
       <MetaTags
         title={event.name}
-        description={`${event.location} on ${displayEventDate(event)?.date}${event.startTime ? ` at ${displayEventDate(event)?.time}` : undefined}`}
+        description={`${event.location} on ${displayEventDate(event)?.dateAndTime}`}
         image={event.imageUrl}
       />
 
@@ -112,10 +112,7 @@ const EventDetails: NextPageWithLayout = () => {
 
               <Flex align="center" gap="s">
                 <SvgIcon icon={<Clock />} />
-                <Text color="sand12">
-                  {displayEventDate(event)?.date}
-                  {event.startTime ? ` at ${displayEventDate(event)?.time}` : undefined}
-                </Text>
+                <Text color="sand12">{displayEventDate(event)?.dateAndTime}</Text>
               </Flex>
             </Flex>
 

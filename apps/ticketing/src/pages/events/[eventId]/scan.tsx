@@ -72,10 +72,7 @@ const ScanEventTickets: NextPageWithLayout = () => {
 
                 <Flex align="center" gap="s">
                   <SvgIcon icon={<Clock />} size="xs" />
-                  <Text size="text-s">
-                    {displayEventDate(event)?.date}
-                    {event.startTime ? ` at ${displayEventDate(event)?.time}` : undefined}
-                  </Text>
+                  <Text size="text-s">{displayEventDate(event)?.dateAndTime}</Text>
                 </Flex>
               </Flex>
 

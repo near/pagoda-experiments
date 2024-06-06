@@ -152,10 +152,7 @@ const PurchasedTickets: NextPageWithLayout = () => {
 
                 <Flex align="center" gap="s">
                   <SvgIcon icon={<Clock />} size="xs" data-html2canvas-ignore />
-                  <Text size="text-xs">
-                    {displayEventDate(event)?.date}
-                    {event.startTime ? ` at ${displayEventDate(event)?.time}` : undefined}
-                  </Text>
+                  <Text size="text-xs">{displayEventDate(event)?.dateAndTime}</Text>
                 </Flex>
               </Flex>
 
@@ -181,7 +178,11 @@ const PurchasedTickets: NextPageWithLayout = () => {
                 />
               </Tooltip>
 
-              <AddToAppleWallet />
+              <AddToAppleWallet
+                onClick={() =>
+                  router.push(`/api/apple-wallet/generate-event-pass?accountId=${accountId}&eventId=${eventId}`)
+                }
+              />
             </Flex>
 
             <Flex stack>
