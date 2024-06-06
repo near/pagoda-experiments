@@ -6,7 +6,7 @@ import { HR } from '@pagoda/ui/src/components/HorizontalRule';
 import { Section } from '@pagoda/ui/src/components/Section';
 import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
 import { Text } from '@pagoda/ui/src/components/Text';
-import { ArrowUpRight, Clock, QrCode } from '@phosphor-icons/react';
+import { CalendarDots, Clock, QrCode } from '@phosphor-icons/react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
@@ -57,7 +57,7 @@ const ScanEventTickets: NextPageWithLayout = () => {
               </Text>
               <Button
                 label="View Event"
-                icon={<ArrowUpRight weight="bold" />}
+                icon={<CalendarDots />}
                 size="small"
                 href={`/events/${event.id}`}
                 target="_blank"
