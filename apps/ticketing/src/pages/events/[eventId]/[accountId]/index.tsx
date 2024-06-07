@@ -179,9 +179,7 @@ const PurchasedTickets: NextPageWithLayout = () => {
               </Tooltip>
 
               <AddToAppleWallet
-                onClick={() =>
-                  router.push(`/api/apple-wallet/generate-event-pass?accountId=${accountId}&eventId=${eventId}`)
-                }
+                href={`/api/apple-wallet/generate-event-pass?accountId=${accountId}&eventId=${eventId}`}
               />
             </Flex>
 

@@ -130,24 +130,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       pass.secondaryFields.add({
-        key: 'location',
-        label: 'Location',
-        value: event.location,
-      });
-
-      if (formattedEventDate) {
-        pass.auxiliaryFields.add({
-          key: 'date',
-          label: 'Date',
-          value: formattedEventDate.dateAndTime,
-        });
-      }
-
-      pass.auxiliaryFields.add({
         key: 'ticket',
         label: 'Ticket',
         value: `${account.tickets.length > 1 ? `${i + 1} of ${account.tickets.length} - ` : ''}${ticket.tier ?? 'General Admission'}`,
       });
+
+      if (formattedEventDate) {
+        pass.auxiliaryFields.add({
+          key: 'location',
+          label: 'Location & Date',
+          value: `${event.location} - ${formattedEventDate.dateAndTime}`,
+        });
+      } else {
+        pass.secondaryFields.add({
+          key: 'location',
+          label: 'Location',
+          value: event.location,
+        });
+      }
 
       pass.images.add('logo', logo1x);
       pass.images.add('logo', logo2x, '2x');
