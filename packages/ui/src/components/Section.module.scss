@@ -1,5 +1,7 @@
 .section {
-  padding: var(--gap-xl) var(--gap-l);
+  --section-padding-x: var(--gap-l);
+  --section-padding-y: var(--gap-xl);
+  padding: var(--section-padding-y) var(--section-padding-x);
   border-bottom: 1px solid var(--sand6);
 
   &:last-child {
@@ -23,6 +25,7 @@
   }
 
   @media (max-width: 600px) {
-    padding: var(--gap-l) var(--gap-m);
+    --section-padding-x: var(--gap-m);
+    --section-padding-y: var(--gap-l);
   }
 }

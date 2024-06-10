@@ -46,7 +46,7 @@ const EditEvent: NextPageWithLayout = () => {
     */
 
     return {
-      id: 1,
+      id: '1',
       imageUrl: `${HOSTNAME}/images/hero-background.jpg`,
       name: 'Some Cool Event Name',
       date: '2024-10-14',

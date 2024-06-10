@@ -6,7 +6,7 @@ import { HR } from '@pagoda/ui/src/components/HorizontalRule';
 import { Section } from '@pagoda/ui/src/components/Section';
 import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
 import { Text } from '@pagoda/ui/src/components/Text';
-import { ArrowUpRight, Clock, QrCode } from '@phosphor-icons/react';
+import { CalendarDots, Clock, QrCode } from '@phosphor-icons/react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
@@ -20,7 +20,7 @@ const ScanEventTickets: NextPageWithLayout = () => {
   const eventId = router.query.eventId as string;
 
   const event: EventDetails = {
-    id: 1,
+    id: '1',
     imageUrl: `${HOSTNAME}/images/hero-background.jpg`,
     name: 'Some Cool Event Name',
     date: '2024-10-14',
@@ -57,7 +57,7 @@ const ScanEventTickets: NextPageWithLayout = () => {
               </Text>
               <Button
                 label="View Event"
-                icon={<ArrowUpRight weight="bold" />}
+                icon={<CalendarDots />}
                 size="small"
                 href={`/events/${event.id}`}
                 target="_blank"
@@ -72,10 +72,7 @@ const ScanEventTickets: NextPageWithLayout = () => {
 
                 <Flex align="center" gap="s">
                   <SvgIcon icon={<Clock />} size="xs" />
-                  <Text size="text-s">
-                    {displayEventDate(event)?.date}
-                    {event.startTime ? ` at ${displayEventDate(event)?.time}` : undefined}
-                  </Text>
+                  <Text size="text-s">{displayEventDate(event)?.dateAndTime}</Text>
                 </Flex>
               </Flex>
 
