@@ -42,8 +42,8 @@ export const QrCodeScanner = (props: Props) => {
             NOTE: We flush the debounced handler in the case that we're quickly scanning 
             multiple, unique QR codes.
           */
-          // onScanSuccess.flush();
-          // lastScannedDataRef.current = result.data;
+          onScanSuccess.flush();
+          lastScannedDataRef.current = result.data;
         }
       },
       {
