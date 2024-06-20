@@ -8,8 +8,6 @@
   - https://developer.apple.com/documentation/walletpasses/distributing_and_updating_a_pass#3793284
 */
 
-// TODO: Set up ngrok to test out on iPhone
-
 import { Template } from '@walletpass/pass-js';
 import JSZip from 'JSZip';
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -40,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // TODO: Fetch event data for eventId
     // TODO: Fetch ticket data for accountId (public key)
-    console.log('Generating event pass for Apple Wallet...', { accountId, eventId });
+    console.log('Generating event passes for Apple Wallet...', { accountId, eventId });
 
     const event: EventDetails = {
       id: '1',
@@ -83,6 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     await template.loadCertificate(certificatePath, APPLE_WALLET_CERTIFICATE_PASSWORD);
 
+    // TODO: Pull in dynamic images from event
     const logo1x = await imageBufferFromUrl(`${HOSTNAME}/images/apple-wallet/logo@1x.png`);
     const logo2x = await imageBufferFromUrl(`${HOSTNAME}/images/apple-wallet/logo@2x.png`);
     const logo3x = await imageBufferFromUrl(`${HOSTNAME}/images/apple-wallet/logo@3x.png`);
@@ -107,7 +106,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         organizationName: 'Ticketing',
         logoText: 'Ticketing',
         expirationDate,
-
         serialNumber: ticket.id,
         barcodes: [
           {
@@ -116,7 +114,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             messageEncoding: 'iso-8859-1',
           },
         ],
-
         backgroundColor: 'rgb(96, 75, 199)',
         foregroundColor: 'rgb(255, 255, 255)',
         labelColor: 'rgb(0, 0, 0)',
