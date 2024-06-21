@@ -35,7 +35,7 @@ export const AddToAppleWallet = ({ href }: Props) => {
   };
 
   return (
-    <a className={s.button} type="button" onClick={onClick} href={href} download>
+    <a className={s.button} type="button" onClick={onClick} href={href}>
       <AddToAppleWalletSvg />
     </a>
   );

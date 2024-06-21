@@ -6,11 +6,13 @@ import { HR } from '@pagoda/ui/src/components/HorizontalRule';
 import { Section } from '@pagoda/ui/src/components/Section';
 import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
 import { Text } from '@pagoda/ui/src/components/Text';
+import { openToast } from '@pagoda/ui/src/components/Toast';
 import { CalendarDots, Clock, QrCode } from '@phosphor-icons/react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
-import { useProducerLayout } from '@/hooks/useLayout';
+import { QrCodeScanner } from '@/components/QrCodeScanner';
+import { useDefaultLayout } from '@/hooks/useLayout';
 import { HOSTNAME } from '@/utils/config';
 import { displayEventDate } from '@/utils/date';
 import { EventDetails, NextPageWithLayout } from '@/utils/types';
@@ -18,6 +20,8 @@ import { EventDetails, NextPageWithLayout } from '@/utils/types';
 const ScanEventTickets: NextPageWithLayout = () => {
   const router = useRouter();
   const eventId = router.query.eventId as string;
+
+  console.log(`TODO: Load data for event ID: ${eventId}`);
 
   const event: EventDetails = {
     id: '1',
@@ -34,6 +38,28 @@ const ScanEventTickets: NextPageWithLayout = () => {
     },
     ticketPrice: 10,
     ticketQuantityLimit: 3,
+  };
+
+  const onScanSuccess = (data: string) => {
+    console.log(`TODO: Verify ticket is valid for current event: ${data} => ${eventId}`);
+
+    const isValid = true;
+
+    if (isValid) {
+      openToast({
+        type: 'success',
+        title: 'Ticket Verified',
+        description: data,
+        duration: 1000,
+      });
+    } else {
+      openToast({
+        type: 'error',
+        title: 'Invalid Ticket',
+        description: data,
+        duration: 1000,
+      });
+    }
   };
 
   return (
@@ -65,6 +91,10 @@ const ScanEventTickets: NextPageWithLayout = () => {
             </Flex>
 
             <Card>
+              <QrCodeScanner onScanSuccess={onScanSuccess} />
+
+              <HR style={{ margin: 0 }} />
+
               <Flex stack gap="none">
                 <Text size="text-s" color="sand12" weight={600}>
                   {event.name}
@@ -75,10 +105,6 @@ const ScanEventTickets: NextPageWithLayout = () => {
                   <Text size="text-s">{displayEventDate(event)?.dateAndTime}</Text>
                 </Flex>
               </Flex>
-
-              <HR style={{ margin: 0 }} />
-
-              <Text>TODO: {eventId}</Text>
             </Card>
           </Flex>
         </Container>
@@ -87,6 +113,6 @@ const ScanEventTickets: NextPageWithLayout = () => {
   );
 };
 
-ScanEventTickets.getLayout = useProducerLayout;
+ScanEventTickets.getLayout = useDefaultLayout;
 
 export default ScanEventTickets;
