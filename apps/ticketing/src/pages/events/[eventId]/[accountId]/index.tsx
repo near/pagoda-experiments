@@ -9,13 +9,14 @@ import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
 import { Text } from '@pagoda/ui/src/components/Text';
 import { openToast } from '@pagoda/ui/src/components/Toast';
 import { Tooltip } from '@pagoda/ui/src/components/Tooltip';
-import { ArrowUpRight, CalendarDots, Clock, DownloadSimple, MapPinArea, Ticket } from '@phosphor-icons/react';
+import { CalendarDots, Clock, DownloadSimple, MapPinArea, Ticket } from '@phosphor-icons/react';
 import html2canvas from 'html2canvas';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import QRCode from 'react-qr-code';
 
 import { AddToAppleWallet } from '@/components/AddToAppleWallet';
+import { AddToGoogleWallet } from '@/components/AddToGoogleWallet';
 import { useDefaultLayout } from '@/hooks/useLayout';
 import { HOSTNAME } from '@/utils/config';
 import { displayEventDate } from '@/utils/date';
@@ -161,7 +162,7 @@ const PurchasedTickets: NextPageWithLayout = () => {
 
             <HR style={{ margin: 0 }} />
 
-            <Flex data-html2canvas-ignore>
+            <Flex data-html2canvas-ignore stretch wrap>
               <Tooltip
                 content="Save your tickets to your device to access them offline"
                 asChild
@@ -169,7 +170,7 @@ const PurchasedTickets: NextPageWithLayout = () => {
               >
                 <Button
                   iconLeft={<DownloadSimple />}
-                  label="Download Tickets"
+                  label="Download"
                   size="small"
                   variant="primary"
                   fill="outline"
@@ -178,9 +179,15 @@ const PurchasedTickets: NextPageWithLayout = () => {
                 />
               </Tooltip>
 
-              <AddToAppleWallet
-                href={`/api/apple-wallet/generate-event-pass?accountId=${accountId}&eventId=${eventId}`}
-              />
+              <Flex style={{ margin: 'auto' }}>
+                <AddToAppleWallet
+                  href={`/api/apple-wallet/generate-event-pass?accountId=${accountId}&eventId=${eventId}`}
+                />
+
+                <AddToGoogleWallet
+                  href={`/api/google-wallet/generate-event-pass?accountId=${accountId}&eventId=${eventId}`}
+                />
+              </Flex>
             </Flex>
 
             <Flex stack>

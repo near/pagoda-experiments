@@ -2,6 +2,7 @@
   position: relative;
   display: flex;
   background: var(--sand4);
+  overflow: hidden;
 
   :global(.scan-region-highlight) {
     z-index: 10;

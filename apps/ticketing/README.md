@@ -14,3 +14,13 @@ We support `Add To Wallet` via [Wallet Passes](https://developer.apple.com/docum
 - Save it to `apps/ticketing/secrets/pass.com.pagoda.ticketing.pem`
 - This folder/file will be ignored by `.gitignore`
 - Copy over `Environment Variables` into `apps/ticketing/.env.local` to retrieve value for `APPLE_WALLET_CERTIFICATE_PASSWORD`
+
+## Google Wallet Integration
+
+We support `Add To Wallet` via Google's [JWT](https://developers.google.com/wallet/tickets/events/use-cases/jwt) flow. To run this integration locally, you'll need to pull down our credentials file:
+
+- In our Pagoda 1Password team account, navigate to the `Event Ticketing` vault
+- If you can't access the vault, Caleb Jacob can give you access
+- Download the `google-wallet-pagoda-ticketing.json` file
+- Save it to `apps/ticketing/secrets/google-wallet-pagoda-ticketing.json`
+- This folder/file will be ignored by `.gitignore`
