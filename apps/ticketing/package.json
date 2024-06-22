@@ -13,6 +13,7 @@
     "pre-commit": "pnpm format && pnpm lint --max-warnings 0"
   },
   "dependencies": {
+    "@keypom/core": "^1.0.0",
     "@near-wallet-selector/core": "^8.9.7",
     "@near-wallet-selector/here-wallet": "8.9.7",
     "@near-wallet-selector/meteor-wallet": "^8.9.7",
