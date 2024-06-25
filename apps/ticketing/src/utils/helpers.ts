@@ -438,8 +438,8 @@ export const createPayload = async ({
     const ticketExtra: TicketMetadataExtra = {
       dateCreated: Date.now().toString(),
       // price: parseNearAmount(ticket.price)!.toString(),
-      priceNear: ticket.priceNear,
-      priceFiat: ticket.priceFiat,
+      priceNear: ticket.priceNear ?? '0',
+      priceFiat: ticket.priceFiat ?? '0',
       salesValidThrough: ticket.salesValidThrough,
       passValidThrough: ticket.passValidThrough,
       maxSupply: ticket.maxSupply,
@@ -456,7 +456,7 @@ export const createPayload = async ({
 
     ticket_information[`${dropId}`] = {
       max_tickets: ticket.maxSupply ?? 0,
-      price: parseNearAmount(ticket.priceNear)!.toString(),
+      price: parseNearAmount(ticket.priceNear ?? '0')!.toString(),
       // sale_start: ticket.salesValidThrough.startDate || undefined,
       // sale_end: ticket.salesValidThrough.endDate || undefined,
     };

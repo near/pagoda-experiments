@@ -245,24 +245,33 @@ const CreateEvent: NextPageWithLayout = () => {
                         number={{
                           allowNegative: false,
                         }}
-                        {...form.register(`tickets.${index}.priceNear`)}
+                        error={form.formState.errors.tickets?.[index]?.priceNear?.message}
+                        {...form.register(`tickets.${index}.priceNear`, { min: 0 })}
                       />
 
                       <Input
                         label="Total Supply"
-                        placeholder="Unlimited"
                         iconLeft={<Ticket />}
-                        number
+                        number={{
+                          allowNegative: false,
+                        }}
+                        error={form.formState.errors.tickets?.[index]?.maxSupply?.message}
                         {...form.register(`tickets.${index}.maxSupply`, {
+                          required: 'Please enter a value',
+                          min: 1,
                           valueAsNumber: true,
                         })}
                       />
                       <Input
                         label="Quantity Limit"
-                        placeholder="Unlimited"
                         iconLeft={<HashStraight />}
-                        number
+                        number={{
+                          allowNegative: false,
+                        }}
+                        error={form.formState.errors.tickets?.[index]?.maxPurchases?.message}
                         {...form.register(`tickets.${index}.maxPurchases`, {
+                          required: 'Please enter a value',
+                          min: 1,
                           valueAsNumber: true,
                         })}
                       />
