@@ -24,12 +24,13 @@ export interface DateAndTimeInfo {
 
 export interface TicketInfoFormMetadata {
   name: string;
-  price: string;
   denomination: string;
   maxSupply: number;
   maxPurchases: number;
+  priceNear?: string;
+  priceFiat?: string;
   description?: string | undefined;
-  artwork?: File | string | undefined;
+  artwork?: File[];
   salesValidThrough?: DateAndTimeInfo;
   passValidThrough?: DateAndTimeInfo;
 }
@@ -44,8 +45,9 @@ export interface TicketInfoMetadata {
 export interface TicketMetadataExtra {
   eventId: string;
   dateCreated: string;
-  price: string;
   limitPerUser: number;
+  priceNear?: string;
+  priceFiat?: string;
   maxSupply?: number;
   salesValidThrough?: DateAndTimeInfo;
   passValidThrough?: DateAndTimeInfo;
@@ -136,11 +138,14 @@ export type FunderMetadata = Record<string, FunderEventMetadata>;
 
 export type FormSchema = {
   name: string;
-  description?: string;
+  stripeAccountId: string | undefined;
+  acceptNearPayments: boolean;
+  acceptStripePayments: boolean;
   location: string;
   date: string;
-  eventTickets: TicketInfoFormMetadata[];
+  tickets: TicketInfoFormMetadata[];
   checkoutType: 'near' | 'stripe' | 'both';
+  description?: string;
   startTime?: string;
   endTime?: string;
   eventArtwork?: File[];
@@ -160,11 +165,11 @@ const METADATA_MARKET_BYTES_PER_KEY = BigInt('900');
 
 export const calculateDepositCost = ({
   eventMetadata,
-  eventTickets,
+  tickets,
   marketTicketInfo,
 }: {
   eventMetadata: FunderEventMetadata;
-  eventTickets: TicketInfoFormMetadata[];
+  tickets: TicketInfoFormMetadata[];
   marketTicketInfo: Record<string, { max_tickets: number; price: string; sale_start?: number; sale_end?: number }>;
 }) => {
   let marketDeposit = FIRST_MARKET_DROP_BASE_COST;
@@ -172,8 +177,8 @@ export const calculateDepositCost = ({
   let funderMetaCost = FUNDER_METADATA_BASE_COST;
 
   // Calculate drop deposit
-  dropDeposit += BigInt(eventTickets.length - 1) * SUBSEQUENT_DROP_BASE_COST;
-  dropDeposit += BigInt(getByteSize(JSON.stringify(eventTickets))) * YOCTO_PER_BYTE;
+  dropDeposit += BigInt(tickets.length - 1) * SUBSEQUENT_DROP_BASE_COST;
+  dropDeposit += BigInt(getByteSize(JSON.stringify(tickets))) * YOCTO_PER_BYTE;
 
   // Calculate funder metadata cost
   funderMetaCost += BigInt(getByteSize(JSON.stringify(eventMetadata))) * YOCTO_PER_BYTE;
@@ -195,7 +200,7 @@ export const calculateDepositCost = ({
   // Return the total deposit cost
   return {
     costBreakdown: {
-      perDrop: (dropDeposit / BigInt(eventTickets.length)).toString(),
+      perDrop: (dropDeposit / BigInt(tickets.length)).toString(),
       perEvent: funderMetaCost.toString(),
       marketListing: marketDeposit.toString(),
       total: (dropDeposit + funderMetaCost + marketDeposit).toString(),
@@ -238,10 +243,10 @@ export async function serializeMediaForWorker(formData: FormSchema) {
     }
   }
 
-  for (const ticket of formData.eventTickets) {
-    if (ticket.artwork) {
+  for (const ticket of formData.tickets) {
+    if (ticket.artwork && ticket.artwork[0]) {
       try {
-        const ticketArtworkArrayBuffer = await fileToArrayBuffer(ticket.artwork);
+        const ticketArtworkArrayBuffer = await fileToArrayBuffer(ticket.artwork[0]);
         arrayBuffers.push(arrayBufferToBase64(ticketArtworkArrayBuffer));
       } catch (error) {
         console.error('Error reading ticket artwork:', error);
@@ -353,7 +358,7 @@ function arrayBufferToBase64(buffer: any) {
 
 //   const { costBreakdown } = calculateDepositCost({
 //     eventMetadata,
-//     eventTickets: formData.tickets,
+//     tickets: formData.tickets,
 //     marketTicketInfo: ticket_information,
 //   });
 
@@ -378,8 +383,7 @@ export const createPayload = async ({
   ticketArtworkCids: string[];
   eventId: string;
 }): Promise<{ actions: Action[]; dropIds: string[] }> => {
-  console.log('Creating payload');
-  console.log('formData in createPayload', formData);
+  console.log('Creating payload', formData);
   const masterKey = get('MASTER_KEY');
 
   const funderMetadata: FunderMetadata = {};
@@ -429,12 +433,14 @@ export const createPayload = async ({
     { max_tickets: number; price: string; sale_start?: number; sale_end?: number }
   > = {};
 
-  for (const ticket of formData.eventTickets) {
+  for (const ticket of formData.tickets) {
     const dropId = `${Date.now().toString()}-${ticket.name.replaceAll(' ', '').toLocaleLowerCase()}`;
 
     const ticketExtra: TicketMetadataExtra = {
       dateCreated: Date.now().toString(),
-      price: parseNearAmount(ticket.price)!.toString(),
+      // price: parseNearAmount(ticket.price)!.toString(),
+      priceNear: ticket.priceNear,
+      priceFiat: ticket.priceFiat,
       salesValidThrough: ticket.salesValidThrough,
       passValidThrough: ticket.passValidThrough,
       maxSupply: ticket.maxSupply,
@@ -451,7 +457,7 @@ export const createPayload = async ({
 
     ticket_information[`${dropId}`] = {
       max_tickets: ticket.maxSupply,
-      price: parseNearAmount(ticket.price)!.toString(),
+      price: parseNearAmount(ticket.priceNear)!.toString(),
       // sale_start: ticket.salesValidThrough.startDate || undefined,
       // sale_end: ticket.salesValidThrough.endDate || undefined,
     };
@@ -480,9 +486,10 @@ export const createPayload = async ({
 
   const { costBreakdown } = calculateDepositCost({
     eventMetadata,
-    eventTickets: formData.eventTickets,
+    tickets: formData.tickets,
     marketTicketInfo: ticket_information,
   });
+  console.log('final formData', formData);
 
   const actions: Action[] = [
     {
@@ -501,8 +508,8 @@ export const createPayload = async ({
               event_id: eventId,
               funder_id: accountId,
               ticket_information,
-              // stripe_status: formData.acceptStripePayments,
-              // stripe_account_id: formData.stripeAccountId,
+              stripe_status: formData.acceptStripePayments,
+              stripe_account_id: formData.stripeAccountId,
             }),
             attached_deposit: costBreakdown.marketListing,
           },

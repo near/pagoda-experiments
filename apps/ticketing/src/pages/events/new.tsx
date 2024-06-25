@@ -23,7 +23,7 @@ import {
 } from '@phosphor-icons/react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { ChangeEvent, use, useEffect, useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 
 import { useProducerLayout } from '@/hooks/useLayout';
@@ -41,36 +41,50 @@ const CreateEvent: NextPageWithLayout = () => {
   const form = useForm<FormSchema>();
   const { fields, append, prepend, remove, swap, move, insert } = useFieldArray({
     control: form.control,
-    name: 'eventTickets',
+    name: 'tickets',
     rules: { minLength: 1 },
   });
   const router = useRouter();
   const [submittingEvent, setSubmittingEvent] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [ticketImages, setTicketImages] = useState<string[]>([]);
-  const [txnSuccess, setTxnSuccess] = useState(false);
+  const [stripeCheckout, setStripeCheckout] = useState(false);
 
   const placeHolderTicket: TicketInfoFormMetadata = {
     name: 'General Admission',
-    price: '0',
+    priceNear: '0',
+    priceFiat: '0',
     denomination: 'Near',
     maxSupply: 1,
     maxPurchases: 1,
   };
 
-  const onValidSubmit: SubmitHandler<FormSchema> = async (data) => {
+  const onValidSubmit: SubmitHandler<FormSchema> = async () => {
     try {
       const formValue = form.getValues();
+      // setting default values for the form
+      if (stripeCheckout) {
+        //set stripe account info when using stripe
+      } else {
+        (formValue.stripeAccountId = ''), (formValue.acceptNearPayments = false);
+        formValue.acceptStripePayments = false;
+      }
 
-      if (!wallet) return;
+      if (!wallet) {
+        openToast({
+          type: 'error',
+          title: 'Wallet not connected',
+          description: 'Please connect your wallet to create an event',
+        });
+        return;
+      }
       const accounts = await wallet.getAccounts();
       const accountId = accounts[0]?.accountId;
 
       setSubmittingEvent(true);
       if (form.formState.isValid) {
-        const serializedData = await serializeMediaForWorker(form as unknown as FormSchema);
+        const serializedData = await serializeMediaForWorker(formValue);
         let response: Response | undefined;
-        console.log('serializedData', serializedData);
         try {
           const url = `${EVENTS_WORKER_BASE}/ipfs-pin`;
           response = await fetch(url, {
@@ -82,9 +96,14 @@ const CreateEvent: NextPageWithLayout = () => {
           console.error('Error in payAndCreateEvent', error);
         }
 
-        if (response?.ok) {
-          const resBody = await response.json();
-          const cids: string[] = resBody.cids;
+        // if (response?.ok) {
+        if (true) {
+          // const resBody = await response.json();
+          // const cids: string[] = resBody.cids;
+          const cids: string[] = [
+            'bafybeicjhlpijcsxcgsokdgjc3slgmna5ditnnx6hny4hlq6zgrhzictie',
+            'bafkreicimptrgl6jr6qfuv6tmano6bx2gfx5lmdhrvzslo5g5wettivcm4',
+          ];
 
           const eventArtworkCid: string = cids[0] as string;
           const ticketArtworkCids: string[] = [];
@@ -112,7 +131,6 @@ const CreateEvent: NextPageWithLayout = () => {
               actions,
             })
             .then(() => {
-              setTxnSuccess(true);
               openToast({
                 type: 'success',
                 title: 'Event Created',
@@ -153,7 +171,6 @@ const CreateEvent: NextPageWithLayout = () => {
       ticketImagesUpdate[index] = urlImage;
 
       setTicketImages(ticketImagesUpdate);
-      console.log('ticketImages', ticketImages);
     } else {
       setPreviewImage(urlImage);
     }
@@ -258,12 +275,12 @@ const CreateEvent: NextPageWithLayout = () => {
                         label="Ticket Name"
                         placeholder="General Admission"
                         iconLeft={<Tag />}
-                        {...form.register(`eventTickets.${index}.name`)}
+                        {...form.register(`tickets.${index}.name`)}
                       />
                     </Flex>
                     <Flex stack="phone" style={{ display: 'block' }}>
                       <label> Payment Type</label>
-                      <select {...form.register(`eventTickets.${index}.denomination`)}>
+                      <select {...form.register(`tickets.${index}.denomination`)}>
                         <option value="Near">Near</option>
                         <option disabled value="USD">
                           USD
@@ -278,30 +295,26 @@ const CreateEvent: NextPageWithLayout = () => {
                         number={{
                           allowNegative: false,
                         }}
-                        {...form.register(`eventTickets.${index}.price`)}
+                        {...form.register(`tickets.${index}.priceNear`)}
                       />
 
                       <Input
                         label="Total Supply"
                         placeholder="Unlimited"
-                        type="number"
                         iconLeft={<Ticket />}
-                        number={{
-                          allowNegative: false,
-                          allowDecimal: false,
-                        }}
-                        {...form.register(`eventTickets.${index}.maxSupply`)}
+                        number={true}
+                        {...form.register(`tickets.${index}.maxSupply`, {
+                          valueAsNumber: true,
+                        })}
                       />
                       <Input
                         label="Quantity Limit"
                         placeholder="Unlimited"
-                        type="number"
                         iconLeft={<HashStraight />}
-                        number={{
-                          allowNegative: false,
-                          allowDecimal: false,
-                        }}
-                        {...form.register(`eventTickets.${index}.maxPurchases`)}
+                        number={true}
+                        {...form.register(`tickets.${index}.maxPurchases`, {
+                          valueAsNumber: true,
+                        })}
                       />
                     </Flex>
 
@@ -317,7 +330,7 @@ const CreateEvent: NextPageWithLayout = () => {
                         )}
                         <input
                           type="file"
-                          {...form.register(`eventTickets.${index}.artwork`)}
+                          {...form.register(`tickets.${index}.artwork`)}
                           onChange={(e) => handleUploadedFile(e, index)}
                         />
                       </label>
