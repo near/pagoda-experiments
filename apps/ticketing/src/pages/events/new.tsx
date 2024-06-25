@@ -72,61 +72,58 @@ const CreateEvent: NextPageWithLayout = () => {
         return;
       }
 
-      if (form.formState.isValid) {
-        const serializedData = await serializeMediaForWorker(formData);
-        let ipfsResponse: Response | undefined;
-        try {
-          const url = `${EVENTS_WORKER_BASE}/ipfs-pin`;
-          ipfsResponse = await fetch(url, {
-            method: 'POST',
-            body: JSON.stringify({ base64Data: serializedData }),
-          });
-        } catch (error) {
-          console.error('Failed to pin media on IPFS', error);
+      const serializedData = await serializeMediaForWorker(formData);
+      let ipfsResponse: Response | undefined;
+      try {
+        const url = `${EVENTS_WORKER_BASE}/ipfs-pin`;
+        ipfsResponse = await fetch(url, {
+          method: 'POST',
+          body: JSON.stringify({ base64Data: serializedData }),
+        });
+      } catch (error) {
+        console.error('Failed to pin media on IPFS', error);
+      }
+
+      // if (ipfsResponse?.ok) {
+      if (true) {
+        // const resBody = await ipfsResponse.json();
+        // const cids: string[] = resBody.cids;
+        const cids: string[] = [
+          'bafybeicjhlpijcsxcgsokdgjc3slgmna5ditnnx6hny4hlq6zgrhzictie',
+          'bafkreicimptrgl6jr6qfuv6tmano6bx2gfx5lmdhrvzslo5g5wettivcm4',
+        ];
+
+        const eventArtworkCid: string = cids[0] as string;
+        const ticketArtworkCids: string[] = [];
+        for (let i = 0; i < cids.length - 1; i++) {
+          ticketArtworkCids.push(cids[i + 1] as string);
         }
 
-        // if (ipfsResponse?.ok) {
-        if (true) {
-          // const resBody = await ipfsResponse.json();
-          // const cids: string[] = resBody.cids;
-          const cids: string[] = [
-            'bafybeicjhlpijcsxcgsokdgjc3slgmna5ditnnx6hny4hlq6zgrhzictie',
-            'bafkreicimptrgl6jr6qfuv6tmano6bx2gfx5lmdhrvzslo5g5wettivcm4',
-          ];
+        const eventId = Date.now().toString();
+        const { actions, dropIds }: { actions: Action[]; dropIds: string[] } = await createPayload({
+          accountId: account.accountId,
+          formData,
+          eventId,
+          eventArtworkCid,
+          ticketArtworkCids,
+        });
 
-          const eventArtworkCid: string = cids[0] as string;
-          const ticketArtworkCids: string[] = [];
-          for (let i = 0; i < cids.length - 1; i++) {
-            ticketArtworkCids.push(cids[i + 1] as string);
-          }
-
-          const eventId = Date.now().toString();
-          const { actions, dropIds }: { actions: Action[]; dropIds: string[] } = await createPayload({
-            accountId: account.accountId,
-            formData,
-            eventId,
-            eventArtworkCid,
-            ticketArtworkCids,
-          });
-
-          if (actions && eventId) {
-            localStorage.setItem('EVENT_INFO_SUCCESS_DATA', JSON.stringify({ eventId }));
-          }
-
-          await wallet.signAndSendTransaction({
-            signerId: wallet.id!,
-            receiverId: KEYPOM_EVENTS_CONTRACT,
-            actions,
-          });
-
-          openToast({
-            type: 'success',
-            title: 'Event Created',
-          });
-
-          router.push('/events');
-        } else {
+        if (actions && eventId) {
+          localStorage.setItem('EVENT_INFO_SUCCESS_DATA', JSON.stringify({ eventId }));
         }
+
+        await wallet.signAndSendTransaction({
+          signerId: wallet.id,
+          receiverId: KEYPOM_EVENTS_CONTRACT,
+          actions,
+        });
+
+        openToast({
+          type: 'success',
+          title: 'Event Created',
+        });
+
+        router.push('/events');
       }
     } catch (error) {
       handleClientError({ title: 'Event Creation Failed', error });
