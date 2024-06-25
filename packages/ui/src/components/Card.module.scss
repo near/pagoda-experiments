@@ -25,4 +25,9 @@
       box-shadow: 0 0 0 4px var(--violet4);
     }
   }
+
+  :global(.html2canvas) & {
+    box-shadow: none;
+    border: 1px solid var(--sand8);
+  }
 }

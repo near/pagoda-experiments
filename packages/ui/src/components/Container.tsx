@@ -7,6 +7,7 @@ export type ContainerSize = 'xs' | 's' | 'm' | 'l';
 type Props = {
   children: ReactNode;
   className?: string;
+  id?: string;
   size?: ContainerSize;
   style?: CSSProperties;
 };

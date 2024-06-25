@@ -28,8 +28,11 @@ export function displayEventDate(event: EventDetails) {
     }
   }
 
+  const dateAndTime = `${date}${time ? ` at ${time}` : ''}`;
+
   return {
     date,
+    dateAndTime,
     time,
   };
 }

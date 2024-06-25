@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 export function useDebouncedFunction<T = void>(
   callback: T extends void ? () => any : (argument: T) => any,
   delay: number,
+  leading = false,
 ) {
   const ref = useRef<(argument: T) => any>();
 
@@ -18,8 +19,11 @@ export function useDebouncedFunction<T = void>(
       ref.current?.(argument);
     };
 
-    return debounce(func, delay);
-  }, [delay]);
+    return debounce(func, delay, {
+      leading,
+      trailing: !leading,
+    });
+  }, [delay, leading]);
 
   return debouncedCallback;
 }
