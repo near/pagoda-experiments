@@ -8,7 +8,7 @@ import { Text } from './Text';
 type Props = {
   message?: string;
   variant: InputVariant;
-  id: string;
+  id?: string;
 };
 
 export const AssistiveText = ({ message, variant, id }: Props) => {

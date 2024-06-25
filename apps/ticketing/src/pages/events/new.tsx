@@ -1,4 +1,5 @@
 import { Action } from '@near-wallet-selector/core';
+import { AssistiveText } from '@pagoda/ui/src/components/AssistiveText';
 import { Button } from '@pagoda/ui/src/components/Button';
 import { Card } from '@pagoda/ui/src/components/Card';
 import { Container } from '@pagoda/ui/src/components/Container';
@@ -45,7 +46,7 @@ const CreateEvent: NextPageWithLayout = () => {
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'tickets',
-    rules: { minLength: 1 },
+    rules: { required: 'Please add at least one ticket configuration', minLength: 1 },
   });
 
   const placeHolderTicket: TicketInfoFormMetadata = {
@@ -297,6 +298,8 @@ const CreateEvent: NextPageWithLayout = () => {
                 ))}
 
                 <Card>
+                  <AssistiveText variant="error" message={form.formState.errors.tickets?.root?.message} />
+
                   <Button
                     variant="secondary"
                     label="Add Ticket"
