@@ -9,8 +9,8 @@ import {
   generateKeyPair,
   getByteSize,
   uint8ArrayToBase64,
-} from './cryptoHelpers';
-import { get } from './localstorage';
+} from './crypto-helpers';
+import { localStorageGet } from './local-storage';
 
 export interface DateAndTimeInfo {
   startDate: number; // Milliseconds from Unix Epoch
@@ -382,8 +382,11 @@ export const createPayload = async ({
   ticketArtworkCids: string[];
   eventId: string;
 }): Promise<{ actions: Action[]; dropIds: string[] }> => {
-  console.log('Creating payload', formData);
-  const masterKey = get('MASTER_KEY');
+  const masterKey = localStorageGet('MASTER_KEY');
+
+  if (!masterKey) {
+    throw new Error('Missing local storage value MASTER_KEY inside createPayload()');
+  }
 
   const funderMetadata: FunderMetadata = {};
 
@@ -488,7 +491,6 @@ export const createPayload = async ({
     tickets: formData.tickets,
     marketTicketInfo: ticket_information,
   });
-  console.log('final formData', formData);
 
   const actions: Action[] = [
     {

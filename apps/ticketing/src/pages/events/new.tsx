@@ -32,15 +32,15 @@ import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { FilePreviews } from '@/components/FilePreviews';
 import { useProducerLayout } from '@/hooks/useLayout';
 import { useWalletStore } from '@/stores/wallet';
-import { EVENTS_WORKER_BASE, KEYPOM_EVENTS_CONTRACT } from '@/utils/common';
-import { createPayload, FormSchema, serializeMediaForWorker, TicketInfoFormMetadata } from '@/utils/helpers';
+import { KEYPOM_EVENTS_CONTRACT } from '@/utils/common';
+import { createPayload, FormSchema, TicketInfoFormMetadata } from '@/utils/helpers';
 import { NextPageWithLayout } from '@/utils/types';
 
 const CreateEvent: NextPageWithLayout = () => {
   const wallet = useWalletStore((state) => state.wallet);
   const account = useWalletStore((state) => state.account);
   const router = useRouter();
-  const [stripeCheckout, setStripeCheckout] = useState(false);
+  const [stripeCheckout] = useState(false);
 
   const form = useForm<FormSchema>();
   const { fields, append, remove } = useFieldArray({
@@ -72,17 +72,17 @@ const CreateEvent: NextPageWithLayout = () => {
         return;
       }
 
-      const serializedData = await serializeMediaForWorker(formData);
-      let ipfsResponse: Response | undefined;
-      try {
-        const url = `${EVENTS_WORKER_BASE}/ipfs-pin`;
-        ipfsResponse = await fetch(url, {
-          method: 'POST',
-          body: JSON.stringify({ base64Data: serializedData }),
-        });
-      } catch (error) {
-        console.error('Failed to pin media on IPFS', error);
-      }
+      // let ipfsResponse: Response | undefined;
+      // try {
+      //   const serializedData = await serializeMediaForWorker(formData);
+      //   const url = `${EVENTS_WORKER_BASE}/ipfs-pin`;
+      //   ipfsResponse = await fetch(url, {
+      //     method: 'POST',
+      //     body: JSON.stringify({ base64Data: serializedData }),
+      //   });
+      // } catch (error) {
+      //   console.error('Failed to pin media on IPFS', error);
+      // }
 
       // if (ipfsResponse?.ok) {
       if (true) {
@@ -100,7 +100,7 @@ const CreateEvent: NextPageWithLayout = () => {
         }
 
         const eventId = Date.now().toString();
-        const { actions, dropIds }: { actions: Action[]; dropIds: string[] } = await createPayload({
+        const { actions }: { actions: Action[]; dropIds: string[] } = await createPayload({
           accountId: account.accountId,
           formData,
           eventId,

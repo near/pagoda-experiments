@@ -22,7 +22,6 @@ export const QrCodeScanner = (props: Props) => {
   */
   const onScanSuccess = useDebouncedFunction(
     (result: QrScanner.ScanResult) => {
-      console.log('Scanned QR code result:', result.data);
       props.onScanSuccess(result.data);
     },
     1000,
