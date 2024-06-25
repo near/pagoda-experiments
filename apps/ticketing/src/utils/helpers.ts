@@ -1,4 +1,3 @@
-import keypomInstance from '@keypom/core';
 import { type Action } from '@near-wallet-selector/core';
 import { parseNearAmount } from 'near-api-js/lib/utils/format';
 
@@ -25,12 +24,12 @@ export interface DateAndTimeInfo {
 export interface TicketInfoFormMetadata {
   name: string;
   denomination: string;
-  maxSupply: number;
-  maxPurchases: number;
+  maxSupply?: number;
+  maxPurchases?: number;
   priceNear?: string;
   priceFiat?: string;
   description?: string | undefined;
-  artwork?: File[];
+  artwork?: FileList;
   salesValidThrough?: DateAndTimeInfo;
   passValidThrough?: DateAndTimeInfo;
 }
@@ -45,7 +44,7 @@ export interface TicketInfoMetadata {
 export interface TicketMetadataExtra {
   eventId: string;
   dateCreated: string;
-  limitPerUser: number;
+  limitPerUser?: number;
   priceNear?: string;
   priceFiat?: string;
   maxSupply?: number;
@@ -148,7 +147,7 @@ export type FormSchema = {
   description?: string;
   startTime?: string;
   endTime?: string;
-  eventArtwork?: File[];
+  eventArtwork?: FileList;
   // ticketPrice?: number;
   // ticketQuantityLimit?: number;
 };
@@ -262,7 +261,7 @@ function arrayBufferToBase64(buffer: any) {
   const bytes = new Uint8Array(buffer);
   const len = bytes.byteLength;
   for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
+    binary += String.fromCharCode(bytes[i] ?? 0);
   }
   return window.btoa(binary);
 }
@@ -456,7 +455,7 @@ export const createPayload = async ({
     };
 
     ticket_information[`${dropId}`] = {
-      max_tickets: ticket.maxSupply,
+      max_tickets: ticket.maxSupply ?? 0,
       price: parseNearAmount(ticket.priceNear)!.toString(),
       // sale_start: ticket.salesValidThrough.startDate || undefined,
       // sale_end: ticket.salesValidThrough.endDate || undefined,

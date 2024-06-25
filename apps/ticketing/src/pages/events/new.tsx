@@ -1,14 +1,15 @@
+import { Action } from '@near-wallet-selector/core';
 import { Button } from '@pagoda/ui/src/components/Button';
 import { Card } from '@pagoda/ui/src/components/Card';
 import { Container } from '@pagoda/ui/src/components/Container';
 import { Flex } from '@pagoda/ui/src/components/Flex';
 import { Form } from '@pagoda/ui/src/components/Form';
-import { HR } from '@pagoda/ui/src/components/HorizontalRule';
 import { Input } from '@pagoda/ui/src/components/Input';
 import { Section } from '@pagoda/ui/src/components/Section';
 import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
 import { Text } from '@pagoda/ui/src/components/Text';
 import { openToast } from '@pagoda/ui/src/components/Toast';
+import { Tooltip } from '@pagoda/ui/src/components/Tooltip';
 import { handleClientError } from '@pagoda/ui/src/utils/error';
 import {
   ArrowRight,
@@ -17,60 +18,51 @@ import {
   HashStraight,
   MapPinArea,
   Note,
+  Plus,
   Tag,
   Ticket,
   Trash,
 } from '@phosphor-icons/react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { ChangeEvent, useState } from 'react';
+import { useState } from 'react';
 import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 
+import { FilePreviews } from '@/components/FilePreviews';
 import { useProducerLayout } from '@/hooks/useLayout';
 import { useWalletStore } from '@/stores/wallet';
 import { EVENTS_WORKER_BASE, KEYPOM_EVENTS_CONTRACT } from '@/utils/common';
 import { createPayload, FormSchema, serializeMediaForWorker, TicketInfoFormMetadata } from '@/utils/helpers';
 import { NextPageWithLayout } from '@/utils/types';
 
-function timeout(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 const CreateEvent: NextPageWithLayout = () => {
   const wallet = useWalletStore((state) => state.wallet);
+  const account = useWalletStore((state) => state.account);
+  const router = useRouter();
+  const [stripeCheckout, setStripeCheckout] = useState(false);
+
   const form = useForm<FormSchema>();
-  const { fields, append, prepend, remove, swap, move, insert } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'tickets',
     rules: { minLength: 1 },
   });
-  const router = useRouter();
-  const [submittingEvent, setSubmittingEvent] = useState(false);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [ticketImages, setTicketImages] = useState<string[]>([]);
-  const [stripeCheckout, setStripeCheckout] = useState(false);
 
   const placeHolderTicket: TicketInfoFormMetadata = {
     name: 'General Admission',
-    priceNear: '0',
-    priceFiat: '0',
     denomination: 'Near',
-    maxSupply: 1,
-    maxPurchases: 1,
   };
 
-  const onValidSubmit: SubmitHandler<FormSchema> = async () => {
+  const onValidSubmit: SubmitHandler<FormSchema> = async (formData) => {
     try {
-      const formValue = form.getValues();
-      // setting default values for the form
       if (stripeCheckout) {
         //set stripe account info when using stripe
       } else {
-        (formValue.stripeAccountId = ''), (formValue.acceptNearPayments = false);
-        formValue.acceptStripePayments = false;
+        (formData.stripeAccountId = ''), (formData.acceptNearPayments = false);
+        formData.acceptStripePayments = false;
       }
 
-      if (!wallet) {
+      if (!wallet || !account) {
         openToast({
           type: 'error',
           title: 'Wallet not connected',
@@ -78,27 +70,23 @@ const CreateEvent: NextPageWithLayout = () => {
         });
         return;
       }
-      const accounts = await wallet.getAccounts();
-      const accountId = accounts[0]?.accountId;
 
-      setSubmittingEvent(true);
       if (form.formState.isValid) {
-        const serializedData = await serializeMediaForWorker(formValue);
-        let response: Response | undefined;
+        const serializedData = await serializeMediaForWorker(formData);
+        let ipfsResponse: Response | undefined;
         try {
           const url = `${EVENTS_WORKER_BASE}/ipfs-pin`;
-          response = await fetch(url, {
+          ipfsResponse = await fetch(url, {
             method: 'POST',
             body: JSON.stringify({ base64Data: serializedData }),
           });
         } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error('Error in payAndCreateEvent', error);
+          console.error('Failed to pin media on IPFS', error);
         }
 
-        // if (response?.ok) {
+        // if (ipfsResponse?.ok) {
         if (true) {
-          // const resBody = await response.json();
+          // const resBody = await ipfsResponse.json();
           // const cids: string[] = resBody.cids;
           const cids: string[] = [
             'bafybeicjhlpijcsxcgsokdgjc3slgmna5ditnnx6hny4hlq6zgrhzictie',
@@ -113,8 +101,8 @@ const CreateEvent: NextPageWithLayout = () => {
 
           const eventId = Date.now().toString();
           const { actions, dropIds }: { actions: Action[]; dropIds: string[] } = await createPayload({
-            accountId: accountId!,
-            formData: formValue,
+            accountId: account.accountId,
+            formData,
             eventId,
             eventArtworkCid,
             ticketArtworkCids,
@@ -124,55 +112,23 @@ const CreateEvent: NextPageWithLayout = () => {
             localStorage.setItem('EVENT_INFO_SUCCESS_DATA', JSON.stringify({ eventId }));
           }
 
-          wallet
-            .signAndSendTransaction({
-              signerId: wallet.id!,
-              receiverId: KEYPOM_EVENTS_CONTRACT,
-              actions,
-            })
-            .then(() => {
-              openToast({
-                type: 'success',
-                title: 'Event Created',
-              });
-              // router.push(`/events/${newEventId}`);
-            })
-            .catch((err) => {
-              const error: string = err.toString();
-              const description_string = `Error: ` + error;
-              openToast({
-                title: 'Event Creation Failed',
-                description: description_string,
-                duration: 5000,
-              });
-            });
-        } else {
-          openToast({
-            type: 'error',
-            title: 'Error with form submission',
+          await wallet.signAndSendTransaction({
+            signerId: wallet.id!,
+            receiverId: KEYPOM_EVENTS_CONTRACT,
+            actions,
           });
+
+          openToast({
+            type: 'success',
+            title: 'Event Created',
+          });
+
+          router.push('/events');
+        } else {
         }
       }
-
-      setSubmittingEvent(false);
     } catch (error) {
-      handleClientError({ error });
-    }
-  };
-
-  const handleUploadedFile = (event: ChangeEvent<HTMLInputElement>, index: null | number) => {
-    if (!event.target) return;
-    if (!event.target.files) return;
-    const file = event.target?.files[0];
-    const urlImage = URL.createObjectURL(file as Blob);
-
-    if (index !== null) {
-      let ticketImagesUpdate = ticketImages;
-      ticketImagesUpdate[index] = urlImage;
-
-      setTicketImages(ticketImagesUpdate);
-    } else {
-      setPreviewImage(urlImage);
+      handleClientError({ title: 'Event Creation Failed', error });
     }
   };
 
@@ -199,74 +155,68 @@ const CreateEvent: NextPageWithLayout = () => {
                 </Text>
               </Flex>
 
-              <Card>
-                <Input
-                  label="Name"
-                  iconLeft={<Tag />}
-                  error={form.formState.errors.name?.message}
-                  {...form.register('name', {
-                    required: 'Please enter a name',
-                  })}
-                />
-
-                <Input
-                  label="Description"
-                  iconLeft={<Note />}
-                  error={form.formState.errors.description?.message}
-                  {...form.register('description')}
-                />
-
-                <Input
-                  label="Location"
-                  iconLeft={<MapPinArea />}
-                  error={form.formState.errors.location?.message}
-                  {...form.register('location', {
-                    required: 'Please enter a location',
-                  })}
-                />
-
-                <Input
-                  label="Date"
-                  type="date"
-                  error={form.formState.errors.date?.message}
-                  {...form.register('date', {
-                    required: 'Please enter a date',
-                  })}
-                />
-
-                <Flex stack="phone">
+              <Flex stack>
+                <Card>
                   <Input
-                    label="Start Time"
-                    type="time"
-                    error={form.formState.errors.startTime?.message}
-                    {...form.register('startTime')}
+                    label="Name"
+                    iconLeft={<Tag />}
+                    error={form.formState.errors.name?.message}
+                    {...form.register('name', {
+                      required: 'Please enter a name',
+                    })}
                   />
 
                   <Input
-                    label="End Time"
-                    type="time"
-                    error={form.formState.errors.endTime?.message}
-                    {...form.register('endTime')}
+                    label="Description"
+                    iconLeft={<Note />}
+                    error={form.formState.errors.description?.message}
+                    {...form.register('description')}
                   />
-                </Flex>
 
-                <Flex stack="phone">
-                  <label>
-                    Event Image
-                    {previewImage && (
-                      <Card style={{ margin: '1em 0 1em 0' }}>{<img src={previewImage} alt="Event Image" />}</Card>
-                    )}
-                    <br />
-                    <br />
-                    <input
-                      type="file"
-                      {...form.register('eventArtwork')}
-                      onChange={(e) => handleUploadedFile(e, null)}
+                  <Input
+                    label="Location"
+                    iconLeft={<MapPinArea />}
+                    error={form.formState.errors.location?.message}
+                    {...form.register('location', {
+                      required: 'Please enter a location',
+                    })}
+                  />
+
+                  <Input
+                    label="Date"
+                    type="date"
+                    error={form.formState.errors.date?.message}
+                    {...form.register('date', {
+                      required: 'Please enter a date',
+                    })}
+                  />
+
+                  <Flex stack="phone">
+                    <Input
+                      label="Start Time"
+                      type="time"
+                      error={form.formState.errors.startTime?.message}
+                      {...form.register('startTime')}
                     />
-                  </label>
-                </Flex>
 
-                <HR />
+                    <Input
+                      label="End Time"
+                      type="time"
+                      error={form.formState.errors.endTime?.message}
+                      {...form.register('endTime')}
+                    />
+                  </Flex>
+
+                  <Card>
+                    <Flex stack as="label">
+                      <Text size="text-xs" weight={600} color="sand12">
+                        Event Artwork
+                      </Text>
+                      <FilePreviews fileList={form.watch('eventArtwork')} />
+                      <input type="file" {...form.register('eventArtwork')} />
+                    </Flex>
+                  </Card>
+                </Card>
 
                 {fields.map((field, index) => (
                   <Card key={field.id}>
@@ -278,7 +228,8 @@ const CreateEvent: NextPageWithLayout = () => {
                         {...form.register(`tickets.${index}.name`)}
                       />
                     </Flex>
-                    <Flex stack="phone" style={{ display: 'block' }}>
+
+                    {/* <Flex stack="phone" style={{ display: 'block' }}>
                       <label> Payment Type</label>
                       <select {...form.register(`tickets.${index}.denomination`)}>
                         <option value="Near">Near</option>
@@ -286,7 +237,8 @@ const CreateEvent: NextPageWithLayout = () => {
                           USD
                         </option>
                       </select>
-                    </Flex>
+                    </Flex> */}
+
                     <Flex stack="phone">
                       <Input
                         label="Ticket Price"
@@ -302,7 +254,7 @@ const CreateEvent: NextPageWithLayout = () => {
                         label="Total Supply"
                         placeholder="Unlimited"
                         iconLeft={<Ticket />}
-                        number={true}
+                        number
                         {...form.register(`tickets.${index}.maxSupply`, {
                           valueAsNumber: true,
                         })}
@@ -311,52 +263,50 @@ const CreateEvent: NextPageWithLayout = () => {
                         label="Quantity Limit"
                         placeholder="Unlimited"
                         iconLeft={<HashStraight />}
-                        number={true}
+                        number
                         {...form.register(`tickets.${index}.maxPurchases`, {
                           valueAsNumber: true,
                         })}
                       />
                     </Flex>
 
-                    <div style={{ display: 'block' }}>
-                      <label>
-                        Ticket Artwork
-                        <br />
-                        <br />
-                        {ticketImages && (
-                          <Card style={{ margin: '1em 0 1em 0' }}>
-                            {<img src={ticketImages[index]} alt="Event Image" />}
-                          </Card>
-                        )}
-                        <input
-                          type="file"
-                          {...form.register(`tickets.${index}.artwork`)}
-                          onChange={(e) => handleUploadedFile(e, index)}
-                        />
-                      </label>
-                    </div>
+                    <Card>
+                      <Flex stack as="label">
+                        <Text size="text-xs" weight={600} color="sand12">
+                          Ticket Artwork
+                        </Text>
+                        <FilePreviews fileList={form.watch(`tickets.${index}.artwork` as const)} />
+                        <input type="file" {...form.register(`tickets.${index}.artwork`)} />
+                      </Flex>
+                    </Card>
 
-                    <div style={{ margin: 'auto' }}>
+                    <Tooltip asChild content="Remove Ticket Option">
                       <Button
                         variant="destructive"
                         label="Remove Option"
-                        iconRight={<Trash />}
+                        fill="outline"
+                        icon={<Trash />}
+                        size="small"
+                        style={{ marginLeft: 'auto' }}
                         onClick={() => {
                           remove(index);
                         }}
                       />
-                    </div>
+                    </Tooltip>
                   </Card>
                 ))}
 
-                <Button
-                  variant="secondary"
-                  label="Add Ticket"
-                  onClick={() => {
-                    append(placeHolderTicket);
-                  }}
-                />
-              </Card>
+                <Card>
+                  <Button
+                    variant="secondary"
+                    label="Add Ticket"
+                    iconLeft={<Plus />}
+                    onClick={() => {
+                      append(placeHolderTicket);
+                    }}
+                  />
+                </Card>
+              </Flex>
 
               <Flex justify="end">
                 <Button
