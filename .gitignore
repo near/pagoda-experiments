@@ -21,6 +21,7 @@ lib
 **/dist/*
 .pem
 secrets
+# **/*.tsbuildinfo
 
 # debug
 npm-debug.log*
