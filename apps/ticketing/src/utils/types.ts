@@ -6,7 +6,7 @@ export type NextPageWithLayout<T = any> = NextPage<T> & {
 };
 
 export type EventDetails = {
-  id: number;
+  id: string;
   name: string;
   location: string;
   date: string; // YYYY-MM-DD
@@ -27,4 +27,14 @@ export type EventDetails = {
   };
   ticketPrice?: number;
   ticketQuantityLimit?: number;
+};
+
+export type EventAccount = {
+  id: string;
+  tickets: EventAccountTicket[];
+};
+
+export type EventAccountTicket = {
+  id: string;
+  tier: string;
 };

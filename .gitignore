@@ -19,6 +19,8 @@ lib
 *.pem
 .idea/
 **/dist/*
+.pem
+secrets
 
 # debug
 npm-debug.log*

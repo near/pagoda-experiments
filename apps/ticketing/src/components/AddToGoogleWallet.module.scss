@@ -1,0 +1,10 @@
+.button {
+  all: unset;
+  display: inline-flex;
+  height: 2rem;
+  cursor: pointer;
+
+  svg {
+    height: 100%;
+  }
+}

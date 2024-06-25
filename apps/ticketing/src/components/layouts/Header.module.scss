@@ -56,6 +56,10 @@
   align-items: center;
   gap: var(--gap-m);
   height: 100%;
+
+  @media (max-width: 600px) {
+    gap: var(--gap-xs);
+  }
 }
 
 .link {
