@@ -2,7 +2,6 @@ import { CheckCircle, Icon, Info, Warning } from '@phosphor-icons/react';
 
 import { Button } from '../Button';
 import { Flex } from '../Flex';
-import { SvgIcon } from '../SvgIcon';
 import type { Toast, ToastType } from './store';
 import { useToasterStore } from './store';
 import * as T from './Toast';

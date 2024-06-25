@@ -4,15 +4,18 @@
   "private": true,
   "scripts": {
     "build": "next build",
+    "ts": "tsc --mo",
     "dev": "next dev",
     "format": "prettier --config ../../.prettierrc.json --check --ignore-path ../../.gitignore .",
     "format:fix": "prettier --config ../../.prettierrc.json --write --ignore-path ../../.gitignore .",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
+    "pre-commit": "pnpm format && pnpm lint --max-warnings 0 && pnpm ts:check",
     "start": "next start",
-    "pre-commit": "pnpm format && pnpm lint --max-warnings 0"
+    "ts:check": "tsc --noEmit --incremental"
   },
   "dependencies": {
+    "@keypom/core": "^1.0.0",
     "@near-wallet-selector/core": "^8.9.7",
     "@near-wallet-selector/here-wallet": "8.9.7",
     "@near-wallet-selector/meteor-wallet": "^8.9.7",
