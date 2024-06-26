@@ -1,7 +1,9 @@
 import { CSSProperties } from 'react';
 
 import { Card } from './Card';
+import { Container } from './Container';
 import s from './Placeholder.module.scss';
+import { Section } from './Section';
 
 type Props = {
   style?: CSSProperties;
@@ -18,5 +20,20 @@ export const PlaceholderCard = (props: Props) => {
       <Placeholder />
       <Placeholder style={{ width: '70%' }} />
     </Card>
+  );
+};
+
+export const PlaceholderSection = (props: Props) => {
+  return (
+    <Section grow="available" {...props}>
+      <Container
+        size="s"
+        style={{
+          margin: 'auto',
+        }}
+      >
+        <PlaceholderCard />
+      </Container>
+    </Section>
   );
 };

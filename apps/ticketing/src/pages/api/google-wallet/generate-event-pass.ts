@@ -12,7 +12,6 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { resolve } from 'path';
 
 import { HOSTNAME } from '@/utils/config';
-import { displayEventDate } from '@/utils/date';
 import { EventAccount, EventDetails } from '@/utils/types';
 
 const ISSUER_ID = '3388000000022340916';
@@ -83,7 +82,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
 
     const genericObjects: any[] = [];
-    const formattedEventDate = displayEventDate(event);
+    // const formattedEventDate = displayEventDate(event); TODO
+    const formattedEventDate = 'My event date and time';
 
     account.tickets.forEach((ticket, i) => {
       // TODO: Pull in dynamic images from event
@@ -92,7 +92,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const textModulesData: { header: string; body: string; id: string }[] = [];
       const ticketName = `${account.tickets.length > 1 ? `${i + 1} of ${account.tickets.length} - ` : ''}${ticket.tier ?? 'General Admission'}`;
-      const location = formattedEventDate ? `${event.location} - ${formattedEventDate.dateAndTime}` : event.location;
+      // const location = formattedEventDate ? `${event.location} - ${formattedEventDate.dateAndTime}` : event.location;
+      const location = formattedEventDate ? `${event.location} - ${formattedEventDate}` : event.location;
 
       textModulesData.push({
         header: 'Event',
