@@ -4,7 +4,7 @@ import type { ComponentProps, ReactElement, ReactNode } from 'react';
 import s from './Tooltip.module.scss';
 
 type RootProps = Omit<ComponentProps<typeof Primitive.Root>, 'children'>;
-type ContentProps = ComponentProps<typeof Primitive.Content>;
+type ContentProps = Omit<ComponentProps<typeof Primitive.Content>, 'content'>;
 
 type Props = ContentProps & {
   asChild?: boolean;

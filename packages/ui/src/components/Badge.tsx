@@ -1,4 +1,4 @@
-import type { ComponentPropsWithRef, ReactElement } from 'react';
+import type { ComponentPropsWithRef, ReactElement, ReactNode } from 'react';
 import { forwardRef } from 'react';
 
 import s from './Badge.module.scss';
@@ -8,7 +8,7 @@ type Variant = 'neutral' | 'primary' | 'warning' | 'success' | 'alert';
 type Props = Omit<ComponentPropsWithRef<'span'>, 'children'> & {
   count?: boolean;
   iconLeft?: ReactElement;
-  label: string;
+  label: ReactNode;
   variant?: Variant;
   iconRight?: ReactElement;
 };

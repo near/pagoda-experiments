@@ -14,11 +14,13 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 
+import { useDrops } from '@/hooks/useDrops';
 import { useEvents } from '@/hooks/useEvents';
 import { useProducerLayout } from '@/hooks/useLayout';
 import { useWalletStore } from '@/stores/wallet';
 import { HOSTNAME } from '@/utils/config';
 import { displayEventDate, parseEventDate } from '@/utils/date';
+import { formatTicketPrice } from '@/utils/dollar';
 import { formatEventIdQueryParam } from '@/utils/event-id';
 import { NextPageWithLayout } from '@/utils/types';
 
@@ -29,6 +31,7 @@ const Events: NextPageWithLayout = () => {
   const account = useWalletStore((store) => store.account);
   const publisherAccountId = account?.accountId ?? '';
   const events = useEvents(publisherAccountId);
+  const drops = useDrops(publisherAccountId);
   const [sort, setSort] = useState<EventSortType>('DATE_DES');
   const now = new Date();
 
@@ -102,7 +105,7 @@ const Events: NextPageWithLayout = () => {
               >
                 <Table.Cell style={{ minWidth: '9rem' }}>
                   <Flex stack align="start" gap="none">
-                    <Text size="text-s" weight={600} color="sand12">
+                    <Text size="text-xs" weight={600} color="sand12">
                       {displayEventDate(event)?.date}
                     </Text>
                     {event.date.startTime && <Text size="text-xs">{displayEventDate(event)?.time}</Text>}
@@ -111,7 +114,7 @@ const Events: NextPageWithLayout = () => {
 
                 <Table.Cell wrap style={{ minWidth: '13rem' }}>
                   <Flex stack align="start" gap="none">
-                    <Text size="text-s" weight={600} color="sand12" clampLines={1}>
+                    <Text size="text-xs" weight={600} color="sand12" clampLines={1}>
                       {event.name}
                     </Text>
                     <Text size="text-xs" clampLines={1}>
@@ -121,28 +124,42 @@ const Events: NextPageWithLayout = () => {
                 </Table.Cell>
 
                 <Table.Cell>
-                  <Flex align="center">
-                    <Flex stack gap="none">
-                      <Text size="text-s" weight={600} color="sand12">
-                        {0}
-                        {/* TODO */}
-                      </Text>
-                      <Text size="text-xs">Total</Text>
-                    </Flex>
-                    <Flex stack gap="none">
-                      <Text size="text-s" weight={600} color="sand12">
-                        {0}
-                        {/* TODO */}
-                      </Text>
-                      <Text size="text-xs">Sold</Text>
-                    </Flex>
-                    <Flex stack gap="none">
-                      <Text size="text-s" weight={600} color="sand12">
-                        {0}
-                        {/* TODO */}
-                      </Text>
-                      <Text size="text-xs">Available</Text>
-                    </Flex>
+                  <Flex gap="s">
+                    {drops.data?.[event.id]?.map((drop) => (
+                      <Tooltip
+                        key={drop.drop_id}
+                        root={{ disableHoverableContent: true }}
+                        content={
+                          <Flex stack gap="s">
+                            <Text size="text-xs" weight={700} color="sand12">
+                              {drop.drop_config.nft_keys_config.token_metadata.title || 'General Admission'}
+                            </Text>
+
+                            <Flex wrap gap="s">
+                              <Text size="text-xs">
+                                Total Tickets: <b>{drop.extra?.maxSupply ?? 0}</b>
+                              </Text>
+
+                              <Text size="text-xs">
+                                Purchase Limit: <b>{drop.extra?.limitPerUser ?? 0}</b>
+                              </Text>
+
+                              <Text size="text-xs">
+                                Price: <b>{formatTicketPrice(drop.extra?.priceFiat)}</b>
+                              </Text>
+                            </Flex>
+                          </Flex>
+                        }
+                      >
+                        <Badge
+                          label={
+                            <>
+                              {drop.extra?.maxSupply ?? 0} / {formatTicketPrice(drop.extra?.priceFiat)}
+                            </>
+                          }
+                        />
+                      </Tooltip>
+                    ))}
                   </Flex>
                 </Table.Cell>
 

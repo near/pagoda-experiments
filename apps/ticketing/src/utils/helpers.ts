@@ -1,7 +1,7 @@
 import { type Action } from '@near-wallet-selector/core';
 import { parseNearAmount } from 'near-api-js/lib/utils/format';
 
-import { KEYPOM_MARKETPLACE_CONTRACT } from './common';
+import { KEYPOM_MARKETPLACE_CONTRACT_ID } from './common';
 import {
   deriveKeyFromPassword,
   encryptPrivateKey,
@@ -34,11 +34,22 @@ export interface TicketInfoFormMetadata {
   passValidThrough?: DateAndTimeInfo;
 }
 
+export interface EventDrop {
+  drop_id: string;
+  deposit_per_use: string;
+  funder_id: string;
+  drop_config: {
+    nft_keys_config: {
+      token_metadata: TicketInfoMetadata;
+    };
+  };
+}
+
 export interface TicketInfoMetadata {
-  name: string;
-  description?: string;
-  artwork?: string; // CID to IPFS. To render, use `${CLOUDFLARE_IPDS}/${media}`
-  extra?: string; // Stringified TicketMetadataExtra
+  title: string;
+  description: string;
+  media: string; // CID to IPFS. To render, use `${CLOUDFLARE_IPDS}/${media}`
+  extra: string; // Stringified TicketMetadataExtra
 }
 
 export interface TicketMetadataExtra {
@@ -441,8 +452,8 @@ export const createPayload = async ({
     const ticketExtra: TicketMetadataExtra = {
       dateCreated: Date.now().toString(),
       // price: parseNearAmount(ticket.price)!.toString(),
-      priceNear: ticket.priceNear ?? '0',
-      priceFiat: ticket.priceFiat ?? '0',
+      priceNear: ticket.priceNear || '0',
+      priceFiat: ticket.priceFiat || '0',
       salesValidThrough: ticket.salesValidThrough,
       passValidThrough: ticket.passValidThrough,
       maxSupply: ticket.maxSupply,
@@ -451,15 +462,15 @@ export const createPayload = async ({
     };
 
     const ticketNftInfo: TicketInfoMetadata = {
-      name: ticket.name,
-      description: ticket.description,
-      artwork: ticketArtworkCids.shift() || '',
+      title: ticket.name,
+      description: ticket.description ?? '',
+      media: ticketArtworkCids.shift() ?? '',
       extra: JSON.stringify(ticketExtra),
     };
 
     ticket_information[`${dropId}`] = {
       max_tickets: ticket.maxSupply ?? 0,
-      price: parseNearAmount(ticket.priceNear ?? '0')!.toString(),
+      price: parseNearAmount(ticket.priceNear || '0')!.toString(),
       // sale_start: ticket.salesValidThrough.startDate || undefined,
       // sale_end: ticket.salesValidThrough.endDate || undefined,
     };
@@ -468,9 +479,9 @@ export const createPayload = async ({
       nft_keys_config: {
         token_metadata: ticketNftInfo,
       },
-      add_key_allowlist: [KEYPOM_MARKETPLACE_CONTRACT],
-      // transfer_key_allowlist: formData.sellable ? [KEYPOM_MARKETPLACE_CONTRACT] : [],
-      transfer_key_allowlist: [KEYPOM_MARKETPLACE_CONTRACT],
+      add_key_allowlist: [KEYPOM_MARKETPLACE_CONTRACT_ID],
+      // transfer_key_allowlist: formData.sellable ? [KEYPOM_MARKETPLACE_CONTRACT_ID] : [],
+      transfer_key_allowlist: [KEYPOM_MARKETPLACE_CONTRACT_ID],
     };
     const assetData = [
       {
@@ -503,7 +514,7 @@ export const createPayload = async ({
           asset_datas,
           change_user_metadata: JSON.stringify(funderMetadata),
           on_success: {
-            receiver_id: KEYPOM_MARKETPLACE_CONTRACT,
+            receiver_id: KEYPOM_MARKETPLACE_CONTRACT_ID,
             method_name: 'create_event',
             args: JSON.stringify({
               event_id: eventId,
