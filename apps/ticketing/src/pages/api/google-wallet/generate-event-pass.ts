@@ -82,8 +82,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
 
     const genericObjects: any[] = [];
-    // const formattedEventDate = displayEventDate(event); TODO
-    const formattedEventDate = 'My event date and time';
+    // TODO: const formattedEventDate = displayEventDate(event);
+    const formattedEventDate = undefined;
 
     account.tickets.forEach((ticket, i) => {
       // TODO: Pull in dynamic images from event
@@ -92,8 +92,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const textModulesData: { header: string; body: string; id: string }[] = [];
       const ticketName = `${account.tickets.length > 1 ? `${i + 1} of ${account.tickets.length} - ` : ''}${ticket.tier ?? 'General Admission'}`;
-      // const location = formattedEventDate ? `${event.location} - ${formattedEventDate.dateAndTime}` : event.location;
-      const location = formattedEventDate ? `${event.location} - ${formattedEventDate}` : event.location;
+      // TODO: const location = formattedEventDate ? `${event.location} - ${formattedEventDate.dateAndTime}` : event.location;
+      const location = event.location;
 
       textModulesData.push({
         header: 'Event',

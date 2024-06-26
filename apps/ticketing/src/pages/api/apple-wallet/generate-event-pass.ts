@@ -91,8 +91,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const thumbnail2x = await imageBufferFromUrl(`${HOSTNAME}/images/apple-wallet/thumbnail@2x.png`);
     const thumbnail3x = await imageBufferFromUrl(`${HOSTNAME}/images/apple-wallet/thumbnail@3x.png`);
 
-    // const formattedEventDate = displayEventDate(event); TODO
-    const formattedEventDate = 'My date and time';
+    // TODO: const formattedEventDate = displayEventDate(event);
+    const formattedEventDate = undefined;
 
     const passes = account.tickets.map((ticket, i) => {
       const pass = template.createPass({
@@ -126,12 +126,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       if (formattedEventDate) {
-        pass.auxiliaryFields.add({
-          key: 'location',
-          label: 'Location & Date',
-          value: `${event.location} - ${formattedEventDate}`,
-          // value: `${event.location} - ${formattedEventDate.dateAndTime}`,
-        });
+        // TODO
+        // pass.auxiliaryFields.add({
+        //   key: 'location',
+        //   label: 'Location & Date',
+        //   value: `${event.location} - ${formattedEventDate.dateAndTime}`,
+        // });
       } else {
         pass.secondaryFields.add({
           key: 'location',
