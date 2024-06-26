@@ -14,7 +14,6 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { resolve } from 'path';
 
 import { APPLE_WALLET_CERTIFICATE_PASSWORD, HOSTNAME } from '@/utils/config';
-import { displayEventDate, parseEventDate } from '@/utils/date';
 import { EventAccount, EventDetails } from '@/utils/types';
 
 const certificatePath = resolve('./secrets/pass.com.pagoda.ticketing.pem');
@@ -92,20 +91,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const thumbnail2x = await imageBufferFromUrl(`${HOSTNAME}/images/apple-wallet/thumbnail@2x.png`);
     const thumbnail3x = await imageBufferFromUrl(`${HOSTNAME}/images/apple-wallet/thumbnail@3x.png`);
 
-    const formattedEventDate = displayEventDate(event);
-
-    const expirationDate = parseEventDate(event);
-    expirationDate.setUTCHours(24);
-    expirationDate.setUTCMinutes(0);
-    expirationDate.setUTCSeconds(0);
-    expirationDate.setDate(expirationDate.getDate() + 2); // Expires roughly 2 days after event date
+    // TODO: const formattedEventDate = displayEventDate(event);
+    const formattedEventDate = undefined;
 
     const passes = account.tickets.map((ticket, i) => {
       const pass = template.createPass({
         description: event.name,
         organizationName: 'Ticketing',
         logoText: 'Ticketing',
-        expirationDate,
         serialNumber: ticket.id,
         barcodes: [
           {
@@ -133,11 +126,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       if (formattedEventDate) {
-        pass.auxiliaryFields.add({
-          key: 'location',
-          label: 'Location & Date',
-          value: `${event.location} - ${formattedEventDate.dateAndTime}`,
-        });
+        // TODO
+        // pass.auxiliaryFields.add({
+        //   key: 'location',
+        //   label: 'Location & Date',
+        //   value: `${event.location} - ${formattedEventDate.dateAndTime}`,
+        // });
       } else {
         pass.secondaryFields.add({
           key: 'location',

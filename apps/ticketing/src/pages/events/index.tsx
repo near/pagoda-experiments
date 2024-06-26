@@ -14,54 +14,35 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 
+import { useEvents } from '@/hooks/useEvents';
 import { useProducerLayout } from '@/hooks/useLayout';
+import { useWalletStore } from '@/stores/wallet';
 import { HOSTNAME } from '@/utils/config';
 import { displayEventDate, parseEventDate } from '@/utils/date';
-import { EventDetails, NextPageWithLayout } from '@/utils/types';
+import { formatEventIdQueryParam } from '@/utils/event-id';
+import { NextPageWithLayout } from '@/utils/types';
 
 type EventSortType = 'DATE_ASC' | 'DATE_DES';
 
 const Events: NextPageWithLayout = () => {
   const router = useRouter();
+  const account = useWalletStore((store) => store.account);
+  const publisherAccountId = account?.accountId ?? '';
+  const events = useEvents(publisherAccountId);
   const [sort, setSort] = useState<EventSortType>('DATE_DES');
   const now = new Date();
 
-  const events: EventDetails[] = [
-    {
-      id: '1',
-      name: 'Some Cool Event Name',
-      date: '2024-03-05',
-      location: '1234 W Cool St, Denver, CO',
-      tickets: {
-        available: 20,
-        sold: 30,
-        total: 50,
-      },
-    },
-    {
-      id: '2',
-      name: 'Another Event Name',
-      location: '3455 S Awesome St, San Francisco, CA',
-      date: '2024-10-14',
-      startTime: '19:00',
-      endTime: '22:00',
-      tickets: {
-        available: 10,
-        sold: 15,
-        total: 25,
-      },
-    },
-  ];
-
-  switch (sort) {
-    case 'DATE_ASC':
-      events.sort((a, b) => parseEventDate(a).getTime() - parseEventDate(b).getTime());
-      break;
-    case 'DATE_DES':
-      events.sort((a, b) => parseEventDate(b).getTime() - parseEventDate(a).getTime());
-      break;
-    default:
-      unreachable(sort);
+  if (events.data) {
+    switch (sort) {
+      case 'DATE_ASC':
+        events.data.sort((a, b) => a.date.startDate - b.date.startDate);
+        break;
+      case 'DATE_DES':
+        events.data.sort((a, b) => b.date.startDate - a.date.startDate);
+        break;
+      default:
+        unreachable(sort);
+    }
   }
 
   return (
@@ -108,20 +89,23 @@ const Events: NextPageWithLayout = () => {
           <Table.Body>
             {!events && <Table.PlaceholderRows />}
 
-            {events?.length === 0 && (
+            {events.data?.length === 0 && (
               <Table.Row>
                 <Table.Cell colSpan={100}>No events have been created yet.</Table.Cell>
               </Table.Row>
             )}
 
-            {events.map((event) => (
-              <Table.Row key={event.id} onClick={() => router.push(`/events/${event.id}`)}>
+            {events.data?.map((event) => (
+              <Table.Row
+                key={event.id}
+                onClick={() => router.push(`/events/${formatEventIdQueryParam(publisherAccountId, event.id)}`)}
+              >
                 <Table.Cell style={{ minWidth: '9rem' }}>
                   <Flex stack align="start" gap="none">
                     <Text size="text-s" weight={600} color="sand12">
                       {displayEventDate(event)?.date}
                     </Text>
-                    {event.startTime && <Text size="text-xs">{displayEventDate(event)?.time}</Text>}
+                    {event.date.startTime && <Text size="text-xs">{displayEventDate(event)?.time}</Text>}
                   </Flex>
                 </Table.Cell>
 
@@ -140,19 +124,22 @@ const Events: NextPageWithLayout = () => {
                   <Flex align="center">
                     <Flex stack gap="none">
                       <Text size="text-s" weight={600} color="sand12">
-                        {event.tickets.total}
+                        {0}
+                        {/* TODO */}
                       </Text>
                       <Text size="text-xs">Total</Text>
                     </Flex>
                     <Flex stack gap="none">
                       <Text size="text-s" weight={600} color="sand12">
-                        {event.tickets.sold}
+                        {0}
+                        {/* TODO */}
                       </Text>
                       <Text size="text-xs">Sold</Text>
                     </Flex>
                     <Flex stack gap="none">
                       <Text size="text-s" weight={600} color="sand12">
-                        {event.tickets.available}
+                        {0}
+                        {/* TODO */}
                       </Text>
                       <Text size="text-xs">Available</Text>
                     </Flex>
@@ -172,7 +159,7 @@ const Events: NextPageWithLayout = () => {
                         fill="outline"
                         icon={<Pencil />}
                         size="small"
-                        href={`/events/${event.id}/edit`}
+                        href={`/events/${formatEventIdQueryParam(publisherAccountId, event.id)}/edit`}
                       />
                     </Tooltip>
 
@@ -183,17 +170,24 @@ const Events: NextPageWithLayout = () => {
 
                       <Dropdown.Content>
                         <Dropdown.Section>
-                          <Dropdown.Item href={`/events/${event.id}`}>
+                          <Dropdown.Item href={`/events/${formatEventIdQueryParam(publisherAccountId, event.id)}`}>
                             <SvgIcon icon={<CalendarDots />} />
                             View Event
                           </Dropdown.Item>
 
-                          <Dropdown.Item onSelect={() => copyTextToClipboard(`${HOSTNAME}/events/${event.id}`)}>
+                          <Dropdown.Item
+                            onSelect={() =>
+                              copyTextToClipboard(
+                                `${HOSTNAME}/events/${formatEventIdQueryParam(publisherAccountId, event.id)}`,
+                                'Shareable event URL',
+                              )
+                            }
+                          >
                             <SvgIcon icon={<Link />} />
                             Copy Share Link
                           </Dropdown.Item>
 
-                          <Dropdown.Item href={`/events/${event.id}/scan`}>
+                          <Dropdown.Item href={`/events/${formatEventIdQueryParam(publisherAccountId, event.id)}/scan`}>
                             <SvgIcon icon={<QrCode />} />
                             Scan Tickets
                           </Dropdown.Item>

@@ -1,30 +1,29 @@
-import { EventDetails } from './types';
+import type { FunderEventMetadata } from './helpers';
 
-export function parseEventDate(event: EventDetails) {
-  if (event.startTime) {
-    return new Date(`${event.date} ${event.startTime}`);
+export function parseEventDate(event: FunderEventMetadata) {
+  const date = new Date(event.date.startDate);
+
+  if (event.date.startTime) {
+    const segments = event.date.startTime.split(':');
+    const hours = Number(segments[0]);
+    const minutes = Number(segments[1]);
+    date.setHours(hours);
+    date.setMinutes(minutes);
   }
-  return new Date(event.date);
+
+  return date;
 }
 
-export function displayEventDate(event: EventDetails) {
-  // Display event date consistently regardless of device's timezone
-  // YYYY-MM-DD HH:MM => { date: "3/18/24", time:"11:00 AM - 1:00PM" }
-
-  let dateSegments = event.date.split('-');
-  const year = dateSegments[0];
-  const month = dateSegments[1];
-  const day = dateSegments[2];
-
-  if (!year || !month || !day) return;
-
-  const date = `${month.replace(/^0/, '')}/${day.replace(/^0/, '')}/${year.slice(-2)}`;
+export function displayEventDate(event: FunderEventMetadata) {
+  const date = new Date(event.date.startDate).toLocaleDateString(undefined, {
+    dateStyle: 'short',
+  });
 
   let time: string | undefined = undefined;
-  if (event.startTime) {
-    time = convertFrom24To12HourTime(event.startTime);
-    if (event.endTime) {
-      time += ` - ${convertFrom24To12HourTime(event.endTime)}`;
+  if (event.date.startTime) {
+    time = convertFrom24To12HourTime(event.date.startTime);
+    if (event.date.endTime) {
+      time += ` - ${convertFrom24To12HourTime(event.date.endTime)}`;
     }
   }
 

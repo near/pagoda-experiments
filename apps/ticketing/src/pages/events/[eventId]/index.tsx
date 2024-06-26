@@ -3,85 +3,58 @@ import { Flex } from '@pagoda/ui/src/components/Flex';
 import { Grid } from '@pagoda/ui/src/components/Grid';
 import { HR } from '@pagoda/ui/src/components/HorizontalRule';
 import { MetaTags } from '@pagoda/ui/src/components/MetaTags';
+import { PlaceholderSection } from '@pagoda/ui/src/components/Placeholder';
 import { Section } from '@pagoda/ui/src/components/Section';
 import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
 import { Text } from '@pagoda/ui/src/components/Text';
 import { Tooltip } from '@pagoda/ui/src/components/Tooltip';
 import { copyTextToClipboard } from '@pagoda/ui/src/utils/clipboard';
-import { formatDollar } from '@pagoda/ui/src/utils/number';
-import {
-  Clock,
-  FacebookLogo,
-  Globe,
-  Link,
-  MapPinArea,
-  Pencil,
-  Ticket,
-  XLogo,
-  YoutubeLogo,
-} from '@phosphor-icons/react';
+import { Clock, Link, MapPinArea, Pencil, Ticket } from '@phosphor-icons/react';
 import { useRouter } from 'next/router';
 
+import { useEvent } from '@/hooks/useEvents';
 import { useDefaultLayout } from '@/hooks/useLayout';
 import { useWalletStore } from '@/stores/wallet';
+import { CLOUDFLARE_IPFS } from '@/utils/common';
 import { HOSTNAME } from '@/utils/config';
 import { displayEventDate } from '@/utils/date';
+import { parseEventIdQueryParam } from '@/utils/event-id';
 import type { EventDetails, NextPageWithLayout } from '@/utils/types';
 
 const EventDetails: NextPageWithLayout = () => {
   const router = useRouter();
-  const eventId = router.query.eventId as string;
+  const { publisherAccountId, eventId } = parseEventIdQueryParam(router.query.eventId);
+  const event = useEvent(publisherAccountId, eventId);
   const account = useWalletStore((store) => store.account);
-  const canEditEvent = !!account; // TODO: Determine when the signed in wallet owns the wallet
+  const canEditEvent = account?.accountId === publisherAccountId;
 
-  const event: EventDetails = {
-    id: '1',
-    name: 'Some Cool Event Name',
-    location: '1234 W Cool St, Denver, CO',
-    date: '2024-10-14',
-    startTime: '19:00',
-    endTime: '22:00',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-    imageUrl: `${HOSTNAME}/images/hero-background.jpg`,
-    links: {
-      facebook: 'https://facebook.com',
-      website: 'https://google.com',
-      x: 'https://x.com',
-      youTube: 'https://youtube.com',
-    },
-    tickets: {
-      available: 20,
-      sold: 30,
-      total: 50,
-    },
-    ticketPrice: 10,
-    ticketQuantityLimit: 3,
-  };
+  if (!event.data) {
+    return <PlaceholderSection />;
+  }
 
   return (
     <>
       {/* NOTE: We'll need to make sure the event details are loaded on the server side to properly support social share previews for this event */}
 
       <MetaTags
-        title={event.name}
-        description={`${event.location} on ${displayEventDate(event)?.dateAndTime}`}
-        image={event.imageUrl}
+        title={event.data.name}
+        description={`${event.data.location} on ${displayEventDate(event.data)?.dateAndTime}`}
+        image={event.data.artwork ? `${CLOUDFLARE_IPFS}/${event.data.artwork}` : undefined}
       />
 
       <Section grow="available">
         <Grid
-          columns={event.imageUrl ? '1fr 1fr' : '1fr'}
+          columns={event.data.artwork ? '1fr 1fr' : '1fr'}
           columnsTablet="1fr"
           align="center"
           gap="xl"
           gapTablet="l"
-          style={{ margin: 'auto', maxWidth: event.imageUrl ? undefined : 'var(--container-width-m)' }}
+          style={{ margin: 'auto', maxWidth: event.data.artwork ? undefined : 'var(--container-width-m)' }}
         >
           <Flex stack gap="l">
             <Flex align="center">
               <Text as="h4" style={{ marginRight: 'auto' }}>
-                {event.name}
+                {event.data.name}
               </Text>
 
               <Tooltip content="Copy shareable event link" asChild>
@@ -91,7 +64,7 @@ const EventDetails: NextPageWithLayout = () => {
                   icon={<Link weight="bold" />}
                   onClick={(click) => {
                     click.stopPropagation();
-                    copyTextToClipboard(`${HOSTNAME}/events/${event.id}`);
+                    copyTextToClipboard(`${HOSTNAME}/events/${router.query.eventId}`, 'Shareable event URL');
                   }}
                   size="small"
                 />
@@ -99,7 +72,12 @@ const EventDetails: NextPageWithLayout = () => {
 
               {canEditEvent && (
                 <Tooltip content="Edit your event" asChild>
-                  <Button size="small" label="Edit Event" icon={<Pencil />} href={`/events/${eventId}/edit`} />
+                  <Button
+                    size="small"
+                    label="Edit Event"
+                    icon={<Pencil />}
+                    href={`/events/${router.query.eventId}/edit`}
+                  />
                 </Tooltip>
               )}
             </Flex>
@@ -107,28 +85,31 @@ const EventDetails: NextPageWithLayout = () => {
             <Flex stack>
               <Flex align="center" gap="s">
                 <SvgIcon icon={<MapPinArea />} />
-                <Text color="sand12">{event.location}</Text>
+                <Text color="sand12">{event.data.location}</Text>
               </Flex>
 
               <Flex align="center" gap="s">
                 <SvgIcon icon={<Clock />} />
-                <Text color="sand12">{displayEventDate(event)?.dateAndTime}</Text>
+                <Text color="sand12">{displayEventDate(event.data)?.dateAndTime}</Text>
               </Flex>
             </Flex>
 
-            {event.description && <Text>{event.description}</Text>}
+            {event.data.description && <Text>{event.data.description}</Text>}
 
             <HR style={{ margin: 0 }} />
 
             <Flex align="center" wrap>
               <Button
                 iconLeft={<Ticket />}
-                label={`Get Tickets (${event.ticketPrice ? formatDollar(event.ticketPrice) : 'Free'})`}
+                // label={`Get Tickets (${event.ticketPrice ? formatDollar(event.ticketPrice) : 'Free'})`} // TODO: Fetch and show ticket price
+                label="Get Tickets"
                 variant="affirmative"
                 style={{ marginRight: 'auto' }}
               />
 
-              {event.links && (
+              {/* TODO: Ability to attach link info to events */}
+
+              {/* {event.links && (
                 <Flex gap="xs" align="center">
                   {event.links.facebook && (
                     <Button
@@ -174,11 +155,17 @@ const EventDetails: NextPageWithLayout = () => {
                     />
                   )}
                 </Flex>
-              )}
+              )} */}
             </Flex>
           </Flex>
 
-          {event.imageUrl && <img src={event.imageUrl} alt={event.name} style={{ borderRadius: '6px' }} />}
+          {event.data.artwork && (
+            <img
+              src={`${CLOUDFLARE_IPFS}/${event.data.artwork}`}
+              alt={event.data.name}
+              style={{ borderRadius: '6px' }}
+            />
+          )}
         </Grid>
       </Section>
     </>

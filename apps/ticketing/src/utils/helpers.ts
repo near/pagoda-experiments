@@ -382,10 +382,10 @@ export const createPayload = async ({
   ticketArtworkCids: string[];
   eventId: string;
 }): Promise<{ actions: Action[]; dropIds: string[] }> => {
-  const masterKey = localStorageGet('MASTER_KEY');
+  const masterKey = localStorageGet('MASTER_KEY') ?? '';
 
   if (!masterKey) {
-    throw new Error('Missing local storage value MASTER_KEY inside createPayload()');
+    console.warn('Missing local storage value MASTER_KEY inside createPayload()');
   }
 
   const funderMetadata: FunderMetadata = {};

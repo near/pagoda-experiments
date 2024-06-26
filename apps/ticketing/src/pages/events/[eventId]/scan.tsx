@@ -3,6 +3,7 @@ import { Card } from '@pagoda/ui/src/components/Card';
 import { Container } from '@pagoda/ui/src/components/Container';
 import { Flex } from '@pagoda/ui/src/components/Flex';
 import { HR } from '@pagoda/ui/src/components/HorizontalRule';
+import { PlaceholderSection } from '@pagoda/ui/src/components/Placeholder';
 import { Section } from '@pagoda/ui/src/components/Section';
 import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
 import { Text } from '@pagoda/ui/src/components/Text';
@@ -12,36 +13,19 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 
 import { QrCodeScanner } from '@/components/QrCodeScanner';
+import { useEvent } from '@/hooks/useEvents';
 import { useDefaultLayout } from '@/hooks/useLayout';
-import { HOSTNAME } from '@/utils/config';
 import { displayEventDate } from '@/utils/date';
-import { EventDetails, NextPageWithLayout } from '@/utils/types';
+import { parseEventIdQueryParam } from '@/utils/event-id';
+import { NextPageWithLayout } from '@/utils/types';
 
 const ScanEventTickets: NextPageWithLayout = () => {
   const router = useRouter();
-  const eventId = router.query.eventId as string;
-
-  console.log(`TODO: Load data for event ID: ${eventId}`);
-
-  const event: EventDetails = {
-    id: '1',
-    imageUrl: `${HOSTNAME}/images/hero-background.jpg`,
-    name: 'Some Cool Event Name',
-    date: '2024-10-14',
-    startTime: '19:00',
-    endTime: '22:00',
-    location: '1234 W Cool St, Denver, CO',
-    tickets: {
-      available: 20,
-      sold: 30,
-      total: 50,
-    },
-    ticketPrice: 10,
-    ticketQuantityLimit: 3,
-  };
+  const { publisherAccountId, eventId } = parseEventIdQueryParam(router.query.eventId);
+  const event = useEvent(publisherAccountId, eventId);
 
   const onScanSuccess = (data: string) => {
-    console.log(`TODO: Verify ticket is valid for current event: ${data} => ${eventId}`);
+    console.log(`TODO: Verify ticket is valid for current event: ${data}`);
 
     const isValid = true;
 
@@ -61,6 +45,10 @@ const ScanEventTickets: NextPageWithLayout = () => {
       });
     }
   };
+
+  if (!event.data) {
+    return <PlaceholderSection />;
+  }
 
   return (
     <>
@@ -85,7 +73,7 @@ const ScanEventTickets: NextPageWithLayout = () => {
                 label="View Event"
                 icon={<CalendarDots />}
                 size="small"
-                href={`/events/${event.id}`}
+                href={`/events/${router.query.eventId}`}
                 target="_blank"
               />
             </Flex>
@@ -97,12 +85,12 @@ const ScanEventTickets: NextPageWithLayout = () => {
 
               <Flex stack gap="none">
                 <Text size="text-s" color="sand12" weight={600}>
-                  {event.name}
+                  {event.data.name}
                 </Text>
 
                 <Flex align="center" gap="s">
                   <SvgIcon icon={<Clock />} size="xs" />
-                  <Text size="text-s">{displayEventDate(event)?.dateAndTime}</Text>
+                  <Text size="text-s">{displayEventDate(event.data)?.dateAndTime}</Text>
                 </Flex>
               </Flex>
             </Card>
