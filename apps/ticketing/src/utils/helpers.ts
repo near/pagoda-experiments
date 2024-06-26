@@ -35,7 +35,7 @@ export interface TicketInfoFormMetadata {
 }
 
 export interface TicketInfoMetadata {
-  name: string;
+  title: string;
   description?: string;
   artwork?: string; // CID to IPFS. To render, use `${CLOUDFLARE_IPDS}/${media}`
   extra?: string; // Stringified TicketMetadataExtra
@@ -120,7 +120,7 @@ export interface FunderEventMetadata {
   date: DateAndTimeInfo;
   artwork: string;
   dateCreated: string;
-  description?: string | undefined;
+  description?: string;
   sellable?: boolean;
 
   // Stage 2
@@ -135,19 +135,29 @@ export interface FunderEventMetadata {
 
 export type FunderMetadata = Record<string, FunderEventMetadata>;
 
+export type costBreakdown = {
+  marketListing: string;
+  total: string;
+  perDrop: string;
+  perEvent: string;
+};
+
 export type FormSchema = {
-  name: string;
-  stripeAccountId: string | undefined;
-  acceptNearPayments: boolean;
+  stripeAccountId?: string;
   acceptStripePayments: boolean;
-  location: string;
+  acceptNearPayments: boolean;
+
+  name: string;
+  description?: { value: string; error?: string };
+  location: { value: string; error?: string };
   date: string;
+  eventArtwork?: FileList;
+  sellable: boolean;
+
   tickets: TicketInfoFormMetadata[];
-  checkoutType: 'near' | 'stripe' | 'both';
-  description?: string;
   startTime?: string;
   endTime?: string;
-  eventArtwork?: FileList;
+  costBreakdown: costBreakdown;
   // ticketPrice?: number;
   // ticketQuantityLimit?: number;
 };
@@ -391,10 +401,12 @@ export const createPayload = async ({
   const funderMetadata: FunderMetadata = {};
 
   const eventMetadata: FunderEventMetadata = {
+    nearCheckout: formData.acceptNearPayments,
+
     name: formData.name,
     dateCreated: Date.now().toString(),
-    description: formData.description,
-    location: formData.location,
+    description: formData?.description?.value || '',
+    location: formData.location.value,
     date: {
       startDate: Date.parse(formData.date),
       startTime: formData.startTime,
@@ -402,8 +414,7 @@ export const createPayload = async ({
       endTime: formData.endTime,
     },
     artwork: eventArtworkCid,
-    // nearCheckout: formData.acceptNearPayments,
-    // sellable: formData.sellable,
+    sellable: formData.sellable,
     // questions: formData.questions.map((question: { question: any; isRequired: any; }) => ({
     //   question: question.question,
     //   required: question.isRequired || false,
@@ -451,15 +462,22 @@ export const createPayload = async ({
     };
 
     const ticketNftInfo: TicketInfoMetadata = {
-      name: ticket.name,
+      title: ticket.name,
       description: ticket.description,
       artwork: ticketArtworkCids.shift() || '',
       extra: JSON.stringify(ticketExtra),
     };
 
+    if (ticket.priceNear === '') {
+      ticket.priceNear = '0';
+    }
+
     ticket_information[`${dropId}`] = {
       max_tickets: ticket.maxSupply ?? 0,
       price: parseNearAmount(ticket.priceNear ?? '0')!.toString(),
+      sale_start: Date.now() || undefined,
+      sale_end: Date.parse(formData.date) || undefined,
+      // ------------ pattern for allowing start and end sales date individually for each ticket
       // sale_start: ticket.salesValidThrough.startDate || undefined,
       // sale_end: ticket.salesValidThrough.endDate || undefined,
     };

@@ -6,7 +6,7 @@ export function convertToSafeFilename(string: string) {
     .replace(/[^a-zA-Z0-9\s_-]/g, '');
 }
 
-export function convertFileListToPreviewUrls(fileList?: FileList) {
+export function convertFileListToPreviewUrls(fileList?: FileList | File[]) {
   if (!fileList) return [];
 
   const urls: string[] = [];
