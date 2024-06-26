@@ -160,25 +160,23 @@ const PurchasedTickets: NextPageWithLayout = () => {
                 data-html2canvas-ignore
               >
                 <Button
-                  iconLeft={<DownloadSimple />}
+                  icon={<DownloadSimple />}
                   label="Download"
                   size="small"
                   variant="primary"
                   fill="outline"
                   onClick={downloadTickets}
-                  style={{ flexGrow: 1 }}
+                  style={{ marginRight: 'auto' }}
                 />
               </Tooltip>
 
-              <Flex style={{ margin: 'auto' }}>
-                <AddToAppleWallet
-                  href={`/api/apple-wallet/generate-event-pass?accountId=${accountId}&eventId=${formatEventIdQueryParam(publisherAccountId, eventId)}`}
-                />
+              <AddToAppleWallet
+                href={`/api/apple-wallet/generate-event-pass?accountId=${accountId}&eventId=${formatEventIdQueryParam(publisherAccountId, eventId)}`}
+              />
 
-                <AddToGoogleWallet
-                  href={`/api/google-wallet/generate-event-pass?accountId=${accountId}&eventId=${formatEventIdQueryParam(publisherAccountId, eventId)}`}
-                />
-              </Flex>
+              <AddToGoogleWallet
+                href={`/api/google-wallet/generate-event-pass?accountId=${accountId}&eventId=${formatEventIdQueryParam(publisherAccountId, eventId)}`}
+              />
             </Flex>
 
             <Flex stack>
