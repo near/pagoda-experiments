@@ -20,6 +20,7 @@ export function useEvents(accountId: string | undefined) {
         });
 
         const events = Object.values(JSON.parse(response.metadata)) as FunderEventMetadata[];
+
         return events;
       } catch (error) {
         handleClientError({
@@ -58,6 +59,8 @@ export function useEvent(accountId: string | undefined, eventId: string | undefi
         const events = Object.values(JSON.parse(response.metadata)) as FunderEventMetadata[];
         const event = events.find((ev) => ev.id === eventId);
         if (!event) throw new Error('Event ID not found under publisher account');
+
+        return event;
       } catch (error) {
         handleClientError({
           title: 'Failed to load event',
