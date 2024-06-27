@@ -131,12 +131,7 @@ const CreateEvent: NextPageWithLayout = () => {
         <title>Create New Event</title>
       </Head>
 
-      <Section
-        grow="available"
-        style={{
-          background: 'linear-gradient(to bottom right, var(--violet4), var(--cyan3))',
-        }}
-      >
+      <Section background="primary-gradient" grow="available">
         <Container size="s" style={{ margin: 'auto' }}>
           <Form onSubmit={form.handleSubmit(onValidSubmit)}>
             <Flex stack gap="l">
@@ -257,6 +252,7 @@ const CreateEvent: NextPageWithLayout = () => {
                           valueAsNumber: true,
                         })}
                       />
+
                       <Input
                         label="Quantity Limit"
                         iconLeft={<HashStraight />}

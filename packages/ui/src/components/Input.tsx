@@ -91,6 +91,9 @@ export const Input = forwardRef<HTMLInputElement, Props>(
               type={type}
               {...props}
               onInput={onInput}
+              style={{
+                textAlign: style?.textAlign,
+              }}
             />
 
             {right}

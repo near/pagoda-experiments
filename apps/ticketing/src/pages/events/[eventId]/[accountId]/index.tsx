@@ -28,7 +28,7 @@ import type { EventAccount, NextPageWithLayout } from '@/utils/types';
 
 const TICKETS_DOM_ID = 'tickets';
 
-const PurchasedTickets: NextPageWithLayout = () => {
+const YourTickets: NextPageWithLayout = () => {
   const router = useRouter();
   const { publisherAccountId, eventId } = parseEventIdQueryParam(router.query.eventId);
   const accountId = router.query.accountId as string;
@@ -146,7 +146,7 @@ const PurchasedTickets: NextPageWithLayout = () => {
                 <img
                   src={`${CLOUDFLARE_IPFS}/${event.data.artwork}`}
                   alt={event.data.name}
-                  style={{ borderRadius: '6px' }}
+                  style={{ borderRadius: '6px', boxShadow: '0 0 0 1px var(--blackA3)' }}
                 />
               )}
             </Grid>
@@ -191,7 +191,7 @@ const PurchasedTickets: NextPageWithLayout = () => {
                     />
 
                     <Flex stack style={{ textAlign: 'center' }} align="center">
-                      <SvgIcon icon={<Ticket weight="thin" />} color="sand10" size="m" />
+                      <SvgIcon icon={<Ticket weight="duotone" />} color="sand10" size="m" />
 
                       <Flex stack gap="s">
                         <Text size="text-xs" weight={600}>
@@ -216,6 +216,6 @@ const PurchasedTickets: NextPageWithLayout = () => {
   );
 };
 
-PurchasedTickets.getLayout = useDefaultLayout;
+YourTickets.getLayout = useDefaultLayout;
 
-export default PurchasedTickets;
+export default YourTickets;

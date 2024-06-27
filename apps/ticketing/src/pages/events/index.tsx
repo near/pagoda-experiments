@@ -131,7 +131,7 @@ const Events: NextPageWithLayout = () => {
                         root={{ disableHoverableContent: true }}
                         content={
                           <Flex stack gap="s">
-                            <Text size="text-xs" weight={700} color="sand12">
+                            <Text size="text-xs" weight={600} color="sand12">
                               {drop.drop_config.nft_keys_config.token_metadata.title || 'General Admission'}
                             </Text>
 

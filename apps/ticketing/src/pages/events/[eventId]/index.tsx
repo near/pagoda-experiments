@@ -86,15 +86,12 @@ const EventDetails: NextPageWithLayout = ({ event }: InferGetServerSidePropsType
           style={{ margin: 'auto', maxWidth: event.artwork ? undefined : 'var(--container-width-m)' }}
         >
           <Flex stack gap="l">
-            <Flex align="center">
-              <Text as="h4" style={{ marginRight: 'auto' }}>
-                {event.name}
-              </Text>
-
+            <Flex align="center" gap="s">
+              <Text as="h4">{event.name}</Text>
               <Tooltip content="Copy shareable event link" asChild>
                 <Button
                   label="Copy Event Link"
-                  fill="outline"
+                  fill="ghost"
                   icon={<Link weight="bold" />}
                   onClick={(click) => {
                     click.stopPropagation();
@@ -103,18 +100,9 @@ const EventDetails: NextPageWithLayout = ({ event }: InferGetServerSidePropsType
                   size="small"
                 />
               </Tooltip>
-
-              {canEditEvent && (
-                <Tooltip content="Edit your event" asChild>
-                  <Button
-                    size="small"
-                    label="Edit Event"
-                    icon={<Pencil />}
-                    href={`/events/${router.query.eventId}/edit`}
-                  />
-                </Tooltip>
-              )}
             </Flex>
+
+            <HR style={{ margin: 0 }} />
 
             <Flex stack>
               <Flex align="center" gap="s">
@@ -130,16 +118,19 @@ const EventDetails: NextPageWithLayout = ({ event }: InferGetServerSidePropsType
 
             {event.description && <Text>{event.description}</Text>}
 
-            <HR style={{ margin: 0 }} />
-
             <Flex align="center" wrap>
               <Button
                 iconLeft={<Ticket />}
-                // label={`Get Tickets (${event.ticketPrice ? formatDollar(event.ticketPrice) : 'Free'})`} // TODO: Fetch and show ticket price
+                href={`/events/${router.query.eventId}/tickets`}
                 label="Get Tickets"
                 variant="affirmative"
-                style={{ marginRight: 'auto' }}
               />
+
+              {canEditEvent && (
+                <Tooltip content="Edit your event" asChild>
+                  <Button label="Edit Event" icon={<Pencil />} href={`/events/${router.query.eventId}/edit`} />
+                </Tooltip>
+              )}
 
               {/* TODO: Ability to attach link info to events */}
 
@@ -194,7 +185,11 @@ const EventDetails: NextPageWithLayout = ({ event }: InferGetServerSidePropsType
           </Flex>
 
           {event.artwork && (
-            <img src={`${CLOUDFLARE_IPFS}/${event.artwork}`} alt={event.name} style={{ borderRadius: '6px' }} />
+            <img
+              src={`${CLOUDFLARE_IPFS}/${event.artwork}`}
+              alt={event.name}
+              style={{ borderRadius: '6px', boxShadow: '0 0 0 1px var(--blackA3)' }}
+            />
           )}
         </Grid>
       </Section>

@@ -8,6 +8,10 @@
     border-bottom: none;
   }
 
+  &[data-background='primary-gradient'] {
+    background: linear-gradient(to bottom right, var(--violet4), var(--cyan3));
+  }
+
   &[data-grow] {
     &,
     > div,

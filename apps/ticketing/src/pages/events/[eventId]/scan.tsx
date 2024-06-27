@@ -47,7 +47,7 @@ const ScanEventTickets: NextPageWithLayout = () => {
   };
 
   if (!event.data) {
-    return <PlaceholderSection />;
+    return <PlaceholderSection background="primary-gradient" />;
   }
 
   return (
@@ -56,12 +56,7 @@ const ScanEventTickets: NextPageWithLayout = () => {
         <title>Scan Tickets</title>
       </Head>
 
-      <Section
-        grow="available"
-        style={{
-          background: 'linear-gradient(to bottom right, var(--violet4), var(--cyan3))',
-        }}
-      >
+      <Section background="primary-gradient" grow="available">
         <Container size="s" style={{ margin: 'auto' }}>
           <Flex stack gap="l">
             <Flex align="center">
