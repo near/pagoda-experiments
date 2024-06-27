@@ -9,6 +9,7 @@ import { Input } from '@pagoda/ui/src/components/Input';
 import { InputTextarea } from '@pagoda/ui/src/components/InputTextarea';
 import { Section } from '@pagoda/ui/src/components/Section';
 import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
+import { Switch } from '@pagoda/ui/src/components/Switch';
 import { Text } from '@pagoda/ui/src/components/Text';
 import { openToast } from '@pagoda/ui/src/components/Toast';
 import { Tooltip } from '@pagoda/ui/src/components/Tooltip';
@@ -40,9 +41,16 @@ const CreateEvent: NextPageWithLayout = () => {
   const wallet = useWalletStore((state) => state.wallet);
   const account = useWalletStore((state) => state.account);
   const router = useRouter();
-  const [stripeCheckout] = useState(false);
+  // const [stripeAccountId, setStripeAccountId] = useState('');
+  const [stripeCheckout, setStripeCheckout] = useState(false);
 
-  const form = useForm<FormSchema>();
+  // TODO check local storage for stripe account id
+
+  const form = useForm<FormSchema>({
+    defaultValues: {
+      acceptNearPayments: true,
+    },
+  });
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'tickets',
@@ -128,6 +136,10 @@ const CreateEvent: NextPageWithLayout = () => {
     }
   };
 
+  const handleConnectStripe = async () => {
+    setStripeCheckout(stripeCheckout);
+  };
+
   return (
     <>
       <Head>
@@ -144,6 +156,40 @@ const CreateEvent: NextPageWithLayout = () => {
                 <Text as="h3" style={{ marginRight: 'auto' }}>
                   Create New Event
                 </Text>
+              </Flex>
+
+              <Flex stack>
+                <Card>
+                  <Text size="text-xs" weight={600} color="sand12">
+                    Payemnt Options
+                  </Text>
+                  <Flex justify="start">
+                    <Text>Accept Near Payments</Text>
+                    <Switch disabled checked={true} />
+                    <span className="slider"></span>
+                  </Flex>
+                  <Flex justify="start">
+                    <Text>Accept Stripe Payments</Text>
+                    {stripeCheckout ? (
+                      <Switch
+                        checked={form.watch('acceptStripePayments')}
+                        onChange={() => {
+                          form.setValue('acceptStripePayments', true);
+                        }}
+                      />
+                    ) : (
+                      <Button
+                        variant="primary"
+                        label="Connect Stripe Account"
+                        fill="outline"
+                        size="small"
+                        onClick={() => {
+                          handleConnectStripe();
+                        }}
+                      />
+                    )}
+                  </Flex>
+                </Card>
               </Flex>
 
               <Flex stack>
