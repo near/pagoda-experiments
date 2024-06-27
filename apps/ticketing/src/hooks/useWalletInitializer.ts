@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import { useEffect } from 'react';
 
 import { useWalletStore } from '@/stores/wallet';
-import { KEYPOM_CONTRACT_ID } from '@/utils/keypom';
+import { KEYPOM_CONTRACT_ID } from '@/utils/common';
 import { WALLET_SELECTOR_PARAMS } from '@/utils/wallet';
 
 export function useWalletInitializer() {

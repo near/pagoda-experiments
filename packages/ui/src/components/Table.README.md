@@ -170,7 +170,7 @@ Just like regular table cells, you can pass an `onClick()` prop to a `HeaderCell
 ```tsx
 <Table.Head>
   <Table.Row>
-    <Table.HeaderCell onClick={() => console.log('Header Cell Clicked')}>Date</Table.HeaderCell>
+    <Table.HeaderCell onClick={() => { ... }}>Date</Table.HeaderCell>
     <Table.HeaderCell>Name</Table.HeaderCell>
   </Table.Row>
 </Table.Head>

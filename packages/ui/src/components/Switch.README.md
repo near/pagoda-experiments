@@ -61,7 +61,7 @@ const [switchValue, setSwitchValue] = useState(false);
 const debouncedSwitchValue = useDebouncedValue(switchValue, 300);
 
 useEffect(() => {
-  console.log(debouncedSwitchValue);
+  // ...
 }, [debouncedSwitchValue]);
 
 

@@ -1,3 +1,5 @@
+import { NETWORK_ID } from './config';
+
 // Matches with optional protocol and URL with one dot
 export const urlRegex = /(?:(?:https?:\/\/)?[\w.-]*\.[\w]{2,3})/;
 
@@ -17,29 +19,18 @@ type DROP_TYPE_KEYS = keyof typeof DROP_TYPE;
 export type DROP_TYPES = (typeof DROP_TYPE)[DROP_TYPE_KEYS];
 
 export const PURCHASED_LOCAL_STORAGE_PREFIX = 'TICKETS_PURCHASED';
-
 export const MASTER_KEY = 'MASTER_KEY';
-
-export const MAX_FILE_SIZE = 10000000;
-
 export const WORKER_BASE_URL = 'https://keypom-nft-storage.keypom.workers.dev/';
 export const EVENTS_WORKER_IPFS_PINNING =
-  process.env.REACT_APP_NETWORK_ID === 'mainnet'
+  NETWORK_ID === 'mainnet'
     ? 'https://stripe-worker-production.keypom.workers.dev/ipfs-pin'
     : 'https://stripe-worker.keypom.workers-dev.dev/ipfs-pin';
 export const EVENTS_WORKER_BASE =
-  process.env.REACT_APP_NETWORK_ID === 'mainnet'
+  NETWORK_ID === 'mainnet'
     ? 'https://stripe-worker-production.keypom.workers.dev'
     : 'https://stripe-worker-dev.keypom.workers.dev';
 export const EMAIL_WORKER_BASE = 'https://email-worker.keypom.workers.dev';
 
-export const PAGE_SIZE_LIMIT = 5;
-export const NFT_ATTEMPT_KEY = 'NFT_ATTEMPT';
-export const PAGE_QUERY_PARAM = 'page';
-export const KEYPOM_EVENTS_CONTRACT =
-  process.env.REACT_APP_NETWORK_ID === 'mainnet' ? 'ticketing-v1.keypom.near' : '1716924460613-kp-ticketing.testnet';
-export const KEYPOM_MARKETPLACE_CONTRACT =
-  process.env.REACT_APP_NETWORK_ID === 'mainnet' ? 'marketplace-v1.keypom.near' : '1716924460613-marketplace.testnet';
 export const KEYPOM_GLOBAL_SIGNING_KEYS = [
   'ed25519:3SoKRJxQj29Kczj6TiMNNxq3c6S3WcA4MUb6oBEcHMEDyhLWxzJyWxXn69sKt3RKCs8akb5KHkNvjdq4mJLYCYGA',
   'ed25519:36s6Po4JAJVhQdZLmXx8gJh4HP6T4AtMYJb5UgWhiYLntxpTX5piAc2pGExdUYrFJujYi18ZevU1z52CRkL6kpLF',
@@ -52,4 +43,20 @@ export const KEYPOM_GLOBAL_SIGNING_KEYS = [
   'ed25519:3PjnkrRdAmWEfoKBkdSXXfGs6AWB6rTG5Sva9EEJBAnAKnkbNwk5VsXPx43zFmKJJhfHwzgFM76FVGqmZQjh6wWh',
   'ed25519:2nP3KsnqWb96k6HKNXHiyumtGH6pmoBLvVqUAbNBAQFMBzTjho3Nw7Yo5fwDMZFwgPeaEeYMcGCqkmX1eoL8Abw1',
 ];
+
 export const MIN_NEAR_SELL = 0.1;
+
+const MAINNET_KEYPOM_CONTRACT_ID = 'v2.keypom.near';
+
+const TESTNET_KEYPOM_CONTRACT_ID = 'v2.keypom.testnet';
+export const KEYPOM_CONTRACT_ID = NETWORK_ID === 'mainnet' ? MAINNET_KEYPOM_CONTRACT_ID : TESTNET_KEYPOM_CONTRACT_ID;
+
+const MAINNET_KEYPOM_EVENTS_CONTRACT_ID = 'ticketing-v1.keypom.near';
+const TESTNET_KEYPOM_EVENTS_CONTRACT_ID = '1716924460613-kp-ticketing.testnet';
+export const KEYPOM_EVENTS_CONTRACT_ID =
+  NETWORK_ID === 'mainnet' ? MAINNET_KEYPOM_EVENTS_CONTRACT_ID : TESTNET_KEYPOM_EVENTS_CONTRACT_ID;
+
+const MAINNET_KEYPOM_MARKETPLACE_CONTRACT_ID = 'marketplace-v1.keypom.near';
+const TESTNET_KEYPOM_MARKETPLACE_CONTRACT_ID = '1716924460613-marketplace.testnet';
+export const KEYPOM_MARKETPLACE_CONTRACT_ID =
+  NETWORK_ID === 'mainnet' ? MAINNET_KEYPOM_MARKETPLACE_CONTRACT_ID : TESTNET_KEYPOM_MARKETPLACE_CONTRACT_ID;

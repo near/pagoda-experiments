@@ -3,8 +3,8 @@ import { useRef } from 'react';
 import { useEffect } from 'react';
 
 import { useNearStore } from '@/stores/near';
-import { NETWORK_ID } from '@/utils/config';
-import { KEYPOM_CONTRACT_ID } from '@/utils/keypom';
+import { KEYPOM_CONTRACT_ID } from '@/utils/common';
+import { NETWORK_ID, NETWORK_NODE_URL } from '@/utils/config';
 
 export function useNearInitializer() {
   const connectPromise = useRef<Promise<Near> | null>(null);
@@ -17,7 +17,7 @@ export function useNearInitializer() {
         connectPromise.current = connect({
           networkId: NETWORK_ID,
           keyStore: new keyStores.BrowserLocalStorageKeyStore(),
-          nodeUrl: NETWORK_ID === 'mainnet' ? 'https://rpc.mainnet.near.org' : 'https://rpc.testnet.near.org',
+          nodeUrl: NETWORK_NODE_URL,
         });
       }
 

@@ -32,7 +32,7 @@ import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { FilePreviews } from '@/components/FilePreviews';
 import { useProducerLayout } from '@/hooks/useLayout';
 import { useWalletStore } from '@/stores/wallet';
-import { EVENTS_WORKER_BASE, KEYPOM_EVENTS_CONTRACT } from '@/utils/common';
+import { EVENTS_WORKER_BASE, KEYPOM_EVENTS_CONTRACT_ID } from '@/utils/common';
 import { createPayload, FormSchema, serializeMediaForWorker, TicketInfoFormMetadata } from '@/utils/helpers';
 import { NextPageWithLayout } from '@/utils/types';
 
@@ -109,7 +109,7 @@ const CreateEvent: NextPageWithLayout = () => {
 
         await wallet.signAndSendTransaction({
           signerId: wallet.id,
-          receiverId: KEYPOM_EVENTS_CONTRACT,
+          receiverId: KEYPOM_EVENTS_CONTRACT_ID,
           actions,
         });
 
