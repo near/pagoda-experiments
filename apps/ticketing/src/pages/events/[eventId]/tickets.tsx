@@ -1,3 +1,4 @@
+import { AssistiveText } from '@pagoda/ui/src/components/AssistiveText';
 import { Button } from '@pagoda/ui/src/components/Button';
 import { Card } from '@pagoda/ui/src/components/Card';
 import { Container } from '@pagoda/ui/src/components/Container';
@@ -13,7 +14,7 @@ import { Text } from '@pagoda/ui/src/components/Text';
 import { openToast } from '@pagoda/ui/src/components/Toast';
 import { Tooltip } from '@pagoda/ui/src/components/Tooltip';
 import { handleClientError } from '@pagoda/ui/src/utils/error';
-import { ArrowLeft, ArrowRight, Clock, MapPinArea, Minus, Plus, Ticket } from '@phosphor-icons/react';
+import { ArrowLeft, ArrowRight, Clock, Envelope, MapPinArea, Minus, Plus, Ticket } from '@phosphor-icons/react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
@@ -27,6 +28,8 @@ import { displayEventDate } from '@/utils/date';
 import { formatDollar, formatTicketPrice } from '@/utils/dollar';
 import { formatEventIdQueryParam, parseEventIdQueryParam } from '@/utils/event-id';
 import { stringToNumber } from '@/utils/number';
+import { pluralize } from '@/utils/pluralize';
+import { purchaseTickets } from '@/utils/purchase';
 import type { NextPageWithLayout } from '@/utils/types';
 
 type FormSchema = {
@@ -56,8 +59,8 @@ const GetTickets: NextPageWithLayout = () => {
 
   const totalPrice = tickets.reduce((result, ticket, index) => {
     const drop = dropsForEvent?.[index];
-    if (!drop?.extra?.priceNear || !ticket.quantity) return result;
-    const price = (stringToNumber(drop.extra.priceNear) || 0) * ticket.quantity;
+    if (!drop?.ticket.extra?.priceFiat || !ticket.quantity) return result;
+    const price = (stringToNumber(drop.ticket.extra.priceFiat) || 0) * ticket.quantity;
     return result + price;
   }, 0);
 
@@ -81,7 +84,21 @@ const GetTickets: NextPageWithLayout = () => {
 
   const onValidSubmit: SubmitHandler<FormSchema> = async (formData) => {
     try {
-      console.log(formData);
+      if (!event.data || !dropsForEvent) return;
+
+      const { totalFreeTickets } = await purchaseTickets({
+        event: event.data,
+        dropsForEvent,
+        publisherAccountId,
+        email: formData.email,
+        tickets: formData.tickets,
+      });
+
+      openToast({
+        type: 'success',
+        title: `${totalFreeTickets} free ${pluralize(totalTickets, 'ticket')} purchased`,
+        description: `${pluralize(totalTickets, 'Ticket')} emailed to: ${formData.email}`,
+      });
     } catch (error) {
       handleClientError({ title: 'Checkout Failed', error });
     }
@@ -146,30 +163,34 @@ const GetTickets: NextPageWithLayout = () => {
                 {dropsForEvent.map((drop, index) => (
                   <Card key={drop.drop_id}>
                     <Flex stack>
-                      <Flex align="center">
+                      <Flex align="center" gap="s">
                         <SvgIcon icon={<Ticket weight="duotone" />} color="sand10" size="s" />
-
-                        <Flex stack gap="none">
-                          <Text size="text-s" weight={600} color="sand12">
-                            {drop.drop_config.nft_keys_config.token_metadata.title ?? 'General Admission'}
-                          </Text>
-
-                          {drop.drop_config.nft_keys_config.token_metadata.description && (
-                            <Text size="text-s">{drop.drop_config.nft_keys_config.token_metadata.description}</Text>
-                          )}
-                        </Flex>
+                        <Text size="text-s" weight={600} color="sand12">
+                          {drop.ticket.title}
+                        </Text>
                       </Flex>
 
                       <HR variant="secondary" style={{ margin: 0 }} />
 
+                      {drop.ticket.description && (
+                        <>
+                          <Text size="text-s">{drop.ticket.description}</Text>
+                          <HR variant="secondary" style={{ margin: 0 }} />
+                        </>
+                      )}
+
                       <Flex align="center">
-                        <Flex stack gap="none">
-                          <Text size="text-s" color="sand12">
-                            {formatTicketPrice(drop.extra?.priceNear)}
+                        <Flex stack gap="xs">
+                          <Text size="text-xs" weight={600} color="sand12">
+                            {formatTicketPrice(drop.ticket.extra?.priceFiat)}
                           </Text>
                           <Flex align="center" gap="xs" wrap>
-                            {drop.extra?.maxSupply && <Text size="text-xs">Available: {drop.extra.maxSupply}</Text>}
-                            {drop.extra?.limitPerUser && <Text size="text-xs">Limit: {drop.extra.limitPerUser}</Text>}
+                            {drop.ticket.extra?.maxSupply && (
+                              <Text size="text-xs">
+                                {drop.ticket.remaining} tickets left. Limit {drop.ticket.extra.limitPerUser} per
+                                customer.
+                              </Text>
+                            )}
                           </Flex>
                         </Flex>
 
@@ -198,12 +219,13 @@ const GetTickets: NextPageWithLayout = () => {
                               width: '4.5rem',
                               textAlign: 'center',
                             }}
+                            disabled={!drop.ticket.remaining || !drop.ticket.validatedSellThrough.valid}
                             error={form.formState.errors.tickets?.[index]?.quantity?.message}
                             {...form.register(`tickets.${index}.quantity`, {
                               min: 0,
                               max: {
-                                value: drop.extra?.limitPerUser || Infinity,
-                                message: `Limit: ${drop.extra?.limitPerUser}`,
+                                value: Math.min(drop.ticket.extra?.limitPerUser || Infinity, drop.ticket.remaining),
+                                message: `Limit: ${Math.min(drop.ticket.extra?.limitPerUser || Infinity, drop.ticket.remaining)}`,
                               },
                               valueAsNumber: true,
                             })}
@@ -223,9 +245,35 @@ const GetTickets: NextPageWithLayout = () => {
                           />
                         </Flex>
                       </Flex>
+
+                      {!drop.ticket.validatedSellThrough.valid && (
+                        <AssistiveText
+                          variant="error"
+                          message={drop.ticket.validatedSellThrough.message || 'Ticket sales have closed'}
+                        />
+                      )}
+
+                      {!drop.ticket.remaining && <AssistiveText variant="error" message="Tickets sold out" />}
                     </Flex>
                   </Card>
                 ))}
+
+                <Card>
+                  <Input
+                    label="Your Email"
+                    type="email"
+                    iconLeft={<Envelope />}
+                    error={form.formState.errors.email?.message}
+                    assistive="Your tickets will be sent to this address"
+                    {...form.register('email', {
+                      required: 'Please enter an email',
+                      pattern: {
+                        value: /^(.+)@(.+)[^.]$/,
+                        message: 'Please enter a valid email addresss',
+                      },
+                    })}
+                  />
+                </Card>
               </Flex>
 
               <Flex align="center">
@@ -239,6 +287,7 @@ const GetTickets: NextPageWithLayout = () => {
                   label="Checkout"
                   variant="affirmative"
                   iconRight={<ArrowRight />}
+                  loading={form.formState.isSubmitting}
                 />
               </Flex>
             </Flex>

@@ -91,7 +91,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const heroImageUrl = 'https://i.ibb.co/cD5fCJP/marcela-laskoski-Yrt-Flr-Lo2-DQ-unsplash.jpg';
 
       const textModulesData: { header: string; body: string; id: string }[] = [];
-      const ticketName = `${account.tickets.length > 1 ? `${i + 1} of ${account.tickets.length} - ` : ''}${ticket.tier ?? 'General Admission'}`;
+      const ticketName = `${account.tickets.length > 1 ? `${i + 1} of ${account.tickets.length} - ` : ''}${ticket.tier}`;
       // TODO: const location = formattedEventDate ? `${event.location} - ${formattedEventDate.dateAndTime}` : event.location;
       const location = event.location;
 

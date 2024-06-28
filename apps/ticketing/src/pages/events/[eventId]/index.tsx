@@ -9,7 +9,7 @@ import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
 import { Text } from '@pagoda/ui/src/components/Text';
 import { Tooltip } from '@pagoda/ui/src/components/Tooltip';
 import { copyTextToClipboard } from '@pagoda/ui/src/utils/clipboard';
-import { Clock, Link, MapPinArea, Pencil, Ticket } from '@phosphor-icons/react';
+import { Clock, ImageSquare, Link, MapPinArea, Pencil, Ticket } from '@phosphor-icons/react';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import { useRouter } from 'next/router';
 
@@ -84,39 +84,46 @@ const EventDetails: NextPageWithLayout = ({ event }: InferGetServerSidePropsType
           align="center"
           gap="l"
           style={{ margin: 'auto', maxWidth: event.artwork ? undefined : 'var(--container-width-m)' }}
+          stretch
         >
           <Flex stack gap="l">
-            <Flex align="center" gap="s">
-              <Text as="h4">{event.name}</Text>
-              <Tooltip content="Copy shareable event link" asChild>
-                <Button
-                  label="Copy Event Link"
-                  fill="ghost"
-                  icon={<Link weight="bold" />}
-                  onClick={(click) => {
-                    click.stopPropagation();
-                    copyTextToClipboard(`${HOSTNAME}/events/${router.query.eventId}`, 'Shareable event URL');
-                  }}
-                  size="small"
-                />
-              </Tooltip>
+            <Flex stack>
+              <Flex align="center" gap="s">
+                <Text as="h3">{event.name}</Text>
+                <Tooltip content="Copy shareable event link" asChild>
+                  <Button
+                    label="Copy Event Link"
+                    fill="ghost"
+                    icon={<Link weight="bold" />}
+                    onClick={(click) => {
+                      click.stopPropagation();
+                      copyTextToClipboard(`${HOSTNAME}/events/${router.query.eventId}`, 'Shareable event URL');
+                    }}
+                    size="small"
+                  />
+                </Tooltip>
+              </Flex>
+
+              {event.description && <Text>{event.description}</Text>}
             </Flex>
 
             <HR style={{ margin: 0 }} />
 
-            <Flex stack>
+            <Flex stack gap="s">
               <Flex align="center" gap="s">
-                <SvgIcon icon={<MapPinArea />} />
-                <Text color="sand12">{event.location}</Text>
+                <SvgIcon icon={<MapPinArea />} color="sand10" />
+                <Text color="sand12" size="text-s">
+                  {event.location}
+                </Text>
               </Flex>
 
               <Flex align="center" gap="s">
-                <SvgIcon icon={<Clock />} />
-                <Text color="sand12">{displayEventDate(event)?.dateAndTime}</Text>
+                <SvgIcon icon={<Clock />} color="sand10" />
+                <Text color="sand12" size="text-s">
+                  {displayEventDate(event)?.dateAndTime}
+                </Text>
               </Flex>
             </Flex>
-
-            {event.description && <Text>{event.description}</Text>}
 
             <Flex align="center" wrap>
               <Button
@@ -185,11 +192,29 @@ const EventDetails: NextPageWithLayout = ({ event }: InferGetServerSidePropsType
           </Flex>
 
           {event.artwork && (
-            <img
-              src={`${CLOUDFLARE_IPFS}/${event.artwork}`}
-              alt={event.name}
-              style={{ borderRadius: '6px', boxShadow: '0 0 0 1px var(--blackA3)' }}
-            />
+            <div style={{ position: 'relative' }}>
+              <img
+                src={`${CLOUDFLARE_IPFS}/${event.artwork}`}
+                alt={event.name}
+                style={{
+                  borderRadius: '6px',
+                  boxShadow: '0 0 0 1px var(--blackA3)',
+                  margin: 'auto',
+                }}
+              />
+
+              <SvgIcon
+                icon={<ImageSquare />}
+                color="sand8"
+                size="l"
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  margin: 'auto',
+                  zIndex: -1,
+                }}
+              />
+            </div>
           )}
         </Grid>
       </Section>

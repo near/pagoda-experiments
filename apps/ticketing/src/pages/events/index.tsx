@@ -130,22 +130,26 @@ const Events: NextPageWithLayout = () => {
                         key={drop.drop_id}
                         root={{ disableHoverableContent: true }}
                         content={
-                          <Flex stack gap="s">
+                          <Flex stack gap="xs">
                             <Text size="text-xs" weight={600} color="sand12">
-                              {drop.drop_config.nft_keys_config.token_metadata.title || 'General Admission'}
+                              {drop.ticket.title}
                             </Text>
 
                             <Flex wrap gap="s">
                               <Text size="text-xs">
-                                Total Tickets: <b>{drop.extra?.maxSupply ?? 0}</b>
+                                Sold: <b>{drop.ticket.sold ?? 0}</b>
                               </Text>
 
                               <Text size="text-xs">
-                                Purchase Limit: <b>{drop.extra?.limitPerUser ?? 0}</b>
+                                Total: <b>{drop.ticket.extra?.maxSupply ?? 0}</b>
                               </Text>
 
                               <Text size="text-xs">
-                                Price: <b>{formatTicketPrice(drop.extra?.priceFiat)}</b>
+                                Limit: <b>{drop.ticket.extra?.limitPerUser ?? 0}</b>
+                              </Text>
+
+                              <Text size="text-xs">
+                                Price: <b>{formatTicketPrice(drop.ticket.extra?.priceFiat)}</b>
                               </Text>
                             </Flex>
                           </Flex>
@@ -154,7 +158,7 @@ const Events: NextPageWithLayout = () => {
                         <Badge
                           label={
                             <>
-                              {drop.extra?.maxSupply ?? 0} / {formatTicketPrice(drop.extra?.priceFiat)}
+                              {drop.ticket.sold ?? 0} / {drop.ticket.extra?.maxSupply ?? 0}
                             </>
                           }
                         />

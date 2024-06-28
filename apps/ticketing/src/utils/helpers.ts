@@ -14,11 +14,9 @@ import { localStorageGet } from './local-storage';
 
 export interface DateAndTimeInfo {
   startDate: number; // Milliseconds from Unix Epoch
-
-  startTime?: string; // Raw time string such as 9:00 AM
-  // For single day events, toDay is not required
+  startTime?: string; // Raw 24 hour time string such as 18:00
   endDate?: number; // Milliseconds from Unix Epoch
-  endTime?: string; // Raw time string such as 9:00 AM
+  endTime?: string; // Raw 24 hour time string such as 18:00
 }
 
 export interface TicketInfoFormMetadata {
@@ -159,8 +157,8 @@ export type FormSchema = {
   acceptNearPayments: boolean;
 
   name: string;
-  description?: { value: string; error?: string };
-  location: { value: string; error?: string };
+  description?: string;
+  location: string;
   date: string;
   eventArtwork?: FileList;
   sellable: boolean;
@@ -416,8 +414,8 @@ export const createPayload = async ({
 
     name: formData.name,
     dateCreated: Date.now().toString(),
-    description: formData?.description?.value || '',
-    location: formData.location.value,
+    description: formData?.description || '',
+    location: formData.location,
     date: {
       startDate: Date.parse(formData.date),
       startTime: formData.startTime,
@@ -460,11 +458,19 @@ export const createPayload = async ({
   for (const ticket of formData.tickets) {
     const dropId = `${Date.now().toString()}-${ticket.name.replaceAll(' ', '').toLocaleLowerCase()}`;
 
+    if (ticket.priceNear === '') {
+      ticket.priceNear = '0';
+    }
+    if (ticket.priceFiat === '') {
+      ticket.priceFiat = '0';
+      ticket.priceNear = '0';
+    }
+
     const ticketExtra: TicketMetadataExtra = {
       dateCreated: Date.now().toString(),
       // price: parseNearAmount(ticket.price)!.toString(),
-      priceNear: ticket.priceNear || '0',
-      priceFiat: ticket.priceFiat || '0',
+      priceNear: ticket.priceNear,
+      priceFiat: ticket.priceFiat,
       salesValidThrough: ticket.salesValidThrough,
       passValidThrough: ticket.passValidThrough,
       maxSupply: ticket.maxSupply,
@@ -479,13 +485,9 @@ export const createPayload = async ({
       extra: JSON.stringify(ticketExtra),
     };
 
-    if (ticket.priceNear === '') {
-      ticket.priceNear = '0';
-    }
-
     ticket_information[`${dropId}`] = {
       max_tickets: ticket.maxSupply ?? 0,
-      price: parseNearAmount(ticket.priceNear ?? '0')!.toString(),
+      price: parseNearAmount(ticket.priceNear || '0')!.toString(),
       sale_start: Date.now() || undefined,
       sale_end: Date.parse(formData.date) || undefined,
       // ------------ pattern for allowing start and end sales date individually for each ticket
