@@ -77,7 +77,7 @@ const EventDetails: NextPageWithLayout = ({ event }: InferGetServerSidePropsType
         image={event?.artwork ? `${CLOUDFLARE_IPFS}/${event.artwork}` : undefined}
       />
 
-      <Section grow="available">
+      <Section grow="available" background="primary-gradient">
         <Grid
           columns={event.artwork ? '1fr 1fr' : '1fr'}
           columnsTablet="1fr"
