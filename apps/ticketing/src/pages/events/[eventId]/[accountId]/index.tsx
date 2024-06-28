@@ -84,7 +84,7 @@ const YourTickets: NextPageWithLayout = () => {
   };
 
   if (!event.data) {
-    return <PlaceholderSection />;
+    return <PlaceholderSection background="primary-gradient" />;
   }
 
   return (
@@ -95,6 +95,7 @@ const YourTickets: NextPageWithLayout = () => {
 
       <Section
         grow="available"
+        background="primary-gradient"
         style={{
           padding: 0,
         }}
@@ -125,6 +126,8 @@ const YourTickets: NextPageWithLayout = () => {
               </Tooltip>
             </Flex>
 
+            <HR style={{ margin: 0 }} />
+
             <Grid columns="2fr 1fr" align="center">
               <Flex stack gap="xs">
                 <Text size="text-s" color="sand12" weight={600}>
@@ -151,9 +154,15 @@ const YourTickets: NextPageWithLayout = () => {
               )}
             </Grid>
 
-            <HR style={{ margin: 0 }} />
-
             <Flex data-html2canvas-ignore stretch wrap>
+              <AddToAppleWallet
+                href={`/api/apple-wallet/generate-event-pass?accountId=${accountId}&eventId=${formatEventIdQueryParam(publisherAccountId, eventId)}`}
+              />
+
+              <AddToGoogleWallet
+                href={`/api/google-wallet/generate-event-pass?accountId=${accountId}&eventId=${formatEventIdQueryParam(publisherAccountId, eventId)}`}
+              />
+
               <Tooltip
                 content="Save your tickets to your device to access them offline"
                 asChild
@@ -163,20 +172,11 @@ const YourTickets: NextPageWithLayout = () => {
                   icon={<DownloadSimple />}
                   label="Download"
                   size="small"
-                  variant="primary"
-                  fill="outline"
+                  variant="affirmative"
                   onClick={downloadTickets}
-                  style={{ marginRight: 'auto' }}
+                  style={{ marginLeft: 'auto' }}
                 />
               </Tooltip>
-
-              <AddToAppleWallet
-                href={`/api/apple-wallet/generate-event-pass?accountId=${accountId}&eventId=${formatEventIdQueryParam(publisherAccountId, eventId)}`}
-              />
-
-              <AddToGoogleWallet
-                href={`/api/google-wallet/generate-event-pass?accountId=${accountId}&eventId=${formatEventIdQueryParam(publisherAccountId, eventId)}`}
-              />
             </Flex>
 
             <Flex stack>
