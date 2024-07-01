@@ -28,7 +28,7 @@ import type { EventAccount, NextPageWithLayout } from '@/utils/types';
 
 const TICKETS_DOM_ID = 'tickets';
 
-const PurchasedTickets: NextPageWithLayout = () => {
+const YourTickets: NextPageWithLayout = () => {
   const router = useRouter();
   const { publisherAccountId, eventId } = parseEventIdQueryParam(router.query.eventId);
   const accountId = router.query.accountId as string;
@@ -84,7 +84,7 @@ const PurchasedTickets: NextPageWithLayout = () => {
   };
 
   if (!event.data) {
-    return <PlaceholderSection />;
+    return <PlaceholderSection background="primary-gradient" />;
   }
 
   return (
@@ -95,6 +95,7 @@ const PurchasedTickets: NextPageWithLayout = () => {
 
       <Section
         grow="available"
+        background="primary-gradient"
         style={{
           padding: 0,
         }}
@@ -125,6 +126,8 @@ const PurchasedTickets: NextPageWithLayout = () => {
               </Tooltip>
             </Flex>
 
+            <HR style={{ margin: 0 }} />
+
             <Grid columns="2fr 1fr" align="center">
               <Flex stack gap="xs">
                 <Text size="text-s" color="sand12" weight={600}>
@@ -146,14 +149,20 @@ const PurchasedTickets: NextPageWithLayout = () => {
                 <img
                   src={`${CLOUDFLARE_IPFS}/${event.data.artwork}`}
                   alt={event.data.name}
-                  style={{ borderRadius: '6px' }}
+                  style={{ borderRadius: '6px', boxShadow: '0 0 0 1px var(--blackA3)' }}
                 />
               )}
             </Grid>
 
-            <HR style={{ margin: 0 }} />
-
             <Flex data-html2canvas-ignore stretch wrap>
+              <AddToAppleWallet
+                href={`/api/apple-wallet/generate-event-pass?accountId=${accountId}&eventId=${formatEventIdQueryParam(publisherAccountId, eventId)}`}
+              />
+
+              <AddToGoogleWallet
+                href={`/api/google-wallet/generate-event-pass?accountId=${accountId}&eventId=${formatEventIdQueryParam(publisherAccountId, eventId)}`}
+              />
+
               <Tooltip
                 content="Save your tickets to your device to access them offline"
                 asChild
@@ -163,20 +172,11 @@ const PurchasedTickets: NextPageWithLayout = () => {
                   icon={<DownloadSimple />}
                   label="Download"
                   size="small"
-                  variant="primary"
-                  fill="outline"
+                  variant="affirmative"
                   onClick={downloadTickets}
-                  style={{ marginRight: 'auto' }}
+                  style={{ marginLeft: 'auto' }}
                 />
               </Tooltip>
-
-              <AddToAppleWallet
-                href={`/api/apple-wallet/generate-event-pass?accountId=${accountId}&eventId=${formatEventIdQueryParam(publisherAccountId, eventId)}`}
-              />
-
-              <AddToGoogleWallet
-                href={`/api/google-wallet/generate-event-pass?accountId=${accountId}&eventId=${formatEventIdQueryParam(publisherAccountId, eventId)}`}
-              />
             </Flex>
 
             <Flex stack>
@@ -191,7 +191,7 @@ const PurchasedTickets: NextPageWithLayout = () => {
                     />
 
                     <Flex stack style={{ textAlign: 'center' }} align="center">
-                      <SvgIcon icon={<Ticket weight="thin" />} color="sand10" size="m" />
+                      <SvgIcon icon={<Ticket weight="duotone" />} color="sand10" size="m" />
 
                       <Flex stack gap="s">
                         <Text size="text-xs" weight={600}>
@@ -216,6 +216,6 @@ const PurchasedTickets: NextPageWithLayout = () => {
   );
 };
 
-PurchasedTickets.getLayout = useDefaultLayout;
+YourTickets.getLayout = useDefaultLayout;
 
-export default PurchasedTickets;
+export default YourTickets;

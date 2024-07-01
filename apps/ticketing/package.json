@@ -30,6 +30,7 @@
     "html2canvas": "^1.4.1",
     "jsonwebtoken": "^9.0.2",
     "jszip": "^3.10.1",
+    "luxon": "^3.4.4",
     "near-api-js": "2.1.4",
     "next": "^14",
     "qr-scanner": "^1.4.2",
@@ -43,6 +44,7 @@
   "devDependencies": {
     "@svgr/webpack": "^8.1.0",
     "@types/jsonwebtoken": "^9.0.6",
+    "@types/luxon": "^3.4.2",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

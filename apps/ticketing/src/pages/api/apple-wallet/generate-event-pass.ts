@@ -122,7 +122,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       pass.secondaryFields.add({
         key: 'ticket',
         label: 'Ticket',
-        value: `${account.tickets.length > 1 ? `${i + 1} of ${account.tickets.length} - ` : ''}${ticket.tier ?? 'General Admission'}`,
+        value: `${account.tickets.length > 1 ? `${i + 1} of ${account.tickets.length} - ` : ''}${ticket.tier}`,
       });
 
       if (formattedEventDate) {

@@ -7,8 +7,9 @@ import s from './Section.module.scss';
 
 export type ContainerSize = 'xs' | 's' | 'm' | 'l';
 
-type Props = {
-  children: ReactNode;
+export type SectionProps = {
+  background?: 'primary-gradient';
+  children?: ReactNode;
   className?: string;
   id?: string;
   gap?: ThemeGap;
@@ -16,9 +17,9 @@ type Props = {
   style?: CSSProperties;
 };
 
-export const Section = ({ children, className = '', gap = 'l', grow, ...props }: Props) => {
+export const Section = ({ background, children, className = '', gap = 'l', grow, ...props }: SectionProps) => {
   return (
-    <section className={`${s.section} ${className}`} data-grow={grow} {...props}>
+    <section className={`${s.section} ${className}`} data-background={background} data-grow={grow} {...props}>
       <Container>
         <Flex stack gap={gap}>
           {children}

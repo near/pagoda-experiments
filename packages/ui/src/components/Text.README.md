@@ -6,7 +6,7 @@ import { Text } from '@pagoda/ui/src/components/Text';
 ...
 
 <Text>My Text</Text>
-<Text color="violet8" weight={700}>My Text</Text>
+<Text color="violet8" weight={600}>My Text</Text>
 <Text size="text-xs">My Text</Text>
 <Text as="h1">My Text</Text>
 <Text as="h2" size="text-s" color="red8">My Text</Text>

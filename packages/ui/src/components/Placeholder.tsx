@@ -3,7 +3,7 @@ import { CSSProperties } from 'react';
 import { Card } from './Card';
 import { Container } from './Container';
 import s from './Placeholder.module.scss';
-import { Section } from './Section';
+import { Section, SectionProps } from './Section';
 
 type Props = {
   style?: CSSProperties;
@@ -23,7 +23,7 @@ export const PlaceholderCard = (props: Props) => {
   );
 };
 
-export const PlaceholderSection = (props: Props) => {
+export const PlaceholderSection = (props: SectionProps) => {
   return (
     <Section grow="available" {...props}>
       <Container

@@ -4,8 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import { useNearStore } from '@/stores/near';
 import { KEYPOM_EVENTS_CONTRACT_ID } from '@/utils/common';
 import { EventDrop, TicketMetadataExtra } from '@/utils/helpers';
+import { validateDateAndTime } from '@/utils/time';
 
 const DROP_ITEMS_PER_QUERY = 5;
+
+export type DropsByEventId = NonNullable<Awaited<ReturnType<typeof useDrops>>['data']>;
 
 export function useDrops(accountId: string | undefined) {
   const viewAccount = useNearStore((store) => store.viewAccount);
@@ -41,18 +44,43 @@ export function useDrops(accountId: string | undefined) {
               },
             });
 
-            const mappedDrops = drops.map((drop) => {
-              let extra: TicketMetadataExtra | undefined;
+            const mappedDrops = await Promise.all(
+              drops.map(async (drop) => {
+                const sold: number = await viewAccount!.viewFunction({
+                  contractId: KEYPOM_EVENTS_CONTRACT_ID,
+                  methodName: 'get_key_supply_for_drop',
+                  args: { drop_id: drop.drop_id },
+                });
 
-              if (drop.drop_config.nft_keys_config.token_metadata.extra) {
-                extra = JSON.parse(drop.drop_config.nft_keys_config.token_metadata.extra) as TicketMetadataExtra;
-              }
+                let extra: TicketMetadataExtra | undefined;
 
-              return {
-                ...drop,
-                extra: extra,
-              };
-            });
+                if (drop.drop_config.nft_keys_config.token_metadata.extra) {
+                  extra = JSON.parse(drop.drop_config.nft_keys_config.token_metadata.extra) as TicketMetadataExtra;
+                }
+
+                const metadata = drop.drop_config.nft_keys_config.token_metadata;
+
+                const validatedSellThrough = extra?.salesValidThrough
+                  ? validateDateAndTime(extra.salesValidThrough)
+                  : {
+                      message: '',
+                      valid: true,
+                    };
+
+                return {
+                  ...drop,
+                  ticket: {
+                    title: metadata.title || 'General Admission',
+                    description: metadata.description,
+                    artwork: metadata.artwork,
+                    extra: extra,
+                    remaining: Math.max(0, (extra?.maxSupply || 0) - sold),
+                    sold,
+                    validatedSellThrough,
+                  },
+                };
+              }),
+            );
 
             return mappedDrops;
           }),
@@ -62,7 +90,7 @@ export function useDrops(accountId: string | undefined) {
         const dropsByEventId: Record<string, typeof allDrops> = {};
 
         allDrops.forEach((drop) => {
-          const eventId = drop.extra?.eventId;
+          const eventId = drop.ticket.extra?.eventId;
           if (eventId) {
             dropsByEventId[eventId] ??= [];
             dropsByEventId[eventId]!.push(drop);

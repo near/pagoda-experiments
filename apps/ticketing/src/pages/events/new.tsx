@@ -6,6 +6,7 @@ import { Container } from '@pagoda/ui/src/components/Container';
 import { Flex } from '@pagoda/ui/src/components/Flex';
 import { Form } from '@pagoda/ui/src/components/Form';
 import { Input } from '@pagoda/ui/src/components/Input';
+import { InputTextarea } from '@pagoda/ui/src/components/InputTextarea';
 import { Section } from '@pagoda/ui/src/components/Section';
 import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
 import { Text } from '@pagoda/ui/src/components/Text';
@@ -18,7 +19,6 @@ import {
   CurrencyDollar,
   HashStraight,
   MapPinArea,
-  Note,
   Plus,
   Tag,
   Ticket,
@@ -103,9 +103,12 @@ const CreateEvent: NextPageWithLayout = () => {
           ticketArtworkCids,
         });
 
-        if (actions && eventId) {
-          localStorage.setItem('EVENT_INFO_SUCCESS_DATA', JSON.stringify({ eventId }));
-        }
+        // Commented out local storage set for now. Not sure if we need it...
+        // if (actions && eventId) {
+        //   localStorage.setItem('EVENT_INFO_SUCCESS_DATA', JSON.stringify({ eventId }));
+        // }
+
+        console.log(actions);
 
         await wallet.signAndSendTransaction({
           signerId: wallet.id,
@@ -131,12 +134,7 @@ const CreateEvent: NextPageWithLayout = () => {
         <title>Create New Event</title>
       </Head>
 
-      <Section
-        grow="available"
-        style={{
-          background: 'linear-gradient(to bottom right, var(--violet4), var(--cyan3))',
-        }}
-      >
+      <Section background="primary-gradient" grow="available">
         <Container size="s" style={{ margin: 'auto' }}>
           <Form onSubmit={form.handleSubmit(onValidSubmit)}>
             <Flex stack gap="l">
@@ -159,9 +157,8 @@ const CreateEvent: NextPageWithLayout = () => {
                     })}
                   />
 
-                  <Input
+                  <InputTextarea
                     label="Description"
-                    iconLeft={<Note />}
                     error={form.formState.errors.description?.message}
                     {...form.register('description')}
                   />
@@ -240,8 +237,8 @@ const CreateEvent: NextPageWithLayout = () => {
                         number={{
                           allowNegative: false,
                         }}
-                        error={form.formState.errors.tickets?.[index]?.priceNear?.message}
-                        {...form.register(`tickets.${index}.priceNear`, { min: 0 })}
+                        error={form.formState.errors.tickets?.[index]?.priceFiat?.message}
+                        {...form.register(`tickets.${index}.priceFiat`, { min: 0 })}
                       />
 
                       <Input
@@ -257,6 +254,7 @@ const CreateEvent: NextPageWithLayout = () => {
                           valueAsNumber: true,
                         })}
                       />
+
                       <Input
                         label="Quantity Limit"
                         iconLeft={<HashStraight />}
