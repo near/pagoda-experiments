@@ -9,6 +9,7 @@ import { Input } from '@pagoda/ui/src/components/Input';
 import { InputTextarea } from '@pagoda/ui/src/components/InputTextarea';
 import { Section } from '@pagoda/ui/src/components/Section';
 import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
+import { Switch } from '@pagoda/ui/src/components/Switch';
 import { Text } from '@pagoda/ui/src/components/Text';
 import { openToast } from '@pagoda/ui/src/components/Toast';
 import { Tooltip } from '@pagoda/ui/src/components/Tooltip';
@@ -26,23 +27,102 @@ import {
 } from '@phosphor-icons/react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 
 import { FilePreviews } from '@/components/FilePreviews';
 import { useProducerLayout } from '@/hooks/useLayout';
+import { useStripe } from '@/hooks/useStripe';
+import { useNearStore } from '@/stores/near';
+import { useStripeStore } from '@/stores/stripe';
 import { useWalletStore } from '@/stores/wallet';
-import { EVENTS_WORKER_BASE, KEYPOM_EVENTS_CONTRACT_ID } from '@/utils/common';
+import { EVENTS_WORKER_BASE, KEYPOM_EVENTS_CONTRACT_ID, KEYPOM_MARKETPLACE_CONTRACT_ID } from '@/utils/common';
 import { createPayload, FormSchema, serializeMediaForWorker, TicketInfoFormMetadata } from '@/utils/helpers';
 import { NextPageWithLayout } from '@/utils/types';
 
 const CreateEvent: NextPageWithLayout = () => {
-  const wallet = useWalletStore((state) => state.wallet);
-  const account = useWalletStore((state) => state.account);
+  const wallet = useWalletStore((store) => store.wallet);
+  const account = useWalletStore((store) => store.account);
+  const viewAccount = useNearStore((store) => store.viewAccount);
+  const [attemptToConnect, setAttemptToConnect] = useState(false);
+  const [uploadingToStripe, setUploadingToStripe] = useState(false);
+  const checkForPriorStripeConnected = useStripeStore((store) => store.checkForPriorStripeConnected);
+  const stripeAccountId = useStripeStore((store) => store.stripeAccountId);
   const router = useRouter();
-  const [stripeCheckout] = useState(false);
+  useStripe(account?.accountId, attemptToConnect);
+  // check for successMessage query string from router
+  const successMessage = router.query.successMessage;
 
-  const form = useForm<FormSchema>();
+  // check for stripe account id in local storage
+  useEffect(() => {
+    checkForPriorStripeConnected(account?.accountId);
+  }, [account, checkForPriorStripeConnected]);
+
+  // check for successMessage query string from router
+  useEffect(() => {
+    if (successMessage) {
+      checkForPriorStripeConnected(account?.accountId);
+    }
+  }, [successMessage, account, checkForPriorStripeConnected]);
+
+  useEffect(() => {
+    const checkForEventCreationSuccess = async () => {
+      const eventData = localStorage.getItem('EVENT_INFO_SUCCESS_DATA');
+      if (eventData) {
+        if (eventData && viewAccount) {
+          const { eventId, eventName, stripeAccountId, priceByDropId } = JSON.parse(eventData);
+          let response: Response | undefined;
+          try {
+            await viewAccount.viewFunction({
+              contractId: KEYPOM_MARKETPLACE_CONTRACT_ID,
+              methodName: 'get_event_information',
+              args: { event_id: eventId },
+            });
+
+            const url = `${EVENTS_WORKER_BASE}/stripe/create-event`;
+            const body = {
+              priceByDropId,
+              stripeAccountId,
+              eventId,
+              eventName,
+            };
+
+            response = await fetch(url, {
+              method: 'POST',
+              body: JSON.stringify(body),
+            });
+
+            if (response.ok) {
+              openToast({
+                type: 'success',
+                title: 'Event Uploaded to Stripe',
+              });
+            }
+            setUploadingToStripe(false);
+          } catch (e) {
+            console.error('Error uploading to stripe: ', e);
+            handleClientError({
+              title: 'Error Uploading to Stripe',
+              error: e,
+            });
+          }
+          setUploadingToStripe(false);
+
+          localStorage.removeItem('EVENT_INFO_SUCCESS_DATA');
+        }
+      }
+    };
+    checkForEventCreationSuccess();
+  }, [viewAccount]);
+
+  // TODO check local storage for stripe account id
+
+  const form = useForm<FormSchema>({
+    defaultValues: {
+      acceptNearPayments: true,
+      acceptStripePayments: stripeAccountId ? true : false,
+    },
+  });
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'tickets',
@@ -56,10 +136,14 @@ const CreateEvent: NextPageWithLayout = () => {
 
   const onValidSubmit: SubmitHandler<FormSchema> = async (formData) => {
     try {
-      if (stripeCheckout) {
+      // TODO: fix accept stripe payments watcher from on to true
+      if (formData.acceptStripePayments && stripeAccountId) {
+        formData.acceptStripePayments = true;
+      }
+
+      if (!formData.acceptStripePayments || !stripeAccountId) {
         //set stripe account info when using stripe
-      } else {
-        (formData.stripeAccountId = ''), (formData.acceptNearPayments = false);
+        formData.stripeAccountId = '';
         formData.acceptStripePayments = false;
       }
 
@@ -84,6 +168,11 @@ const CreateEvent: NextPageWithLayout = () => {
         console.error('Failed to pin media on IPFS', error);
       }
 
+      // const testCids = [
+      //   'bafybeicjhlpijcsxcgsokdgjc3slgmna5ditnnx6hny4hlq6zgrhzictie',
+      //   'bafybeieaibg47unt4ywrqxgczevebze7uga2bupl2e33ot6sxnt2yl2k44',
+      // ];
+
       if (ipfsResponse?.ok) {
         const resBody = await ipfsResponse.json();
         const cids: string[] = resBody.cids;
@@ -95,7 +184,7 @@ const CreateEvent: NextPageWithLayout = () => {
         }
 
         const eventId = Date.now().toString();
-        const { actions }: { actions: Action[]; dropIds: string[] } = await createPayload({
+        const { actions, dropIds }: { actions: Action[]; dropIds: string[] } = await createPayload({
           accountId: account.accountId,
           formData,
           eventId,
@@ -103,12 +192,33 @@ const CreateEvent: NextPageWithLayout = () => {
           ticketArtworkCids,
         });
 
-        // Commented out local storage set for now. Not sure if we need it...
-        // if (actions && eventId) {
-        //   localStorage.setItem('EVENT_INFO_SUCCESS_DATA', JSON.stringify({ eventId }));
-        // }
+        // set stripe account info when using stripe
 
-        console.log(actions);
+        if (formData.acceptStripePayments && stripeAccountId) {
+          const priceByDropId: Record<string, number> = {};
+          for (let i = 0; i < formData.tickets.length; i++) {
+            const ticketDropId = dropIds[i];
+            // const priceCents = Math.round(parseFloat(formData.tickets[i].priceFiat) * formData.nearPrice! * 100);
+            if (formData.tickets[i]?.priceFiat) {
+              priceByDropId[ticketDropId || `${eventId}-${i}`] = Math.round(
+                parseFloat(formData.tickets[i]?.priceFiat || ''),
+              );
+            }
+            {
+              priceByDropId[ticketDropId || `${eventId}-${i}`] = 0;
+            }
+          }
+          const stripeAccountInfo = {
+            stripeAccountId,
+            eventId,
+            eventName: formData.name,
+            priceByDropId,
+          };
+
+          localStorage.setItem('EVENT_INFO_SUCCESS_DATA', JSON.stringify(stripeAccountInfo));
+        } else {
+          localStorage.setItem('EVENT_INFO_SUCCESS_DATA', JSON.stringify({ eventId }));
+        }
 
         await wallet.signAndSendTransaction({
           signerId: wallet.id,
@@ -121,10 +231,24 @@ const CreateEvent: NextPageWithLayout = () => {
           title: 'Event Created',
         });
 
-        router.push('/events');
+        if (formData.acceptStripePayments && stripeAccountId) {
+          openToast({
+            type: 'success',
+            title: 'Uploading to Stripe',
+            description: 'Please wait while we upload your event to Stripe',
+          });
+          setUploadingToStripe(true);
+        }
       }
     } catch (error) {
       handleClientError({ title: 'Event Creation Failed', error });
+    }
+  };
+
+  const handleConnectStripe = async () => {
+    const prevConnection = await checkForPriorStripeConnected(account?.accountId);
+    if (prevConnection === null) {
+      setAttemptToConnect(true);
     }
   };
 
@@ -144,6 +268,52 @@ const CreateEvent: NextPageWithLayout = () => {
                 <Text as="h3" style={{ marginRight: 'auto' }}>
                   Create New Event
                 </Text>
+              </Flex>
+
+              <Flex stack>
+                <Card>
+                  <Text size="text-xs" weight={600} color="sand12">
+                    Payemnt Options
+                  </Text>
+                  <Flex justify="start">
+                    <Text>Accept Near Payments</Text>
+                    <Switch
+                      disabled={stripeAccountId ? false : true}
+                      checked={form.watch('acceptNearPayments')}
+                      onClick={() => {
+                        form.setValue('acceptNearPayments', !form.watch('acceptNearPayments'));
+                      }}
+                      {...form.register('acceptNearPayments')}
+                    />
+                    <span className="slider"></span>
+                  </Flex>
+                  <Flex justify="start">
+                    <Text>Accept Stripe Payments</Text>
+                    {stripeAccountId ? (
+                      <>
+                        <Switch
+                          disabled={stripeAccountId ? false : true}
+                          checked={form.watch('acceptStripePayments')}
+                          onClick={() => {
+                            form.setValue('acceptStripePayments', !form.watch('acceptStripePayments'));
+                          }}
+                          {...form.register('acceptStripePayments')}
+                        />
+                      </>
+                    ) : (
+                      <Button
+                        variant="primary"
+                        label="Connect Stripe Account"
+                        fill="outline"
+                        size="small"
+                        onClick={handleConnectStripe}
+                      />
+                    )}
+                  </Flex>
+                  <Flex justify="center">
+                    {stripeAccountId ? <Text size={'text-xs'}>connected to: {`${stripeAccountId}`}</Text> : null}
+                  </Flex>
+                </Card>
               </Flex>
 
               <Flex stack>
@@ -231,7 +401,7 @@ const CreateEvent: NextPageWithLayout = () => {
 
                     <Flex stack="phone">
                       <Input
-                        label="Ticket Price"
+                        label="Ticket Price (USD)"
                         placeholder="Free"
                         iconLeft={<CurrencyDollar />}
                         number={{
@@ -316,7 +486,7 @@ const CreateEvent: NextPageWithLayout = () => {
                   variant="affirmative"
                   label="Create Event"
                   iconRight={<ArrowRight />}
-                  loading={form.formState.isSubmitting}
+                  loading={form.formState.isSubmitting || uploadingToStripe}
                 />
               </Flex>
             </Flex>
