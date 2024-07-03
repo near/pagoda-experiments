@@ -26,9 +26,9 @@ export const EVENTS_WORKER_IPFS_PINNING =
     ? 'https://stripe-worker-production.keypom.workers.dev/ipfs-pin'
     : 'https://stripe-worker.keypom.workers-dev.dev/ipfs-pin';
 export const EVENTS_WORKER_BASE =
-  NETWORK_ID === 'mainnet'
+  process.env.REACT_APP_NETWORK_ID === 'mainnet'
     ? 'https://stripe-worker-production.keypom.workers.dev'
-    : 'https://stripe-worker-dev.keypom.workers.dev';
+    : 'https://stripe-worker-template.keypom.workers.dev';
 export const EMAIL_WORKER_BASE = 'https://email-worker.keypom.workers.dev';
 
 export const KEYPOM_GLOBAL_SIGNING_KEYS = [
