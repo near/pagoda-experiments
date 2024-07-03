@@ -4,13 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNearStore } from '@/stores/near';
 import { useStripeStore } from '@/stores/stripe';
 import { EVENTS_WORKER_BASE, KEYPOM_MARKETPLACE_CONTRACT_ID } from '@/utils/common';
-
-function uuidv4() {
-  if (crypto === undefined) return;
-  return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c) =>
-    (+c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))).toString(16),
-  );
-}
+import { uuidv4 } from '@/utils/crypto-helpers';
 
 export function useStripe(accountId: string | undefined, stripeCheckout: boolean) {
   const viewAccount = useNearStore((store) => store.viewAccount);

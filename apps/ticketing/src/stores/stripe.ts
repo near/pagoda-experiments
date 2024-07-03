@@ -5,6 +5,7 @@ import { create } from 'zustand';
 import { EVENTS_WORKER_BASE, KEYPOM_MARKETPLACE_CONTRACT_ID } from '@/utils/common';
 
 import { useNearStore } from './near';
+import { uuidv4 } from '@/utils/crypto-helpers';
 
 type StripeStore = {
   stripeAccountId: string | null;
@@ -16,13 +17,6 @@ type StripeStore = {
 
   useStripe: (accountId: string | undefined, attemptToConnect: boolean) => void;
 };
-
-function uuidv4() {
-  if (crypto === undefined) return;
-  return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c) =>
-    (+c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))).toString(16),
-  );
-}
 
 export const useStripeStore = create<StripeStore>((set) => ({
   stripeAccountId: null,
