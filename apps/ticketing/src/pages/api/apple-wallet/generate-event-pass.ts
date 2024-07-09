@@ -161,6 +161,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       https://developer.apple.com/documentation/walletpasses/distributing_and_updating_a_pass#3793284
     */
 
+    // 'require' is necessary here because these API routes load in the Edge VM runtime
     const zip = require('jszip');
 
     for (const pass of passes) {
@@ -176,3 +177,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(500).send(undefined);
   }
 }
+
+export const runtime = 'edge';
