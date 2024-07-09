@@ -9,14 +9,11 @@
 */
 
 import { Template } from '@walletpass/pass-js';
-import JSZip from 'JSZip';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { resolve } from 'path';
 
-import { APPLE_WALLET_CERTIFICATE_PASSWORD, HOSTNAME } from '@/utils/config';
+import { APPLE_WALLET_CERTIFICATE_PASSWORD, APPLE_WALLET_CERTIFICATE_PEM, HOSTNAME } from '@/utils/config';
 import { EventAccount, EventDetails } from '@/utils/types';
-
-const certificatePath = resolve('./secrets/pass.com.pagoda.ticketing.pem');
 
 const template = new Template('eventTicket', {
   passTypeIdentifier: 'pass.com.pagoda.ticketing',
@@ -78,7 +75,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ],
     };
 
-    await template.loadCertificate(certificatePath, APPLE_WALLET_CERTIFICATE_PASSWORD);
+    if (APPLE_WALLET_CERTIFICATE_PEM) {
+      template.setCertificate(APPLE_WALLET_CERTIFICATE_PEM, APPLE_WALLET_CERTIFICATE_PASSWORD);
+    } else {
+      const certificatePath = resolve('./secrets/pass.com.pagoda.ticketing.pem');
+      await template.loadCertificate(certificatePath, APPLE_WALLET_CERTIFICATE_PASSWORD);
+    }
 
     // TODO: Pull in dynamic images from event
     const logo1x = await imageBufferFromUrl(`${HOSTNAME}/images/apple-wallet/logo@1x.png`);
@@ -162,7 +164,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       https://developer.apple.com/documentation/walletpasses/distributing_and_updating_a_pass#3793284
     */
 
-    const zip = new JSZip();
+    const zip = require('jszip');
 
     for (const pass of passes) {
       const buffer = await pass.asBuffer();

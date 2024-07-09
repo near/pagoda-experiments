@@ -1,10 +1,10 @@
 import { handleClientError } from '@pagoda/ui/src/utils/error';
 import { useQuery } from '@tanstack/react-query';
+import { v4 as uuidv4 } from 'uuid';
 
 import { useNearStore } from '@/stores/near';
 import { useStripeStore } from '@/stores/stripe';
 import { EVENTS_WORKER_BASE, KEYPOM_MARKETPLACE_CONTRACT_ID } from '@/utils/common';
-import { uuidv4 } from '@/utils/crypto-helpers';
 
 export function useStripe(accountId: string | undefined, stripeCheckout: boolean) {
   const viewAccount = useNearStore((store) => store.viewAccount);

@@ -1,11 +1,11 @@
 import { handleClientError } from '@pagoda/ui/src/utils/error';
 import { useQuery } from '@tanstack/react-query';
+import { v4 as uuidv4 } from 'uuid';
 import { create } from 'zustand';
 
 import { EVENTS_WORKER_BASE, KEYPOM_MARKETPLACE_CONTRACT_ID } from '@/utils/common';
 
 import { useNearStore } from './near';
-import { uuidv4 } from '@/utils/crypto-helpers';
 
 type StripeStore = {
   stripeAccountId: string | null;
