@@ -9,7 +9,6 @@
 */
 
 import { Template } from '@walletpass/pass-js';
-import JSZip from 'JSZip';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { resolve } from 'path';
 
@@ -162,7 +161,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       https://developer.apple.com/documentation/walletpasses/distributing_and_updating_a_pass#3793284
     */
 
-    const zip = new JSZip();
+    const zip = require('jszip');
 
     for (const pass of passes) {
       const buffer = await pass.asBuffer();
