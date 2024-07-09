@@ -3,7 +3,7 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "target": "ES6",
     "noEmit": true,
-    "module": "esnext",
+    "module": "preserve",
     "moduleResolution": "bundler",
     "jsx": "preserve",
     "resolveJsonModule": true,
