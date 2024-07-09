@@ -188,3 +188,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(500).send(undefined);
   }
 }
+
+export const runtime = 'edge';
