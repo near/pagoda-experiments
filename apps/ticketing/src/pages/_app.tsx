@@ -29,7 +29,6 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
       <QueryClientProvider client={queryClient}>
         <Head>
           <link rel="icon" href="favicon.ico" />
-          <link rel="manifest" href="manifest.json" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <title>Ticketing</title>
         </Head>
