@@ -97,6 +97,7 @@ const CreateEvent: NextPageWithLayout = () => {
                 type: 'success',
                 title: 'Event Uploaded to Stripe',
               });
+              router.push('/events');
             }
             setUploadingToStripe(false);
           } catch (e) {
@@ -113,7 +114,7 @@ const CreateEvent: NextPageWithLayout = () => {
       }
     };
     checkForEventCreationSuccess();
-  }, [viewAccount]);
+  }, [router, viewAccount]);
 
   // TODO check local storage for stripe account id
 
@@ -238,6 +239,8 @@ const CreateEvent: NextPageWithLayout = () => {
             description: 'Please wait while we upload your event to Stripe',
           });
           setUploadingToStripe(true);
+        } else {
+          router.push('/events');
         }
       }
     } catch (error) {

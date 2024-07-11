@@ -176,8 +176,7 @@ export const dateAndTimeToText = (date: DateAndTimeInfo, placeholder = '') => {
 };
 
 const getTimeAsMinutes = (timeString: string) => {
-  // Assuming the format is 'h:mm a', e.g., '9:00 AM'
-  console.log(timeString);
-  const time = DateTime.fromFormat(timeString, 'h:mm a');
+  // Assuming the format is 'hh:mm', e.g., '14:00' would be 2pm
+  const time = DateTime.fromFormat(timeString, 'hh:mm');
   return time.hour * 60 + (time.minute as number);
 };

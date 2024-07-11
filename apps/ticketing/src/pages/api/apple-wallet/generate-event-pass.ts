@@ -9,11 +9,13 @@
 */
 
 import { Template } from '@walletpass/pass-js';
+import JSZip from 'jszip';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { resolve } from 'path';
 
 import { APPLE_WALLET_CERTIFICATE_PASSWORD, APPLE_WALLET_CERTIFICATE_PEM, HOSTNAME } from '@/utils/config';
-import { EventAccount, EventDetails } from '@/utils/types';
+import { displayEventDate } from '@/utils/date';
+import { decodeEventDataForWallet } from '@/utils/wallet';
 
 const template = new Template('eventTicket', {
   passTypeIdentifier: 'pass.com.pagoda.ticketing',
@@ -29,51 +31,7 @@ async function imageBufferFromUrl(url: string) {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const accountId = req.query.accountId as string;
-    const eventId = req.query.eventId as string;
-
-    // TODO: Fetch event data for eventId
-    // TODO: Fetch ticket data for accountId (public key)
-    console.log('Generating event passes for Apple Wallet...', { accountId, eventId });
-
-    const event: EventDetails = {
-      id: '1',
-      name: 'Some Cool Event Name',
-      location: '1234 W Cool St, Denver, CO',
-      date: '2024-10-14',
-      startTime: '19:00',
-      endTime: '22:00',
-      description:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-      imageUrl: `${HOSTNAME}/images/hero-background.jpg`,
-      links: {
-        facebook: 'https://facebook.com',
-        website: 'https://google.com',
-        x: 'https://x.com',
-        youTube: 'https://youtube.com',
-      },
-      tickets: {
-        available: 20,
-        sold: 30,
-        total: 50,
-      },
-      ticketPrice: 10,
-      ticketQuantityLimit: 3,
-    };
-
-    const account: EventAccount = {
-      id: '1',
-      tickets: [
-        {
-          id: 'a0fd96f4-12a5-4a92-882d-7b68609f8420', // Random, dummy UUID
-          tier: 'Premium Seating',
-        },
-        {
-          id: 'd7d2fc4e-c978-4b0d-93b1-3e57de9c92aa', // Random, dummy UUID
-          tier: 'General Admission',
-        },
-      ],
-    };
+    const { event, tickets } = decodeEventDataForWallet(req.query.data as string);
 
     if (APPLE_WALLET_CERTIFICATE_PEM) {
       template.setCertificate(APPLE_WALLET_CERTIFICATE_PEM, APPLE_WALLET_CERTIFICATE_PASSWORD);
@@ -82,7 +40,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await template.loadCertificate(certificatePath, APPLE_WALLET_CERTIFICATE_PASSWORD);
     }
 
-    // TODO: Pull in dynamic images from event
+    /*
+      NOTE: The Apple Wallet SDK is extremely picky when it comes to image dimensions, resolutions, 
+      and types. For now we'll stick with using hardcoded placeholder images instead of using 
+      the uploaded event/ticket artwork.
+    */
+
     const logo1x = await imageBufferFromUrl(`${HOSTNAME}/images/apple-wallet/logo@1x.png`);
     const logo2x = await imageBufferFromUrl(`${HOSTNAME}/images/apple-wallet/logo@2x.png`);
     const logo3x = await imageBufferFromUrl(`${HOSTNAME}/images/apple-wallet/logo@3x.png`);
@@ -93,18 +56,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const thumbnail2x = await imageBufferFromUrl(`${HOSTNAME}/images/apple-wallet/thumbnail@2x.png`);
     const thumbnail3x = await imageBufferFromUrl(`${HOSTNAME}/images/apple-wallet/thumbnail@3x.png`);
 
-    // TODO: const formattedEventDate = displayEventDate(event);
-    const formattedEventDate = undefined;
+    const formattedEventDate = displayEventDate(event);
 
-    const passes = account.tickets.map((ticket, i) => {
+    const passes = tickets.map((ticket, i) => {
       const pass = template.createPass({
         description: event.name,
         organizationName: 'Ticketing',
         logoText: 'Ticketing',
-        serialNumber: ticket.id,
+        serialNumber: ticket.secretKey,
         barcodes: [
           {
-            message: ticket.id,
+            message: ticket.secretKey,
             format: 'PKBarcodeFormatQR',
             messageEncoding: 'iso-8859-1',
           },
@@ -124,23 +86,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       pass.secondaryFields.add({
         key: 'ticket',
         label: 'Ticket',
-        value: `${account.tickets.length > 1 ? `${i + 1} of ${account.tickets.length} - ` : ''}${ticket.tier}`,
+        value: `${tickets.length > 1 ? `${i + 1} of ${tickets.length} - ` : ''}${ticket.title}`,
       });
 
-      if (formattedEventDate) {
-        // TODO
-        // pass.auxiliaryFields.add({
-        //   key: 'location',
-        //   label: 'Location & Date',
-        //   value: `${event.location} - ${formattedEventDate.dateAndTime}`,
-        // });
-      } else {
-        pass.secondaryFields.add({
-          key: 'location',
-          label: 'Location',
-          value: event.location,
-        });
-      }
+      pass.auxiliaryFields.add({
+        key: 'location',
+        label: 'Location & Date',
+        value: `${event.location} - ${formattedEventDate.dateAndTime}`,
+      });
 
       pass.images.add('logo', logo1x);
       pass.images.add('logo', logo2x, '2x');
@@ -164,7 +117,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       https://developer.apple.com/documentation/walletpasses/distributing_and_updating_a_pass#3793284
     */
 
-    const zip = require('jszip');
+    const zip = new JSZip();
 
     for (const pass of passes) {
       const buffer = await pass.asBuffer();

@@ -1,6 +1,6 @@
 import { Container } from '@pagoda/ui/src/components/Container';
 import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
-import { CalendarDots, Plus, QrCode } from '@phosphor-icons/react';
+import { CalendarDots, PlusCircle, QrCode } from '@phosphor-icons/react';
 import Link from 'next/link';
 
 import { AccountDropdown } from '../AccountDropdown';
@@ -17,7 +17,7 @@ export const Header = () => {
 
         <div className={s.links}>
           <Link href="/events/new" className={s.link}>
-            <SvgIcon icon={<Plus weight="regular" />} />
+            <SvgIcon icon={<PlusCircle weight="regular" />} />
             <span>Create Event</span>
           </Link>
 

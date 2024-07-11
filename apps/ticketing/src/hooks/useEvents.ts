@@ -19,7 +19,7 @@ export function useEvents(accountId: string | undefined) {
           args: { account_id: accountId },
         });
 
-        const events = Object.values(JSON.parse(response.metadata)) as FunderEventMetadata[];
+        const events = response ? (Object.values(JSON.parse(response.metadata)) as FunderEventMetadata[]) : [];
 
         return events;
       } catch (error) {
@@ -56,7 +56,7 @@ export function useEvent(accountId: string | undefined, eventId: string | undefi
           args: { account_id: accountId },
         });
 
-        const events = Object.values(JSON.parse(response.metadata)) as FunderEventMetadata[];
+        const events = response ? (Object.values(JSON.parse(response.metadata)) as FunderEventMetadata[]) : [];
         const event = events.find((ev) => ev.id === eventId);
         if (!event) throw new Error('Event ID not found under publisher account');
 

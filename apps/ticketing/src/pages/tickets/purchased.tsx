@@ -1,3 +1,11 @@
+/*
+  NOTE: This page supports rendering single or multiple purchased tickets based on 
+  the number of "key" query params that exist in the URL:
+
+  - Single ticket: /tickets/purchased?key=1
+  - Multiple tickets: /tickets/purchased?key=1&key=2&key=3
+*/
+
 import { Button } from '@pagoda/ui/src/components/Button';
 import { Card } from '@pagoda/ui/src/components/Card';
 import { Container } from '@pagoda/ui/src/components/Container';
@@ -18,41 +26,27 @@ import QRCode from 'react-qr-code';
 
 import { AddToAppleWallet } from '@/components/AddToAppleWallet';
 import { AddToGoogleWallet } from '@/components/AddToGoogleWallet';
-import { useEvent } from '@/hooks/useEvents';
 import { useDefaultLayout } from '@/hooks/useLayout';
+import { usePurchasedTickets } from '@/hooks/usePurchasedTickets';
 import { CLOUDFLARE_IPFS } from '@/utils/common';
 import { displayEventDate } from '@/utils/date';
-import { formatEventIdQueryParam, parseEventIdQueryParam } from '@/utils/event-id';
+import { formatEventIdQueryParam } from '@/utils/event-id';
 import { convertToSafeFilename } from '@/utils/file';
-import type { EventAccount, NextPageWithLayout } from '@/utils/types';
+import type { NextPageWithLayout } from '@/utils/types';
 
 const TICKETS_DOM_ID = 'tickets';
 
-const YourTickets: NextPageWithLayout = () => {
+const PurchasedTickets: NextPageWithLayout = () => {
   const router = useRouter();
-  const { publisherAccountId, eventId } = parseEventIdQueryParam(router.query.eventId);
-  const accountId = router.query.accountId as string;
-  const event = useEvent(publisherAccountId, eventId);
+  const secretKeys = Array.isArray(router.query.key) ? router.query.key : router.query.key ? [router.query.key] : [];
+  const purchasedTickets = usePurchasedTickets(secretKeys);
+  const { event, publisherAccountId, tickets } = purchasedTickets.data ?? {};
 
-  console.log('TODO: Fetch account/ticket details', accountId);
-
-  const account: EventAccount = {
-    id: '1',
-    tickets: [
-      {
-        id: 'a0fd96f4-12a5-4a92-882d-7b68609f8420', // Random, dummy UUID
-        tier: 'Premium Seating',
-      },
-      {
-        id: 'd7d2fc4e-c978-4b0d-93b1-3e57de9c92aa', // Random, dummy UUID
-        tier: 'General Admission',
-      },
-    ],
-  };
+  console.log(event);
 
   const downloadTickets = async () => {
     try {
-      if (!event.data) return;
+      if (!event) return;
 
       document.body.classList.add('html2canvas');
 
@@ -63,7 +57,7 @@ const YourTickets: NextPageWithLayout = () => {
 
       const image = canvas.toDataURL('image/jpeg', 1);
       const downloadLink = document.createElement('a');
-      downloadLink.download = convertToSafeFilename(`Tickets for ${event.data.name}`);
+      downloadLink.download = convertToSafeFilename(`Tickets for ${event.name}`);
       downloadLink.href = image;
       downloadLink.click();
 
@@ -83,7 +77,7 @@ const YourTickets: NextPageWithLayout = () => {
     }
   };
 
-  if (!event.data) {
+  if (!event || !tickets || !publisherAccountId) {
     return <PlaceholderSection background="primary-gradient" />;
   }
 
@@ -111,7 +105,7 @@ const YourTickets: NextPageWithLayout = () => {
           <Flex stack gap="l">
             <Flex align="center">
               <Text as="h3" style={{ marginRight: 'auto' }}>
-                {account.tickets.length > 1 ? `Your ${account.tickets.length} Tickets` : 'Your Ticket'}
+                {tickets.length > 1 ? `Your ${tickets.length} Tickets` : 'Your Ticket'}
               </Text>
 
               <Tooltip asChild content="View all event details">
@@ -119,7 +113,7 @@ const YourTickets: NextPageWithLayout = () => {
                   label="View Event"
                   icon={<CalendarDots />}
                   size="small"
-                  href={`/events/${formatEventIdQueryParam(publisherAccountId, eventId)}`}
+                  href={`/events/${formatEventIdQueryParam(publisherAccountId, event.id)}`}
                   target="_blank"
                   data-html2canvas-ignore
                 />
@@ -131,37 +125,32 @@ const YourTickets: NextPageWithLayout = () => {
             <Grid columns="2fr 1fr" align="center">
               <Flex stack gap="xs">
                 <Text size="text-s" color="sand12" weight={600}>
-                  {event.data.name}
+                  {event.name}
                 </Text>
 
                 <Flex align="center" gap="s">
                   <SvgIcon icon={<MapPinArea />} size="xs" data-html2canvas-ignore />
-                  <Text size="text-xs">{event.data.location}</Text>
+                  <Text size="text-xs">{event.location}</Text>
                 </Flex>
 
                 <Flex align="center" gap="s">
                   <SvgIcon icon={<Clock />} size="xs" data-html2canvas-ignore />
-                  <Text size="text-xs">{displayEventDate(event.data)?.dateAndTime}</Text>
+                  <Text size="text-xs">{displayEventDate(event).dateAndTime}</Text>
                 </Flex>
               </Flex>
 
-              {event.data.artwork && (
+              {event.artwork && (
                 <img
-                  src={`${CLOUDFLARE_IPFS}/${event.data.artwork}`}
-                  alt={event.data.name}
+                  src={`${CLOUDFLARE_IPFS}/${event.artwork}`}
+                  alt={event.name}
                   style={{ borderRadius: '6px', boxShadow: '0 0 0 1px var(--blackA3)' }}
                 />
               )}
             </Grid>
 
             <Flex data-html2canvas-ignore stretch wrap>
-              <AddToAppleWallet
-                href={`/api/apple-wallet/generate-event-pass?accountId=${accountId}&eventId=${formatEventIdQueryParam(publisherAccountId, eventId)}`}
-              />
-
-              <AddToGoogleWallet
-                href={`/api/google-wallet/generate-event-pass?accountId=${accountId}&eventId=${formatEventIdQueryParam(publisherAccountId, eventId)}`}
-              />
+              <AddToAppleWallet data={purchasedTickets.data} />
+              <AddToGoogleWallet data={purchasedTickets.data} />
 
               <Tooltip
                 content="Save your tickets to your device to access them offline"
@@ -180,13 +169,13 @@ const YourTickets: NextPageWithLayout = () => {
             </Flex>
 
             <Flex stack>
-              {account.tickets.map((ticket, i) => (
-                <Card key={ticket.id}>
+              {tickets.map((ticket, i) => (
+                <Card key={ticket.secretKey}>
                   <Grid columns="1fr 1fr" columnsPhone="1fr" align="center">
                     <QRCode
                       size={256}
                       style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
-                      value={ticket.id}
+                      value={ticket.secretKey}
                       viewBox={`0 0 256 256`}
                     />
 
@@ -195,14 +184,14 @@ const YourTickets: NextPageWithLayout = () => {
 
                       <Flex stack gap="s">
                         <Text size="text-xs" weight={600}>
-                          Ticket #{i + 1}
+                          Ticket {i + 1} of {tickets.length}
                         </Text>
 
                         <Text size="text-s" color="sand12" weight={600}>
-                          {ticket.tier}
+                          {ticket.title}
                         </Text>
 
-                        <Text size="text-xs">{ticket.id}</Text>
+                        {ticket.description && <Text size="text-xs">{ticket.description}</Text>}
                       </Flex>
                     </Flex>
                   </Grid>
@@ -216,6 +205,6 @@ const YourTickets: NextPageWithLayout = () => {
   );
 };
 
-YourTickets.getLayout = useDefaultLayout;
+PurchasedTickets.getLayout = useDefaultLayout;
 
-export default YourTickets;
+export default PurchasedTickets;

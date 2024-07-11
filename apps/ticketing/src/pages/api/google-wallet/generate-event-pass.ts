@@ -11,8 +11,8 @@ import jwt from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { resolve } from 'path';
 
-import { HOSTNAME } from '@/utils/config';
-import { EventAccount, EventDetails } from '@/utils/types';
+import { displayEventDate } from '@/utils/date';
+import { decodeEventDataForWallet } from '@/utils/wallet';
 
 const ISSUER_ID = '3388000000022340916';
 const CLASS_ID = `${ISSUER_ID}.GENERIC`;
@@ -35,65 +35,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     if (!credentials) throw new Error('Credentials are undefined');
 
-    const accountId = req.query.accountId as string;
-    const eventId = req.query.eventId as string;
-
-    // TODO: Fetch event data for eventId
-    // TODO: Fetch ticket data for accountId (public key)
-    console.log('Generating event passes for Google Wallet...', { accountId, eventId });
-
-    const event: EventDetails = {
-      id: '1',
-      name: 'Some Cool Event Name',
-      location: '1234 W Cool St, Denver, CO',
-      date: '2024-10-14',
-      startTime: '19:00',
-      endTime: '22:00',
-      description:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-      imageUrl: `${HOSTNAME}/images/hero-background.jpg`,
-      links: {
-        facebook: 'https://facebook.com',
-        website: 'https://google.com',
-        x: 'https://x.com',
-        youTube: 'https://youtube.com',
-      },
-      tickets: {
-        available: 20,
-        sold: 30,
-        total: 50,
-      },
-      ticketPrice: 10,
-      ticketQuantityLimit: 3,
-    };
-
-    const account: EventAccount = {
-      id: '1',
-      tickets: [
-        {
-          id: 'a0fd96f4-12a5-4a92-882d-7b68609f8420', // Random, dummy UUID
-          tier: 'Premium Seating',
-        },
-        {
-          id: 'd7d2fc4e-c978-4b0d-93b1-3e57de9c92aa', // Random, dummy UUID
-          tier: 'General Admission',
-        },
-      ],
-    };
+    const { event, tickets } = decodeEventDataForWallet(req.query.data as string);
 
     const genericObjects: any[] = [];
-    // TODO: const formattedEventDate = displayEventDate(event);
-    const formattedEventDate = undefined;
+    const formattedEventDate = displayEventDate(event);
 
-    account.tickets.forEach((ticket, i) => {
-      // TODO: Pull in dynamic images from event
+    tickets.forEach((ticket, i) => {
       const logoImageUrl = 'https://i.ibb.co/rsXTfWm/icon-3x.png';
-      const heroImageUrl = 'https://i.ibb.co/cD5fCJP/marcela-laskoski-Yrt-Flr-Lo2-DQ-unsplash.jpg';
+      // const artwork = ticket.artwork || event.artwork;
+      // const heroImageUrl = artwork ? `${CLOUDFLARE_IPFS}/${artwork}` : undefined;
 
       const textModulesData: { header: string; body: string; id: string }[] = [];
-      const ticketName = `${account.tickets.length > 1 ? `${i + 1} of ${account.tickets.length} - ` : ''}${ticket.tier}`;
-      // TODO: const location = formattedEventDate ? `${event.location} - ${formattedEventDate.dateAndTime}` : event.location;
-      const location = event.location;
+      const ticketName = `${tickets.length > 1 ? `${i + 1} of ${tickets.length} - ` : ''}${ticket.title}`;
+      const location = `${event.location} - ${formattedEventDate.dateAndTime}`;
 
       textModulesData.push({
         header: 'Event',
@@ -107,22 +61,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         id: 'ticket',
       });
 
-      if (formattedEventDate) {
-        textModulesData.push({
-          header: 'Location & Date',
-          body: location,
-          id: 'location',
-        });
-      } else {
-        textModulesData.push({
-          header: 'Location',
-          body: location,
-          id: 'location',
-        });
-      }
+      textModulesData.push({
+        header: 'Location & Date',
+        body: location,
+        id: 'location',
+      });
 
       genericObjects.push({
-        id: `${ISSUER_ID}.${ticket.id}`,
+        id: `${ISSUER_ID}.${ticket.secretKey}`,
         classId: CLASS_ID,
         state: 'ACTIVE',
         hexBackgroundColor: '#604bc7',
@@ -151,13 +97,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
         barcode: {
           type: 'QR_CODE',
-          value: ticket.id,
+          value: ticket.secretKey,
         },
-        heroImage: {
-          sourceUri: {
-            uri: heroImageUrl,
-          },
-        },
+        // heroImage: {
+        //   sourceUri: {
+        //     uri: heroImageUrl,
+        //   },
+        // },
         textModulesData,
       });
     });
