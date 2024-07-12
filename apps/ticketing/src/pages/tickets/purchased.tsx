@@ -1,9 +1,9 @@
 /*
   NOTE: This page supports rendering single or multiple purchased tickets based on 
-  the number of "key" query params that exist in the URL:
+  the number of comma separated values that exist in the URL hash:
 
-  - Single ticket: /tickets/purchased?key=1
-  - Multiple tickets: /tickets/purchased?key=1&key=2&key=3
+  - Single ticket: /tickets/purchased#1
+  - Multiple tickets: /tickets/purchased#1,2,3
 */
 
 import { Button } from '@pagoda/ui/src/components/Button';
@@ -22,6 +22,7 @@ import { CalendarDots, Clock, DownloadSimple, MapPinArea, Ticket } from '@phosph
 import html2canvas from 'html2canvas';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 import QRCode from 'react-qr-code';
 
 import { AddToAppleWallet } from '@/components/AddToAppleWallet';
@@ -38,11 +39,24 @@ const TICKETS_DOM_ID = 'tickets';
 
 const PurchasedTickets: NextPageWithLayout = () => {
   const router = useRouter();
-  const secretKeys = Array.isArray(router.query.key) ? router.query.key : router.query.key ? [router.query.key] : [];
+  const [secretKeys, setSecretKeys] = useState<string[]>([]);
   const purchasedTickets = usePurchasedTickets(secretKeys);
   const { event, publisherAccountId, tickets } = purchasedTickets.data ?? {};
 
-  console.log(event);
+  useEffect(() => {
+    /*
+      NOTE: The secret keys are stored and read from "location.hash" instead of 
+      a query param to help provide an extra layer of privacy since URI fragments 
+      are never sent to the server (they're client side only).
+      
+      https://en.wikipedia.org/wiki/URI_fragment
+    */
+
+    if (typeof window !== 'undefined') {
+      const keys = window.location.hash.replace(/^#/, '').split(',');
+      setSecretKeys(keys);
+    }
+  }, [router]);
 
   const downloadTickets = async () => {
     try {

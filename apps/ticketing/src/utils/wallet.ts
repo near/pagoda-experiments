@@ -50,9 +50,9 @@ export function stringifyEventDataForWallet(data: ReturnType<typeof usePurchased
     })),
   };
 
-  return encodeURIComponent(JSON.stringify(result));
+  return encodeURIComponent(btoa(JSON.stringify(result)));
 }
 
 export function decodeEventDataForWallet(data: string) {
-  return JSON.parse(decodeURIComponent(data)) as EventDataForWallet;
+  return JSON.parse(atob(decodeURIComponent(data))) as EventDataForWallet;
 }

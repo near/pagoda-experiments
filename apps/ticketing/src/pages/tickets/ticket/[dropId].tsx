@@ -18,7 +18,7 @@ const RedirectToPurchasedTickets: NextPageWithLayout = () => {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const secretKey = window.location.hash.replace(/^#/, '');
-      router.replace(`/tickets/purchased?key=${secretKey}`);
+      router.replace(`/tickets/purchased#${secretKey}`);
     }
   }, [router]);
 

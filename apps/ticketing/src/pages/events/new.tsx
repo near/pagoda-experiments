@@ -1,5 +1,6 @@
 import { Action } from '@near-wallet-selector/core';
 import { AssistiveText } from '@pagoda/ui/src/components/AssistiveText';
+import { Badge } from '@pagoda/ui/src/components/Badge';
 import { Button } from '@pagoda/ui/src/components/Button';
 import { Card } from '@pagoda/ui/src/components/Card';
 import { Container } from '@pagoda/ui/src/components/Container';
@@ -9,7 +10,6 @@ import { Input } from '@pagoda/ui/src/components/Input';
 import { InputTextarea } from '@pagoda/ui/src/components/InputTextarea';
 import { Section } from '@pagoda/ui/src/components/Section';
 import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
-import { Switch } from '@pagoda/ui/src/components/Switch';
 import { Text } from '@pagoda/ui/src/components/Text';
 import { openToast } from '@pagoda/ui/src/components/Toast';
 import { Tooltip } from '@pagoda/ui/src/components/Tooltip';
@@ -18,6 +18,7 @@ import {
   ArrowRight,
   CalendarPlus,
   CurrencyDollar,
+  Gear,
   HashStraight,
   MapPinArea,
   Plus,
@@ -37,7 +38,14 @@ import { useNearStore } from '@/stores/near';
 import { useStripeStore } from '@/stores/stripe';
 import { useWalletStore } from '@/stores/wallet';
 import { EVENTS_WORKER_BASE, KEYPOM_EVENTS_CONTRACT_ID, KEYPOM_MARKETPLACE_CONTRACT_ID } from '@/utils/common';
-import { createPayload, FormSchema, serializeMediaForWorker, TicketInfoFormMetadata } from '@/utils/helpers';
+import {
+  createPayload,
+  estimateCosts,
+  FormSchema,
+  serializeMediaForWorker,
+  TicketInfoFormMetadata,
+  yoctoToNear,
+} from '@/utils/helpers';
 import { NextPageWithLayout } from '@/utils/types';
 
 const CreateEvent: NextPageWithLayout = () => {
@@ -46,12 +54,26 @@ const CreateEvent: NextPageWithLayout = () => {
   const viewAccount = useNearStore((store) => store.viewAccount);
   const [attemptToConnect, setAttemptToConnect] = useState(false);
   const [uploadingToStripe, setUploadingToStripe] = useState(false);
+  const [estimatedNearCost, setEstimatedNearCost] = useState('');
   const checkForPriorStripeConnected = useStripeStore((store) => store.checkForPriorStripeConnected);
   const stripeAccountId = useStripeStore((store) => store.stripeAccountId);
   const router = useRouter();
-  useStripe(account?.accountId, attemptToConnect);
-  // check for successMessage query string from router
   const successMessage = router.query.successMessage;
+
+  const form = useForm<FormSchema>({
+    defaultValues: {
+      acceptNearPayments: true,
+      acceptStripePayments: stripeAccountId ? true : false,
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: 'tickets',
+    rules: { required: 'Please add at least one ticket configuration', minLength: 1 },
+  });
+
+  useStripe(account?.accountId, attemptToConnect);
 
   // check for stripe account id in local storage
   useEffect(() => {
@@ -64,6 +86,23 @@ const CreateEvent: NextPageWithLayout = () => {
       checkForPriorStripeConnected(account?.accountId);
     }
   }, [successMessage, account, checkForPriorStripeConnected]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (form.formState.isValid) {
+        const { total } = estimateCosts({
+          formData: form.getValues(),
+        });
+        setEstimatedNearCost(total);
+      } else {
+        setEstimatedNearCost('');
+      }
+    }, 250);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [form]);
 
   useEffect(() => {
     const checkForEventCreationSuccess = async () => {
@@ -117,18 +156,6 @@ const CreateEvent: NextPageWithLayout = () => {
   }, [router, viewAccount]);
 
   // TODO check local storage for stripe account id
-
-  const form = useForm<FormSchema>({
-    defaultValues: {
-      acceptNearPayments: true,
-      acceptStripePayments: stripeAccountId ? true : false,
-    },
-  });
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: 'tickets',
-    rules: { required: 'Please add at least one ticket configuration', minLength: 1 },
-  });
 
   const placeHolderTicket: TicketInfoFormMetadata = {
     name: 'General Admission',
@@ -276,32 +303,26 @@ const CreateEvent: NextPageWithLayout = () => {
               <Flex stack>
                 <Card>
                   <Text size="text-xs" weight={600} color="sand12">
-                    Payemnt Options
+                    Payment Options
                   </Text>
-                  <Flex justify="start">
-                    <Text>Accept Near Payments</Text>
-                    <Switch
-                      disabled={stripeAccountId ? false : true}
-                      checked={form.watch('acceptNearPayments')}
-                      onClick={() => {
-                        form.setValue('acceptNearPayments', !form.watch('acceptNearPayments'));
-                      }}
-                      {...form.register('acceptNearPayments')}
-                    />
-                    <span className="slider"></span>
-                  </Flex>
-                  <Flex justify="start">
-                    <Text>Accept Stripe Payments</Text>
+
+                  <Flex align="center">
+                    <Text style={{ marginRight: 'auto' }}>Stripe</Text>
+
                     {stripeAccountId ? (
                       <>
-                        <Switch
-                          disabled={stripeAccountId ? false : true}
-                          checked={form.watch('acceptStripePayments')}
-                          onClick={() => {
-                            form.setValue('acceptStripePayments', !form.watch('acceptStripePayments'));
-                          }}
-                          {...form.register('acceptStripePayments')}
-                        />
+                        <Badge variant="success" label={`Connected To: ${stripeAccountId}`} />
+
+                        <Tooltip asChild content="Change Stripe Account">
+                          <Button
+                            variant="primary"
+                            label="Change Stripe Account"
+                            fill="outline"
+                            size="small"
+                            icon={<Gear />}
+                            onClick={handleConnectStripe}
+                          />
+                        </Tooltip>
                       </>
                     ) : (
                       <Button
@@ -313,13 +334,8 @@ const CreateEvent: NextPageWithLayout = () => {
                       />
                     )}
                   </Flex>
-                  <Flex justify="center">
-                    {stripeAccountId ? <Text size={'text-xs'}>connected to: {`${stripeAccountId}`}</Text> : null}
-                  </Flex>
                 </Card>
-              </Flex>
 
-              <Flex stack>
                 <Card>
                   <Input
                     label="Name"
@@ -483,13 +499,27 @@ const CreateEvent: NextPageWithLayout = () => {
                 </Card>
               </Flex>
 
-              <Flex justify="end">
+              <Flex align="center">
+                {estimatedNearCost && (
+                  <Tooltip content="The estimated cost (in NEAR) to publish this event">
+                    <Flex align="center" gap="xs" wrap>
+                      <Text size="text-xs" color="sand10">
+                        Estimated Cost:
+                      </Text>
+                      <Text size="text-s" weight={600} color="sand12">
+                        {yoctoToNear(estimatedNearCost)} Ⓝ
+                      </Text>
+                    </Flex>
+                  </Tooltip>
+                )}
+
                 <Button
                   type="submit"
                   variant="affirmative"
                   label="Create Event"
                   iconRight={<ArrowRight />}
                   loading={form.formState.isSubmitting || uploadingToStripe}
+                  style={{ marginLeft: 'auto' }}
                 />
               </Flex>
             </Flex>

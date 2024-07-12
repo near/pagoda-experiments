@@ -43,6 +43,17 @@ type PurchaseTicketOptions = {
   }[];
 };
 
+type PurchaseWorkerResponse = {
+  tickets: {
+    public_key: string;
+    secret_key: string;
+  }[];
+};
+
+type PurchasedTicket = {
+  secretKey: string;
+};
+
 export async function purchaseTickets({
   dropsForEvent,
   email,
@@ -50,8 +61,12 @@ export async function purchaseTickets({
   publisherAccountId,
   tickets,
 }: PurchaseTicketOptions) {
-  let totalFreeTickets = 0;
-  let totalFiatTickets = 0;
+  const purchases: PurchasedTicket[] = [];
+
+  const bot = await botCheck();
+  if (bot) {
+    throw new Error('Bot detection triggered');
+  }
 
   for (const ticket of tickets) {
     if (!ticket.quantity) continue;
@@ -96,11 +111,6 @@ export async function purchaseTickets({
       priceNear: '0', // TODO: What price should we pass since we really only want to support fiat and free?
     };
 
-    const bot = await botCheck();
-    if (bot) {
-      throw new Error('Bot detection triggered');
-    }
-
     const ticketIsFree =
       (!drop.ticket.extra?.priceFiat || drop.ticket.extra.priceFiat === '0') &&
       (!drop.ticket.extra?.priceNear || drop.ticket.extra.priceNear === '0');
@@ -114,40 +124,29 @@ export async function purchaseTickets({
         body: JSON.stringify(workerPayload),
       });
 
-      const data = await response.json();
-
       if (response.ok) {
-        console.log('Free ticket purchase success response data', data);
-        totalFreeTickets += ticket.quantity;
-
-        // TODO: Decide if saving this data to local storage is needed...
-        // const purchaseLocalStorageKey = `${PURCHASED_LOCAL_STORAGE_PREFIX}_${workerPayload.ticket_info.dropId}`;
-        // let numTicketsPurchased = parseInt(localStorage.getItem(purchaseLocalStorageKey) || '0');
-        // numTicketsPurchased += workerPayload.ticketAmount;
-        // localStorage.setItem(purchaseLocalStorageKey, numTicketsPurchased.toString());
+        const data = (await response.json()) as PurchaseWorkerResponse;
+        data.tickets.forEach((t) => purchases.push({ secretKey: t.secret_key }));
       } else {
         console.error(response);
         throw new Error('Request to purchase free tickets failed');
       }
     } else {
-      console.warn('TODO: Handle purchasing tickets with fiat or near...');
-      totalFiatTickets += ticket.quantity;
-
+      console.log('TODO: Handle purchasing tickets with fiat');
       /*
-        We'll need to think through how we redirect to Stripe after exiting this ticket loop. We 
-        need to make sure all the free tickets are handled first for the edge case that a customer 
-        is purchasing free and tickets with cost in one go.
+        TODO: We'll need to think through how we redirect to Stripe after exiting this loop. 
+        We need to make sure any and all free tickets are handled first before redirecting 
+        to Stripe.
       */
     }
   }
 
-  if (!totalFiatTickets && !totalFreeTickets) {
-    throw new Error('No tickets to purchase. Invalid purchase request.');
+  if (!purchases.length) {
+    throw new Error('No tickets were purchased. A ticket with quantity of 1 or greater is required for purchasing.');
   }
 
   return {
-    totalFiatTickets,
-    totalFreeTickets,
+    purchases,
   };
 }
 
