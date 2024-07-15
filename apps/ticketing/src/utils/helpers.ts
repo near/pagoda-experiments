@@ -1,15 +1,9 @@
 import { type Action } from '@near-wallet-selector/core';
+import { utils } from 'near-api-js';
 import { parseNearAmount } from 'near-api-js/lib/utils/format';
 
 import { KEYPOM_MARKETPLACE_CONTRACT_ID } from './common';
-import {
-  deriveKeyFromPassword,
-  encryptPrivateKey,
-  exportPublicKeyToBase64,
-  generateKeyPair,
-  getByteSize,
-  uint8ArrayToBase64,
-} from './crypto-helpers';
+import { getByteSize } from './crypto-helpers';
 import { localStorageGet } from './local-storage';
 
 export interface DateAndTimeInfo {
@@ -61,68 +55,13 @@ export interface TicketMetadataExtra {
   passValidThrough?: DateAndTimeInfo;
 }
 
-/* ---- Keeping for reference as we build additional functionality ----
-
-// export interface TicketDropFormData {
-//   // Step 0
-//   stripeAccountId?: string;
-//   acceptStripePayments: boolean;
-//   acceptNearPayments: boolean;
-//   nearPrice?: number;
-
-//   // Step 1
-//   eventName: { value: string; error?: string };
-//   eventDescription: { value: string; error?: string };
-//   eventLocation: { value: string; error?: string };
-//   date: { value: DateAndTimeInfo; error?: string };
-//   eventArtwork: { value: File | undefined; error?: string };
-//   sellable: boolean;
-
-//   // Step 2
-//   questions: Array<{ question: string; isRequired: boolean }>;
-
-//   // Step 3
-//   tickets: TicketInfoFormMetadata[];
-
-//   costBreakdown: {
-//     marketListing: string;
-//     total: string;
-//     perDrop: string;
-//     perEvent: string;
-//   };
-// }
-
-export interface FunderEventMetadata {
-  // Stage 0
-  nearCheckout: boolean;
-
-  // Stage 1
-  name: string;
-  id: string;
-  description: string;
-  location: string;
-  date: DateAndTimeInfo;
-  artwork: string;
-  sellable?: boolean;
-  dateCreated: string;
-
-  // Stage 2
-  questions?: QuestionInfo[];
-
-  // If there are some questions, then we need to encrypt the answers
-  pubKey?: string;
-  encPrivKey?: string;
-  iv?: string;
-  salt?: string;
+export interface QuestionInfo {
+  required: boolean;
+  question: string;
 }
 
-------- End references ----   */
-
 export interface FunderEventMetadata {
-  // Stage 0
   nearCheckout?: boolean;
-
-  // Stage 1
   name: string;
   id: string;
   location: string;
@@ -131,11 +70,10 @@ export interface FunderEventMetadata {
   dateCreated: string;
   description?: string;
   sellable?: boolean;
+  questions?: QuestionInfo[];
 
-  // Stage 2
-  // questions?: QuestionInfo[];
+  // If there are some questions, then we need to encrypt the answers:
 
-  // If there are some questions, then we need to encrypt the answers
   pubKey?: string;
   encPrivKey?: string;
   iv?: string;
@@ -144,7 +82,7 @@ export interface FunderEventMetadata {
 
 export type FunderMetadata = Record<string, FunderEventMetadata>;
 
-export type costBreakdown = {
+export type CostBreakdown = {
   marketListing: string;
   total: string;
   perDrop: string;
@@ -166,7 +104,7 @@ export type FormSchema = {
   tickets: TicketInfoFormMetadata[];
   startTime?: string;
   endTime?: string;
-  costBreakdown: costBreakdown;
+  costBreakdown: CostBreakdown;
   // ticketPrice?: number;
   // ticketQuantityLimit?: number;
 };
@@ -176,18 +114,26 @@ const SUBSEQUENT_DROP_BASE_COST = BigInt('14460000000000200000000');
 const FUNDER_METADATA_BASE_COST = BigInt('840000000000000000000');
 const FIRST_MARKET_DROP_BASE_COST = BigInt('11790000000000000000000');
 const SUBSEQUENT_MARKET_DROP_BASE_COST = BigInt('6810000000000000000000');
+const ACCESS_KEY_ALLOWANCE = BigInt('110000000000000000000000');
 const YOCTO_PER_BYTE = BigInt('15000000000000000000'); // Includes a 200% safety margin
-
 const BASE_MARKET_BYTES_PER_KEY = BigInt('800');
 const METADATA_MARKET_BYTES_PER_KEY = BigInt('900');
 
+export const yoctoPerFreeKey = () => {
+  return (BASE_MARKET_BYTES_PER_KEY + METADATA_MARKET_BYTES_PER_KEY) * YOCTO_PER_BYTE;
+};
+
+export const yoctoToNear = (yocto: string) => {
+  return utils.format.formatNearAmount(yocto, 2);
+};
+
 export const calculateDepositCost = ({
   eventMetadata,
-  tickets,
+  eventTickets,
   marketTicketInfo,
 }: {
   eventMetadata: FunderEventMetadata;
-  tickets: TicketInfoFormMetadata[];
+  eventTickets: TicketInfoFormMetadata[];
   marketTicketInfo: Record<string, { max_tickets: number; price: string; sale_start?: number; sale_end?: number }>;
 }) => {
   let marketDeposit = FIRST_MARKET_DROP_BASE_COST;
@@ -195,8 +141,8 @@ export const calculateDepositCost = ({
   let funderMetaCost = FUNDER_METADATA_BASE_COST;
 
   // Calculate drop deposit
-  dropDeposit += BigInt(tickets.length - 1) * SUBSEQUENT_DROP_BASE_COST;
-  dropDeposit += BigInt(getByteSize(JSON.stringify(tickets))) * YOCTO_PER_BYTE;
+  dropDeposit += BigInt(eventTickets.length - 1) * SUBSEQUENT_DROP_BASE_COST;
+  dropDeposit += BigInt(getByteSize(JSON.stringify(eventTickets))) * YOCTO_PER_BYTE;
 
   // Calculate funder metadata cost
   funderMetaCost += BigInt(getByteSize(JSON.stringify(eventMetadata))) * YOCTO_PER_BYTE;
@@ -214,11 +160,13 @@ export const calculateDepositCost = ({
   // Calculate market key cost for free keys (if any)
   marketDeposit +=
     BigInt(numFreeKeys) * (BASE_MARKET_BYTES_PER_KEY + METADATA_MARKET_BYTES_PER_KEY) * YOCTO_PER_BYTE * BigInt(2);
+  // For free keys, add in the key allowance costs
+  marketDeposit += BigInt(numFreeKeys) * ACCESS_KEY_ALLOWANCE;
 
   // Return the total deposit cost
   return {
     costBreakdown: {
-      perDrop: (dropDeposit / BigInt(tickets.length)).toString(),
+      perDrop: (dropDeposit / BigInt(eventTickets.length)).toString(),
       perEvent: funderMetaCost.toString(),
       marketListing: marketDeposit.toString(),
       total: (dropDeposit + funderMetaCost + marketDeposit).toString(),
@@ -285,108 +233,93 @@ function arrayBufferToBase64(buffer: any) {
   return window.btoa(binary);
 }
 
-// export const estimateCosts = async ({
-//   formData,
-//   accountId,
-//   setFormData,
-//   setCurrentStep,
-// }: {
-//   accountId: string;
-//   formData: TicketDropFormData;
-//   setFormData: (data: TicketDropFormData | ((prev: TicketDropFormData) => TicketDropFormData)) => void;
-//   setCurrentStep: any;
-// }) => {
-//   const eventId = Date.now().toString();
-//   const masterKey = get('MASTER_KEY');
+export const estimateCosts = ({ formData }: { formData: FormSchema }) => {
+  const eventId = Date.now().toString();
 
-//   const funderInfo = await keypomInstance.viewCall({
-//     methodName: 'get_funder_info',
-//     args: { account_id: accountId },
-//   });
-//   const funderMetadata: FunderMetadata =
-//     funderInfo === undefined || funderInfo === null ? {} : JSON.parse(funderInfo.metadata);
+  const masterKey = localStorageGet('MASTER_KEY') ?? '';
+  if (!masterKey) {
+    console.warn('Missing local storage value MASTER_KEY inside createPayload()');
+  }
 
-//   const eventMetadata: FunderEventMetadata = {
-//     nearCheckout: formData.acceptNearPayments,
-//     name: formData.eventName.value,
-//     dateCreated: Date.now().toString(),
-//     description: formData.eventDescription.value,
-//     sellable: formData.sellable,
-//     location: formData.eventLocation.value,
-//     date: formData.date.value,
-//     artwork: 'bafybeiehk3mzsj2ih4u4fkvmkfrome3kars7xyy3bxh6xfjquws4flglqa',
-//     questions: formData.questions.map((question) => ({
-//       question: question.question,
-//       required: question.isRequired || false,
-//     })),
-//     id: eventId.toString(),
-//   };
+  const eventMetadata: FunderEventMetadata = {
+    nearCheckout: formData.acceptNearPayments,
+    name: formData.name,
+    dateCreated: Date.now().toString(),
+    description: formData.description,
+    sellable: formData.sellable,
+    location: formData.location,
+    date: {
+      startDate: Date.parse(formData.date),
+      startTime: formData.startTime,
+      endDate: Date.parse(formData.endTime || ''),
+      endTime: formData.endTime,
+    },
+    artwork: 'bafybeiehk3mzsj2ih4u4fkvmkfrome3kars7xyy3bxh6xfjquws4flglqa',
+    id: eventId.toString(),
+  };
 
-//   if (formData.questions.length > 0) {
-//     const { publicKey, privateKey } = await generateKeyPair();
-//     const saltBytes = window.crypto.getRandomValues(new Uint8Array(16));
-//     const saltBase64 = uint8ArrayToBase64(saltBytes);
-//     const symmetricKey = await deriveKeyFromPassword(masterKey, saltBase64);
-//     const { encryptedPrivateKeyBase64, ivBase64 } = await encryptPrivateKey(privateKey, symmetricKey);
+  // if (formData.questions.length > 0) {
+  //   const { publicKey, privateKey } = await generateKeyPair();
+  //   const saltBytes = window.crypto.getRandomValues(new Uint8Array(16));
+  //   const saltBase64 = uint8ArrayToBase64(saltBytes);
+  //   const symmetricKey = await deriveKeyFromPassword(masterKey, saltBase64);
+  //   const { encryptedPrivateKeyBase64, ivBase64 } = await encryptPrivateKey(privateKey, symmetricKey);
+  //   eventMetadata.pubKey = await exportPublicKeyToBase64(publicKey);
+  //   eventMetadata.encPrivKey = encryptedPrivateKeyBase64;
+  //   eventMetadata.iv = ivBase64;
+  //   eventMetadata.salt = saltBase64;
+  // }
 
-//     eventMetadata.pubKey = await exportPublicKeyToBase64(publicKey);
-//     eventMetadata.encPrivKey = encryptedPrivateKeyBase64;
-//     eventMetadata.iv = ivBase64;
-//     eventMetadata.salt = saltBase64;
-//   }
+  const drop_ids: string[] = [];
+  const drop_configs: any = [];
+  const asset_datas: any = [];
+  const ticket_information: Record<
+    string,
+    { max_tickets: number; price: string; sale_start?: number; sale_end?: number }
+  > = {};
 
-//   funderMetadata[eventId] = eventMetadata;
+  for (const ticket of formData.tickets) {
+    const dropId = `${Date.now().toString()}-${ticket.name.replaceAll(' ', '').toLocaleLowerCase()}`;
 
-//   const drop_ids: string[] = [];
-//   const drop_configs: any = [];
-//   const asset_datas: any = [];
-//   const ticket_information: Record<
-//     string,
-//     { max_tickets: number; price: string; sale_start?: number; sale_end?: number }
-//   > = {};
+    ticket_information[`${dropId}`] = {
+      max_tickets: ticket.maxSupply ?? 0,
+      price: parseNearAmount(ticket.priceNear || '0')!.toString(),
+      sale_start: Date.now() || undefined,
+      sale_end: Date.parse(formData.date) || undefined,
+      // ------------ pattern for allowing start and end sales date individually for each ticket
+      // sale_start: ticket.salesValidThrough.startDate || undefined,
+      // sale_end: ticket.salesValidThrough.endDate || undefined,
+    };
 
-//   for (const ticket of formData.tickets) {
-//     const dropId = `${Date.now().toString()}-${ticket.name.replaceAll(' ', '').toLocaleLowerCase()}`;
+    const dropConfig = {
+      metadata: JSON.stringify(ticket),
+      add_key_allowlist: [KEYPOM_MARKETPLACE_CONTRACT_ID],
+      transfer_key_allowlist: [KEYPOM_MARKETPLACE_CONTRACT_ID],
+    };
 
-//     ticket_information[`${dropId}`] = {
-//       max_tickets: ticket.maxSupply,
-//       price: parseNearAmount(ticket.priceNear)!.toString(),
-//       sale_start: ticket.salesValidThrough.startDate || undefined,
-//       sale_end: ticket.salesValidThrough.endDate || undefined,
-//     };
+    const assetData = [
+      {
+        uses: 2,
+        assets: [null],
+        config: {
+          permissions: 'claim',
+        },
+      },
+    ];
 
-//     const dropConfig = {
-//       metadata: JSON.stringify(ticket),
-//       add_key_allowlist: [KEYPOM_MARKETPLACE_CONTRACT],
-//       transfer_key_allowlist: [KEYPOM_MARKETPLACE_CONTRACT],
-//     };
-//     const assetData = [
-//       {
-//         uses: 2,
-//         assets: [null],
-//         config: {
-//           permissions: 'claim',
-//         },
-//       },
-//     ];
-//     drop_ids.push(dropId);
-//     asset_datas.push(assetData);
-//     drop_configs.push(dropConfig);
-//   }
+    drop_ids.push(dropId);
+    asset_datas.push(assetData);
+    drop_configs.push(dropConfig);
+  }
 
-//   const { costBreakdown } = calculateDepositCost({
-//     eventMetadata,
-//     tickets: formData.tickets,
-//     marketTicketInfo: ticket_information,
-//   });
+  const { costBreakdown } = calculateDepositCost({
+    eventMetadata,
+    eventTickets: formData.tickets,
+    marketTicketInfo: ticket_information,
+  });
 
-//   setFormData((prev: TicketDropFormData) => ({
-//     ...prev,
-//     costBreakdown,
-//   }));
-
-//   setCurrentStep((prevStep: number) => prevStep + 1);
-// };
+  return costBreakdown;
+};
 
 export const createPayload = async ({
   accountId,
@@ -402,7 +335,6 @@ export const createPayload = async ({
   eventId: string;
 }): Promise<{ actions: Action[]; dropIds: string[] }> => {
   const masterKey = localStorageGet('MASTER_KEY') ?? '';
-
   if (!masterKey) {
     console.warn('Missing local storage value MASTER_KEY inside createPayload()');
   }
@@ -432,18 +364,17 @@ export const createPayload = async ({
   };
 
   // if (formData.questions.length > 0) {
-  if (formData) {
-    const { publicKey, privateKey } = await generateKeyPair();
-    const saltBytes = window.crypto.getRandomValues(new Uint8Array(16));
-    const saltBase64 = uint8ArrayToBase64(saltBytes);
-    const symmetricKey = await deriveKeyFromPassword(masterKey, saltBase64);
-    const { encryptedPrivateKeyBase64, ivBase64 } = await encryptPrivateKey(privateKey, symmetricKey);
+  //   const { publicKey, privateKey } = await generateKeyPair();
+  //   const saltBytes = window.crypto.getRandomValues(new Uint8Array(16));
+  //   const saltBase64 = uint8ArrayToBase64(saltBytes);
+  //   const symmetricKey = await deriveKeyFromPassword(masterKey, saltBase64);
+  //   const { encryptedPrivateKeyBase64, ivBase64 } = await encryptPrivateKey(privateKey, symmetricKey);
 
-    eventMetadata.pubKey = await exportPublicKeyToBase64(publicKey);
-    eventMetadata.encPrivKey = encryptedPrivateKeyBase64;
-    eventMetadata.iv = ivBase64;
-    eventMetadata.salt = saltBase64;
-  }
+  //   eventMetadata.pubKey = await exportPublicKeyToBase64(publicKey);
+  //   eventMetadata.encPrivKey = encryptedPrivateKeyBase64;
+  //   eventMetadata.iv = ivBase64;
+  //   eventMetadata.salt = saltBase64;
+  // }
 
   funderMetadata[eventId] = eventMetadata;
 
@@ -500,8 +431,7 @@ export const createPayload = async ({
         token_metadata: ticketNftInfo,
       },
       add_key_allowlist: [KEYPOM_MARKETPLACE_CONTRACT_ID],
-      // transfer_key_allowlist: formData.sellable ? [KEYPOM_MARKETPLACE_CONTRACT_ID] : [],
-      transfer_key_allowlist: [KEYPOM_MARKETPLACE_CONTRACT_ID],
+      transfer_key_allowlist: formData.sellable ? [KEYPOM_MARKETPLACE_CONTRACT_ID] : [],
     };
     const assetData = [
       {
@@ -519,7 +449,7 @@ export const createPayload = async ({
 
   const { costBreakdown } = calculateDepositCost({
     eventMetadata,
-    tickets: formData.tickets,
+    eventTickets: formData.tickets,
     marketTicketInfo: ticket_information,
   });
 
@@ -539,6 +469,7 @@ export const createPayload = async ({
             args: JSON.stringify({
               event_id: eventId,
               funder_id: accountId,
+              max_markup: 100, // Actual ticket price without any markup
               ticket_information,
               stripe_status: formData.acceptStripePayments,
               stripe_account_id: formData.stripeAccountId,

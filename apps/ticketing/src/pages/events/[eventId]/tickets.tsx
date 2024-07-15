@@ -86,7 +86,7 @@ const GetTickets: NextPageWithLayout = () => {
     try {
       if (!event.data || !dropsForEvent) return;
 
-      const { totalFreeTickets } = await purchaseTickets({
+      const { purchases } = await purchaseTickets({
         event: event.data,
         dropsForEvent,
         publisherAccountId,
@@ -96,9 +96,11 @@ const GetTickets: NextPageWithLayout = () => {
 
       openToast({
         type: 'success',
-        title: `${totalFreeTickets} free ${pluralize(totalTickets, 'ticket')} purchased`,
-        description: `${pluralize(totalTickets, 'Ticket')} emailed to: ${formData.email}`,
+        title: `${purchases.length} ${pluralize(purchases.length, 'ticket')} purchased`,
+        description: `${pluralize(purchases.length, 'Ticket')} emailed to: ${formData.email}`,
       });
+
+      router.push(`/tickets/purchased#${purchases.map((purchase) => purchase.secretKey).join(',')}`);
     } catch (error) {
       handleClientError({ title: 'Checkout Failed', error });
     }

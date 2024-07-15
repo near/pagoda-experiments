@@ -1,15 +1,19 @@
 import { openToast } from '@pagoda/ui/src/components/Toast';
 import { MouseEventHandler } from 'react';
 
+import { usePurchasedTickets } from '@/hooks/usePurchasedTickets';
 import AddToAppleWalletSvg from '@/svg/add-to-apple-wallet.svg';
+import { stringifyEventDataForWallet } from '@/utils/wallet';
 
 import s from './AddToAppleWallet.module.scss';
 
 type Props = {
-  href: string;
+  data: ReturnType<typeof usePurchasedTickets>['data'];
 };
 
-export const AddToAppleWallet = ({ href }: Props) => {
+export const AddToAppleWallet = ({ data }: Props) => {
+  const href = `/api/apple-wallet/generate-event-pass?data=${stringifyEventDataForWallet(data)}`;
+
   const onClick: MouseEventHandler<HTMLAnchorElement> = (event) => {
     /*
       The Brave browser on iOS currently doesn't support adding multiple passes at once (pkpasses vs pkpass). 
