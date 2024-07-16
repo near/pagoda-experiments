@@ -1,5 +1,4 @@
 import { WalletSelectorParams } from '@near-wallet-selector/core';
-import { setupHereWallet } from '@near-wallet-selector/here-wallet';
 import { setupMeteorWallet } from '@near-wallet-selector/meteor-wallet';
 import { setupMyNearWallet } from '@near-wallet-selector/my-near-wallet';
 import { setupNightly } from '@near-wallet-selector/nightly';
@@ -10,7 +9,7 @@ import { usePurchasedTickets } from '@/hooks/usePurchasedTickets';
 import { NETWORK_ID } from './config';
 import { FunderEventMetadata, TicketMetadataExtra } from './helpers';
 
-const modules = [setupMyNearWallet(), setupSender(), setupHereWallet(), setupMeteorWallet(), setupNightly()];
+const modules = [setupMyNearWallet(), setupSender(), setupMeteorWallet(), setupNightly()];
 
 const TESTNET_WALLET_SELECTOR_PARAMS: WalletSelectorParams = {
   network: 'testnet',
