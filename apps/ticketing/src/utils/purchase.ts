@@ -7,7 +7,7 @@ import { FunderEventMetadata } from './helpers';
 type PurchaseWorkerPayload = {
   name: string | null;
   ticketAmount: number;
-  buyerAnswers: string;
+  buyerAnswers: string | undefined;
   ticket_info: {
     location: string;
     eventName: string;
@@ -76,13 +76,13 @@ export async function purchaseTickets({
     if (!drop) {
       throw new Error(`Matching drop not found for id: ${ticket.dropId}`);
     }
-    if (!event.pubKey) {
-      throw new Error('Event is missing public key');
-    }
+    //if (!event.pubKey) {
+    //  throw new Error('Event is missing public key');
+    //}
 
-    const publicKeyBase64 = event.pubKey;
-    const publicKey = await base64ToPublicKey(publicKeyBase64);
-    const buyerAnswers = await encryptWithPublicKey(JSON.stringify({ questions: {} }), publicKey); // TODO: Eventually support questions in our UI and record answers here
+    //const publicKeyBase64 = event.pubKey;
+    //const publicKey = await base64ToPublicKey(publicKeyBase64);
+    //const buyerAnswers = await encryptWithPublicKey(JSON.stringify({ questions: {} }), publicKey); // TODO: Eventually support questions in our UI and record answers here
 
     const eventImageUrl = event.artwork ? `https://cloudflare-ipfs.com/ipfs/${event.artwork}` : '';
     const ticketImageUrl = drop.ticket.artwork
@@ -92,7 +92,7 @@ export async function purchaseTickets({
     const workerPayload: PurchaseWorkerPayload = {
       name: null,
       ticketAmount: ticket.quantity,
-      buyerAnswers,
+      buyerAnswers: undefined,
       ticket_info: {
         location: event.location,
         eventName: event.name,
@@ -148,46 +148,4 @@ export async function purchaseTickets({
   return {
     purchases,
   };
-}
-
-function uint8ArrayToBase64(u8Arr: Uint8Array) {
-  const string = u8Arr.reduce((data, byte) => data + String.fromCharCode(byte), '');
-  return btoa(string);
-}
-
-async function encryptWithPublicKey(data: string, publicKey: CryptoKey) {
-  const encoded = new TextEncoder().encode(data);
-
-  const encrypted = await window.crypto.subtle.encrypt(
-    {
-      name: 'RSA-OAEP',
-    },
-    publicKey,
-    encoded,
-  );
-
-  return uint8ArrayToBase64(new Uint8Array(encrypted));
-}
-
-async function base64ToPublicKey(base64Key: string) {
-  const binaryString = atob(base64Key);
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-
-  const publicKey = await window.crypto.subtle.importKey(
-    'spki',
-    bytes.buffer,
-    {
-      name: 'RSA-OAEP',
-      hash: { name: 'SHA-256' },
-    },
-    true,
-    ['encrypt'],
-  );
-
-  return publicKey;
 }
