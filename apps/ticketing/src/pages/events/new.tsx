@@ -59,6 +59,10 @@ const CreateEvent: NextPageWithLayout = () => {
   const stripeAccountId = useStripeStore((store) => store.stripeAccountId);
   const router = useRouter();
   const successMessage = router.query.successMessage;
+  // errorCode and transactionHashes comes from MNW
+  // transactionHashes defines success transaction on myNearWallet
+  const errorCode = router.query.errorCode;
+  const transactionHashes = router.query.transactionHashes; // should I rename this to successTransactionHash or something?
 
   const form = useForm<FormSchema>({
     defaultValues: {
@@ -162,6 +166,26 @@ const CreateEvent: NextPageWithLayout = () => {
     denomination: 'Near',
   };
 
+  useEffect(() => {
+    if (errorCode) {
+      const eventData = localStorage.getItem('EVENT_INFO_DATA');
+      if (eventData) {
+        form.reset(JSON.parse(eventData));
+      }
+    }
+  }, [errorCode, form]);
+
+  useEffect(() => {
+    if (transactionHashes) {
+      localStorage.removeItem('EVENT_INFO_DATA');
+      router.push('/events');
+      openToast({
+        type: 'success',
+        title: 'Event Created',
+      });
+    }
+  }, [router, transactionHashes]);
+
   const onValidSubmit: SubmitHandler<FormSchema> = async (formData) => {
     try {
       // TODO: fix accept stripe payments watcher from on to true
@@ -174,6 +198,8 @@ const CreateEvent: NextPageWithLayout = () => {
         formData.stripeAccountId = '';
         formData.acceptStripePayments = false;
       }
+
+      localStorage.setItem('EVENT_INFO_DATA', JSON.stringify(formData));
 
       if (!wallet || !account) {
         openToast({
