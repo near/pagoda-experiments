@@ -3,13 +3,25 @@ import { setupMeteorWallet } from '@near-wallet-selector/meteor-wallet';
 import { setupMyNearWallet } from '@near-wallet-selector/my-near-wallet';
 import { setupNightly } from '@near-wallet-selector/nightly';
 import { setupSender } from '@near-wallet-selector/sender';
+import { setupFastAuthWallet } from 'near-fastauth-wallet';
 
 import { usePurchasedTickets } from '@/hooks/usePurchasedTickets';
 
 import { NETWORK_ID } from './config';
 import { FunderEventMetadata, TicketMetadataExtra } from './helpers';
 
-const modules = [setupMyNearWallet(), setupSender(), setupMeteorWallet(), setupNightly()];
+const modules = [
+  setupMyNearWallet(),
+  setupSender(),
+  setupMeteorWallet(),
+  setupNightly(),
+  setupFastAuthWallet({
+    walletUrl:
+      NETWORK_ID === 'testnet' ? 'https://wallet.testnet.near.org/fastauth' : 'https://wallet.near.org/fastauth',
+    relayerUrl:
+      NETWORK_ID === 'testnet' ? 'http://34.70.226.83:3030/relay' : 'https://near-relayer-mainnet.api.pagoda.co/relay',
+  }),
+];
 
 const TESTNET_WALLET_SELECTOR_PARAMS: WalletSelectorParams = {
   network: 'testnet',

@@ -4,11 +4,13 @@ import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
 import { Gear, User, X } from '@phosphor-icons/react';
 
 import { useWalletStore } from '@/stores/wallet';
+import { useEffect } from 'react';
 
 export const AccountDropdown = () => {
   const account = useWalletStore((store) => store.account);
   const modal = useWalletStore((store) => store.modal);
   const wallet = useWalletStore((store) => store.wallet);
+  const showFastAuthModal = useWalletStore((store) => store.showFastAuthModal);
 
   if (account) {
     return (
@@ -38,5 +40,5 @@ export const AccountDropdown = () => {
     );
   }
 
-  return <Button label="Sign In" size="small" onClick={() => modal?.show()} />;
+  return <Button label="Sign In" size="small" onClick={showFastAuthModal} />;
 };

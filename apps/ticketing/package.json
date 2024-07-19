@@ -32,6 +32,7 @@
     "jszip": "^3.10.1",
     "luxon": "^3.4.4",
     "near-api-js": "2.1.4",
+    "near-fastauth-wallet": "^2.0.1",
     "next": "^14",
     "qr-scanner": "^1.4.2",
     "react": "^18",
