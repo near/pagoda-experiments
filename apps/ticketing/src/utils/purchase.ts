@@ -23,7 +23,6 @@ type PurchaseWorkerPayload = {
   purchaseEmail: string;
   stripeAccountId: string | undefined;
   baseUrl: string;
-  priceNear: string;
   // secret keys, for multiple primary purchases
   ticketKeys?: string[];
   // single secret key to send in email
@@ -108,36 +107,27 @@ export async function purchaseTickets({
       purchaseEmail: email.trim(),
       stripeAccountId: undefined,
       baseUrl: window.location.origin,
-      priceNear: '0', // TODO: What price should we pass since we really only want to support fiat and free?
     };
 
     const ticketIsFree =
       (!drop.ticket.extra?.priceFiat || drop.ticket.extra.priceFiat === '0') &&
       (!drop.ticket.extra?.priceNear || drop.ticket.extra.priceNear === '0');
 
-    if (ticketIsFree) {
-      const response = await fetch(`${EVENTS_WORKER_BASE}/purchase-free-tickets`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(workerPayload),
-      });
+    const purchaseURL = ticketIsFree ? 'purchase-free-tickets' : 'stripe/create-checkout-session';
+    const response = await fetch(`${EVENTS_WORKER_BASE}/${purchaseURL}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(workerPayload),
+    });
 
-      if (response.ok) {
-        const data = (await response.json()) as PurchaseWorkerResponse;
-        data.tickets.forEach((t) => purchases.push({ secretKey: t.secret_key }));
-      } else {
-        console.error(response);
-        throw new Error('Request to purchase free tickets failed');
-      }
+    if (response.ok) {
+      const data = (await response.json()) as PurchaseWorkerResponse;
+      data.tickets.forEach((t) => purchases.push({ secretKey: t.secret_key }));
     } else {
-      console.log('TODO: Handle purchasing tickets with fiat');
-      /*
-        TODO: We'll need to think through how we redirect to Stripe after exiting this loop. 
-        We need to make sure any and all free tickets are handled first before redirecting 
-        to Stripe.
-      */
+      console.error(response);
+      throw new Error('Request to purchase ticket(s) failed');
     }
   }
 

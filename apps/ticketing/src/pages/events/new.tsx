@@ -55,7 +55,7 @@ const CreateEvent: NextPageWithLayout = () => {
   const viewAccount = useNearStore((store) => store.viewAccount);
   const near = useNearStore((store) => store.near);
   const [attemptToConnect, setAttemptToConnect] = useState(false);
-  const [uploadingToStripe, setUploadingToStripe] = useState(false);
+  const [stripeUploaded, setUploadedToStripe] = useState(false);
   const [estimatedNearCost, setEstimatedNearCost] = useState('');
   const checkForPriorStripeConnected = useStripeStore((store) => store.checkForPriorStripeConnected);
   const stripeAccountId = useStripeStore((store) => store.stripeAccountId);
@@ -67,10 +67,7 @@ const CreateEvent: NextPageWithLayout = () => {
   const transactionHashes = router.query.transactionHashes as string;
 
   const form = useForm<FormSchema>({
-    defaultValues: {
-      acceptNearPayments: true,
-      acceptStripePayments: stripeAccountId ? true : false,
-    },
+    defaultValues: {},
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -113,55 +110,47 @@ const CreateEvent: NextPageWithLayout = () => {
   useEffect(() => {
     const checkForEventCreationSuccess = async () => {
       const eventData = localStorage.getItem('EVENT_INFO_SUCCESS_DATA');
-      if (eventData) {
-        if (eventData && viewAccount) {
-          const { eventId, eventName, stripeAccountId, priceByDropId } = JSON.parse(eventData);
-          let response: Response | undefined;
-          try {
-            await viewAccount.viewFunction({
-              contractId: KEYPOM_MARKETPLACE_CONTRACT_ID,
-              methodName: 'get_event_information',
-              args: { event_id: eventId },
-            });
+      if (eventData && viewAccount && !stripeUploaded) {
+        console.log('eventData is ', eventData);
+        const { eventId, eventName, stripeAccountId, priceByDropId } = JSON.parse(eventData);
+        let response: Response | undefined;
+        try {
+          await viewAccount.viewFunction({
+            contractId: KEYPOM_MARKETPLACE_CONTRACT_ID,
+            methodName: 'get_event_information',
+            args: { event_id: eventId },
+          });
 
-            const url = `${EVENTS_WORKER_BASE}/stripe/create-event`;
-            const body = {
+          response = await fetch(`${EVENTS_WORKER_BASE}/stripe/create-event`, {
+            method: 'POST',
+            body: JSON.stringify({
               priceByDropId,
               stripeAccountId,
               eventId,
               eventName,
-            };
+            }),
+          });
 
-            response = await fetch(url, {
-              method: 'POST',
-              body: JSON.stringify(body),
-            });
-
-            if (response.ok) {
-              openToast({
-                type: 'success',
-                title: 'Event Uploaded to Stripe',
-              });
-              router.push('/events');
-            }
-            setUploadingToStripe(false);
-          } catch (e) {
-            console.error('Error uploading to stripe: ', e);
-            handleClientError({
-              title: 'Error Uploading to Stripe',
-              error: e,
+          if (response.ok) {
+            setUploadedToStripe(true);
+            openToast({
+              type: 'success',
+              title: 'Event Uploaded to Stripe',
             });
           }
-          setUploadingToStripe(false);
-
-          localStorage.removeItem('EVENT_INFO_SUCCESS_DATA');
+        } catch (e) {
+          console.error('Error uploading to stripe: ', e);
+          handleClientError({
+            title: 'Error Uploading to Stripe',
+            error: e,
+          });
         }
+
+        localStorage.removeItem('EVENT_INFO_SUCCESS_DATA');
       }
     };
     checkForEventCreationSuccess();
-  }, [router, viewAccount]);
-
-  // TODO check local storage for stripe account id
+  }, [router, stripeUploaded, viewAccount]);
 
   const placeHolderTicket: TicketInfoFormMetadata = {
     name: 'General Admission',
@@ -206,17 +195,6 @@ const CreateEvent: NextPageWithLayout = () => {
 
   const onValidSubmit: SubmitHandler<FormSchema> = async (formData) => {
     try {
-      // TODO: fix accept stripe payments watcher from on to true
-      if (formData.acceptStripePayments && stripeAccountId) {
-        formData.acceptStripePayments = true;
-      }
-
-      if (!formData.acceptStripePayments || !stripeAccountId) {
-        //set stripe account info when using stripe
-        formData.stripeAccountId = '';
-        formData.acceptStripePayments = false;
-      }
-
       localStorage.setItem('EVENT_INFO_DATA', JSON.stringify(formData));
 
       if (!wallet || !account) {
@@ -240,11 +218,6 @@ const CreateEvent: NextPageWithLayout = () => {
         console.error('Failed to pin media on IPFS', error);
       }
 
-      // const testCids = [
-      //   'bafybeicjhlpijcsxcgsokdgjc3slgmna5ditnnx6hny4hlq6zgrhzictie',
-      //   'bafybeieaibg47unt4ywrqxgczevebze7uga2bupl2e33ot6sxnt2yl2k44',
-      // ];
-
       if (ipfsResponse?.ok) {
         const resBody = await ipfsResponse.json();
         const cids: string[] = resBody.cids;
@@ -264,13 +237,10 @@ const CreateEvent: NextPageWithLayout = () => {
           ticketArtworkCids,
         });
 
-        // set stripe account info when using stripe
-
-        if (formData.acceptStripePayments && stripeAccountId) {
+        if (stripeAccountId) {
           const priceByDropId: Record<string, number> = {};
           for (let i = 0; i < formData.tickets.length; i++) {
             const ticketDropId = dropIds[i];
-            // const priceCents = Math.round(parseFloat(formData.tickets[i].priceFiat) * formData.nearPrice! * 100);
             if (formData.tickets[i]?.priceFiat) {
               priceByDropId[ticketDropId || `${eventId}-${i}`] = Math.round(
                 parseFloat(formData.tickets[i]?.priceFiat || ''),
@@ -303,13 +273,12 @@ const CreateEvent: NextPageWithLayout = () => {
           title: 'Event Created',
         });
 
-        if (formData.acceptStripePayments && stripeAccountId) {
+        if (stripeAccountId) {
           openToast({
             type: 'success',
             title: 'Uploading to Stripe',
             description: 'Please wait while we upload your event to Stripe',
           });
-          setUploadingToStripe(true);
         } else {
           router.push('/events');
         }
@@ -562,7 +531,7 @@ const CreateEvent: NextPageWithLayout = () => {
                   variant="affirmative"
                   label="Create Event"
                   iconRight={<ArrowRight />}
-                  loading={form.formState.isSubmitting || uploadingToStripe}
+                  loading={form.formState.isSubmitting}
                   style={{ marginLeft: 'auto' }}
                 />
               </Flex>

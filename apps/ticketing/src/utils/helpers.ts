@@ -91,9 +91,6 @@ export type CostBreakdown = {
 
 export type FormSchema = {
   stripeAccountId?: string;
-  acceptStripePayments: boolean;
-  acceptNearPayments: boolean;
-
   name: string;
   description?: string;
   location: string;
@@ -242,7 +239,6 @@ export const estimateCosts = ({ formData }: { formData: FormSchema }) => {
   }
 
   const eventMetadata: FunderEventMetadata = {
-    nearCheckout: formData.acceptNearPayments,
     name: formData.name,
     dateCreated: Date.now().toString(),
     description: formData.description,
@@ -342,8 +338,6 @@ export const createPayload = async ({
   const funderMetadata: FunderMetadata = {};
 
   const eventMetadata: FunderEventMetadata = {
-    nearCheckout: formData.acceptNearPayments,
-
     name: formData.name,
     dateCreated: Date.now().toString(),
     description: formData?.description || '',
@@ -471,7 +465,7 @@ export const createPayload = async ({
               funder_id: accountId,
               max_markup: 100, // Actual ticket price without any markup
               ticket_information,
-              stripe_status: formData.acceptStripePayments,
+              stripe_status: !!formData.stripeAccountId,
               stripe_account_id: formData.stripeAccountId,
             }),
             attached_deposit: costBreakdown.marketListing,
