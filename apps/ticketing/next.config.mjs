@@ -2,6 +2,7 @@
 const nextConfig = {
   experimental: {
     externalDir: true, // https://stackoverflow.com/a/72842944
+    optimizePackageImports: ['@phosphor-icons/react'],
   },
   reactStrictMode: true,
   webpack(config) {
