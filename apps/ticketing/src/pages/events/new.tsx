@@ -26,6 +26,7 @@ import {
   Ticket,
   Trash,
 } from '@phosphor-icons/react';
+import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -52,6 +53,7 @@ const CreateEvent: NextPageWithLayout = () => {
   const wallet = useWalletStore((store) => store.wallet);
   const account = useWalletStore((store) => store.account);
   const viewAccount = useNearStore((store) => store.viewAccount);
+  const near = useNearStore((store) => store.near);
   const [attemptToConnect, setAttemptToConnect] = useState(false);
   const [uploadingToStripe, setUploadingToStripe] = useState(false);
   const [estimatedNearCost, setEstimatedNearCost] = useState('');
@@ -59,6 +61,10 @@ const CreateEvent: NextPageWithLayout = () => {
   const stripeAccountId = useStripeStore((store) => store.stripeAccountId);
   const router = useRouter();
   const successMessage = router.query.successMessage;
+  // errorCode and transactionHashes comes from MNW
+  // transactionHashes defines success transaction on myNearWallet
+  const errorCode = router.query.errorCode;
+  const transactionHashes = router.query.transactionHashes as string;
 
   const form = useForm<FormSchema>({
     defaultValues: {
@@ -162,6 +168,42 @@ const CreateEvent: NextPageWithLayout = () => {
     denomination: 'Near',
   };
 
+  useEffect(() => {
+    if (errorCode) {
+      const eventData = localStorage.getItem('EVENT_INFO_DATA');
+      if (eventData) {
+        form.reset(JSON.parse(eventData));
+      }
+    }
+  }, [errorCode, form]);
+
+  useEffect(() => {
+    if (transactionHashes) {
+      const checkTransactionStatusForEvent = async () => {
+        const txHash = transactionHashes as string;
+        const provider = near?.connection.provider;
+
+        try {
+          const result = (await provider!.txStatus(txHash, account?.accountId!)) as FinalExecutionOutcome;
+          if (result.status && typeof result.status === 'object' && 'SuccessValue' in result.status) {
+            openToast({
+              type: 'success',
+              title: 'Event Created',
+            });
+            localStorage.removeItem('EVENT_INFO_DATA');
+            router.push('/events');
+          }
+        } catch (error) {
+          handleClientError({
+            title: 'Failed to fetch transaction status',
+            error,
+          });
+        }
+      };
+      checkTransactionStatusForEvent();
+    }
+  }, [account?.accountId, near?.connection.provider, router, transactionHashes]);
+
   const onValidSubmit: SubmitHandler<FormSchema> = async (formData) => {
     try {
       // TODO: fix accept stripe payments watcher from on to true
@@ -174,6 +216,8 @@ const CreateEvent: NextPageWithLayout = () => {
         formData.stripeAccountId = '';
         formData.acceptStripePayments = false;
       }
+
+      localStorage.setItem('EVENT_INFO_DATA', JSON.stringify(formData));
 
       if (!wallet || !account) {
         openToast({
