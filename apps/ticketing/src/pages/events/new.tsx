@@ -26,6 +26,7 @@ import {
   Ticket,
   Trash,
 } from '@phosphor-icons/react';
+import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -52,6 +53,7 @@ const CreateEvent: NextPageWithLayout = () => {
   const wallet = useWalletStore((store) => store.wallet);
   const account = useWalletStore((store) => store.account);
   const viewAccount = useNearStore((store) => store.viewAccount);
+  const near = useNearStore((store) => store.near);
   const [attemptToConnect, setAttemptToConnect] = useState(false);
   const [uploadingToStripe, setUploadingToStripe] = useState(false);
   const [estimatedNearCost, setEstimatedNearCost] = useState('');
@@ -62,7 +64,7 @@ const CreateEvent: NextPageWithLayout = () => {
   // errorCode and transactionHashes comes from MNW
   // transactionHashes defines success transaction on myNearWallet
   const errorCode = router.query.errorCode;
-  const transactionHashes = router.query.transactionHashes; // should I rename this to successTransactionHash or something?
+  const transactionHashes = router.query.transactionHashes as string;
 
   const form = useForm<FormSchema>({
     defaultValues: {
@@ -177,14 +179,30 @@ const CreateEvent: NextPageWithLayout = () => {
 
   useEffect(() => {
     if (transactionHashes) {
-      localStorage.removeItem('EVENT_INFO_DATA');
-      router.push('/events');
-      openToast({
-        type: 'success',
-        title: 'Event Created',
-      });
+      const checkTransactionStatusForEvent = async () => {
+        const txHash = transactionHashes as string;
+        const provider = near?.connection.provider;
+
+        try {
+          const result = (await provider!.txStatus(txHash, account?.accountId!)) as FinalExecutionOutcome;
+          if (result.status && typeof result.status === 'object' && 'SuccessValue' in result.status) {
+            openToast({
+              type: 'success',
+              title: 'Event Created',
+            });
+            localStorage.removeItem('EVENT_INFO_DATA');
+            router.push('/events');
+          }
+        } catch (error) {
+          handleClientError({
+            title: 'Failed to fetch transaction status',
+            error,
+          });
+        }
+      };
+      checkTransactionStatusForEvent();
     }
-  }, [router, transactionHashes]);
+  }, [account?.accountId, near?.connection.provider, router, transactionHashes]);
 
   const onValidSubmit: SubmitHandler<FormSchema> = async (formData) => {
     try {
