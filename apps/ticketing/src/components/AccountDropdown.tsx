@@ -4,11 +4,11 @@ import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
 import { Gear, User, X } from '@phosphor-icons/react';
 
 import { useWalletStore } from '@/stores/wallet';
-import { useEffect } from 'react';
 
 export const AccountDropdown = () => {
   const account = useWalletStore((store) => store.account);
-  const modal = useWalletStore((store) => store.modal);
+  // this is not used but will be required in the future
+  // const modal = useWalletStore((store) => store.modal);
   const wallet = useWalletStore((store) => store.wallet);
   const showFastAuthModal = useWalletStore((store) => store.showFastAuthModal);
 
