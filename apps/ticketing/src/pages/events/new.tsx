@@ -111,10 +111,10 @@ const CreateEvent: NextPageWithLayout = () => {
     const checkForEventCreationSuccess = async () => {
       const eventData = localStorage.getItem('EVENT_INFO_SUCCESS_DATA');
       if (eventData && viewAccount && !stripeUploaded) {
-        console.log('eventData is ', eventData);
         const { eventId, eventName, stripeAccountId, priceByDropId } = JSON.parse(eventData);
         let response: Response | undefined;
         try {
+          //this essentially asserts that they event exists
           await viewAccount.viewFunction({
             contractId: KEYPOM_MARKETPLACE_CONTRACT_ID,
             methodName: 'get_event_information',
@@ -229,38 +229,38 @@ const CreateEvent: NextPageWithLayout = () => {
         }
 
         const eventId = Date.now().toString();
+        localStorage.setItem('EVENT_INFO_SUCCESS_DATA', JSON.stringify({ eventId }));
+        if (!stripeAccountId) throw Error('Stripe Account ID is not available');
+
         const { actions, dropIds }: { actions: Action[]; dropIds: string[] } = await createPayload({
           accountId: account.accountId,
           formData,
+          stripeAccountId,
           eventId,
           eventArtworkCid,
           ticketArtworkCids,
         });
 
-        if (stripeAccountId) {
-          const priceByDropId: Record<string, number> = {};
-          for (let i = 0; i < formData.tickets.length; i++) {
-            const ticketDropId = dropIds[i];
-            if (formData.tickets[i]?.priceFiat) {
-              priceByDropId[ticketDropId || `${eventId}-${i}`] = Math.round(
-                parseFloat(formData.tickets[i]?.priceFiat || ''),
-              );
-            }
-            {
-              priceByDropId[ticketDropId || `${eventId}-${i}`] = 0;
-            }
+        const priceByDropId: Record<string, number> = {};
+        for (let i = 0; i < formData.tickets.length; i++) {
+          const ticketDropId = dropIds[i];
+          if (formData.tickets[i]?.priceFiat) {
+            priceByDropId[ticketDropId || `${eventId}-${i}`] = Math.round(
+              parseFloat(formData.tickets[i]?.priceFiat || ''),
+            );
           }
-          const stripeAccountInfo = {
-            stripeAccountId,
-            eventId,
-            eventName: formData.name,
-            priceByDropId,
-          };
-
-          localStorage.setItem('EVENT_INFO_SUCCESS_DATA', JSON.stringify(stripeAccountInfo));
-        } else {
-          localStorage.setItem('EVENT_INFO_SUCCESS_DATA', JSON.stringify({ eventId }));
+          {
+            priceByDropId[ticketDropId || `${eventId}-${i}`] = 0;
+          }
         }
+        const stripeAccountInfo = {
+          stripeAccountId,
+          eventId,
+          eventName: formData.name,
+          priceByDropId,
+        };
+
+        localStorage.setItem('EVENT_INFO_SUCCESS_DATA', JSON.stringify(stripeAccountInfo));
 
         await wallet.signAndSendTransaction({
           signerId: wallet.id,

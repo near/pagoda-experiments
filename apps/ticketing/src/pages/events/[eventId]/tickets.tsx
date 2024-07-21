@@ -23,6 +23,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { useDrops } from '@/hooks/useDrops';
 import { useEvent } from '@/hooks/useEvents';
 import { useDefaultLayout } from '@/hooks/useLayout';
+import { useNearStore } from '@/stores/near';
 import { CLOUDFLARE_IPFS } from '@/utils/common';
 import { displayEventDate } from '@/utils/date';
 import { formatDollar, formatTicketPrice } from '@/utils/dollar';
@@ -45,6 +46,7 @@ const GetTickets: NextPageWithLayout = () => {
   const { publisherAccountId, eventId } = parseEventIdQueryParam(router.query.eventId);
   const event = useEvent(publisherAccountId, eventId);
   const drops = useDrops(publisherAccountId);
+  const viewAccount = useNearStore((store) => store.viewAccount);
   const dropsForEvent = drops.data?.[eventId];
   const form = useForm<FormSchema>({
     defaultValues: {
@@ -92,6 +94,7 @@ const GetTickets: NextPageWithLayout = () => {
         publisherAccountId,
         email: formData.email,
         tickets: formData.tickets,
+        viewAccount,
       });
 
       openToast({

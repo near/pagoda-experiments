@@ -1,4 +1,8 @@
+import assert from 'assert';
+import { Account } from 'near-api-js';
+
 import { DropsByEventId } from '@/hooks/useDrops';
+import { KEYPOM_MARKETPLACE_CONTRACT_ID } from '@/utils/common';
 
 import { botCheck } from './bot-check';
 import { EVENTS_WORKER_BASE } from './common';
@@ -40,6 +44,7 @@ type PurchaseTicketOptions = {
     dropId: string;
     quantity?: number;
   }[];
+  viewAccount: Account | null;
 };
 
 type PurchaseWorkerResponse = {
@@ -59,6 +64,7 @@ export async function purchaseTickets({
   event,
   publisherAccountId,
   tickets,
+  viewAccount,
 }: PurchaseTicketOptions) {
   const purchases: PurchasedTicket[] = [];
 
@@ -113,8 +119,17 @@ export async function purchaseTickets({
       (!drop.ticket.extra?.priceFiat || drop.ticket.extra.priceFiat === '0') &&
       (!drop.ticket.extra?.priceNear || drop.ticket.extra.priceNear === '0');
 
+    assert(viewAccount, 'Expected View account to be initiatlized');
+    let response: Response | undefined;
+    let stripeAccountId = await viewAccount!.viewFunction({
+      contractId: KEYPOM_MARKETPLACE_CONTRACT_ID,
+      methodName: 'get_stripe_id_for_account',
+      args: { account_id: publisherAccountId },
+    });
+    workerPayload.stripeAccountId = stripeAccountId;
+
     const purchaseURL = ticketIsFree ? 'purchase-free-tickets' : 'stripe/create-checkout-session';
-    const response = await fetch(`${EVENTS_WORKER_BASE}/${purchaseURL}`, {
+    response = await fetch(`${EVENTS_WORKER_BASE}/${purchaseURL}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -126,6 +141,11 @@ export async function purchaseTickets({
       const data = (await response.json()) as PurchaseWorkerResponse;
       data.tickets.forEach((t) => purchases.push({ secretKey: t.secret_key }));
     } else {
+      /*
+        TODO: We'll need to think through how we redirect to Stripe after exiting this loop. 
+        We need to make sure any and all free tickets are handled first before redirecting 
+        to Stripe.
+      */
       console.error(response);
       throw new Error('Request to purchase ticket(s) failed');
     }
