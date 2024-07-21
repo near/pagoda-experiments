@@ -90,10 +90,6 @@ export type CostBreakdown = {
 };
 
 export type FormSchema = {
-  stripeAccountId?: string;
-  acceptStripePayments: boolean;
-  acceptNearPayments: boolean;
-
   name: string;
   description?: string;
   location: string;
@@ -242,7 +238,6 @@ export const estimateCosts = ({ formData }: { formData: FormSchema }) => {
   }
 
   const eventMetadata: FunderEventMetadata = {
-    nearCheckout: formData.acceptNearPayments,
     name: formData.name,
     dateCreated: Date.now().toString(),
     description: formData.description,
@@ -327,12 +322,14 @@ export const createPayload = async ({
   eventArtworkCid,
   ticketArtworkCids,
   eventId,
+  stripeAccountId,
 }: {
   accountId: string;
   formData: FormSchema;
   eventArtworkCid: string;
   ticketArtworkCids: string[];
   eventId: string;
+  stripeAccountId: string;
 }): Promise<{ actions: Action[]; dropIds: string[] }> => {
   const masterKey = localStorageGet('MASTER_KEY') ?? '';
   if (!masterKey) {
@@ -342,8 +339,6 @@ export const createPayload = async ({
   const funderMetadata: FunderMetadata = {};
 
   const eventMetadata: FunderEventMetadata = {
-    nearCheckout: formData.acceptNearPayments,
-
     name: formData.name,
     dateCreated: Date.now().toString(),
     description: formData?.description || '',
@@ -471,8 +466,8 @@ export const createPayload = async ({
               funder_id: accountId,
               max_markup: 100, // Actual ticket price without any markup
               ticket_information,
-              stripe_status: formData.acceptStripePayments,
-              stripe_account_id: formData.stripeAccountId,
+              stripe_status: !!stripeAccountId,
+              stripe_account_id: stripeAccountId,
             }),
             attached_deposit: costBreakdown.marketListing,
           },

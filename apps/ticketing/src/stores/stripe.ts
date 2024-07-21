@@ -26,8 +26,7 @@ export const useStripeStore = create<StripeStore>((set) => ({
 
   checkForPriorStripeConnected: (accountId) => {
     if (accountId) {
-      const stripeAccountData = localStorage.getItem(`STRIPE_ACCOUNT_INFO`);
-      const stripeAccountObject = stripeAccountData ? JSON.parse(stripeAccountData) : {};
+      const stripeAccountObject = JSON.parse(localStorage.getItem(`STRIPE_ACCOUNT_INFO`) || '{}');
       if (Object.keys(stripeAccountObject).length === 0) {
         return null;
       } else {

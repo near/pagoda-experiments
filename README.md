@@ -69,6 +69,4 @@ TODO: Update the `pre-commit` command to only run against files that have been s
 
 ## Deployment
 
-TODO: https://github.com/near/pagoda-experiments/issues/16
-
-This project currently doesn't deploy anywhere.
+The main branch deploys to Vercel @ https://pagoda-experiments-ticketing.vercel.app/. Each pull-request will get its own Vercel deployment added onto the PR.
