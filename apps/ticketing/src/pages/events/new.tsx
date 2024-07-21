@@ -38,7 +38,7 @@ import { useStripe } from '@/hooks/useStripe';
 import { useNearStore } from '@/stores/near';
 import { useStripeStore } from '@/stores/stripe';
 import { useWalletStore } from '@/stores/wallet';
-import { EVENTS_WORKER_BASE, KEYPOM_EVENTS_CONTRACT_ID, KEYPOM_MARKETPLACE_CONTRACT_ID } from '@/utils/common';
+import { EVENTS_WORKER_BASE, KEYPOM_EVENTS_CONTRACT_ID } from '@/utils/common';
 import {
   createPayload,
   estimateCosts,
@@ -108,19 +108,13 @@ const CreateEvent: NextPageWithLayout = () => {
   }, [form]);
 
   useEffect(() => {
+    //TODO - prevent `/stripe/create-event` from being called twice and throwing a misleading error messaage
     const checkForEventCreationSuccess = async () => {
       const eventData = localStorage.getItem('EVENT_INFO_SUCCESS_DATA');
       if (eventData && viewAccount && !stripeUploaded) {
         const { eventId, eventName, stripeAccountId, priceByDropId } = JSON.parse(eventData);
         let response: Response | undefined;
         try {
-          //this essentially asserts that they event exists
-          await viewAccount.viewFunction({
-            contractId: KEYPOM_MARKETPLACE_CONTRACT_ID,
-            methodName: 'get_event_information',
-            args: { event_id: eventId },
-          });
-
           response = await fetch(`${EVENTS_WORKER_BASE}/stripe/create-event`, {
             method: 'POST',
             body: JSON.stringify({
@@ -133,10 +127,7 @@ const CreateEvent: NextPageWithLayout = () => {
 
           if (response.ok) {
             setUploadedToStripe(true);
-            openToast({
-              type: 'success',
-              title: 'Event Uploaded to Stripe',
-            });
+            console.log('Event Uploaded to Stripe');
           }
         } catch (e) {
           console.error('Error uploading to stripe: ', e);
@@ -184,7 +175,7 @@ const CreateEvent: NextPageWithLayout = () => {
           }
         } catch (error) {
           handleClientError({
-            title: 'Failed to fetch transaction status',
+            title: 'An error occurred during Event Creation.',
             error,
           });
         }
@@ -266,11 +257,6 @@ const CreateEvent: NextPageWithLayout = () => {
           signerId: wallet.id,
           receiverId: KEYPOM_EVENTS_CONTRACT_ID,
           actions,
-        });
-
-        openToast({
-          type: 'success',
-          title: 'Event Created',
         });
 
         if (stripeAccountId) {
