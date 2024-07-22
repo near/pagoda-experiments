@@ -3,7 +3,7 @@ import type { SignMessageMethod } from '@near-wallet-selector/core/src/lib/walle
 import type { WalletSelectorModal } from '@near-wallet-selector/modal-ui';
 import { create } from 'zustand';
 
-import { KEYPOM_CONTRACT_ID } from '@/utils/common';
+import { KEYPOM_CONTRACT_ID } from '@/utils/config';
 
 type WalletStore = {
   account: AccountState | null;

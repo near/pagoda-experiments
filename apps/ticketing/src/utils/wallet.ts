@@ -8,7 +8,7 @@ import { setupFastAuthWallet } from 'near-fastauth-wallet';
 import { usePurchasedTickets } from '@/hooks/usePurchasedTickets';
 
 import { NETWORK_ID } from './config';
-import { FunderEventMetadata, TicketMetadataExtra } from './helpers';
+import type { FunderEventMetadata, TicketMetadataExtra } from './helpers';
 
 const modules = [
   setupMyNearWallet(),
@@ -23,18 +23,10 @@ const modules = [
   }),
 ];
 
-const TESTNET_WALLET_SELECTOR_PARAMS: WalletSelectorParams = {
-  network: 'testnet',
+export const WALLET_SELECTOR_PARAMS: WalletSelectorParams = {
+  network: NETWORK_ID,
   modules,
 };
-
-const MAINNET_WALLET_SELECTOR_PARAMS: WalletSelectorParams = {
-  network: 'mainnet',
-  modules,
-};
-
-export const WALLET_SELECTOR_PARAMS =
-  NETWORK_ID === 'mainnet' ? MAINNET_WALLET_SELECTOR_PARAMS : TESTNET_WALLET_SELECTOR_PARAMS;
 
 export type EventDataForWallet = {
   event: FunderEventMetadata;
