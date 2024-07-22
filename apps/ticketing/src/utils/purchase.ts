@@ -2,10 +2,9 @@ import assert from 'assert';
 import { Account } from 'near-api-js';
 
 import { DropsByEventId } from '@/hooks/useDrops';
-import { KEYPOM_MARKETPLACE_CONTRACT_ID } from '@/utils/common';
 
 import { botCheck } from './bot-check';
-import { EVENTS_WORKER_BASE } from './common';
+import { CLOUDFLARE_IPFS, EVENTS_WORKER_BASE, KEYPOM_MARKETPLACE_CONTRACT_ID } from './config';
 import { FunderEventMetadata } from './helpers';
 
 type PurchaseWorkerPayload = {
@@ -89,10 +88,8 @@ export async function purchaseTickets({
     //const publicKey = await base64ToPublicKey(publicKeyBase64);
     //const buyerAnswers = await encryptWithPublicKey(JSON.stringify({ questions: {} }), publicKey); // TODO: Eventually support questions in our UI and record answers here
 
-    const eventImageUrl = event.artwork ? `https://cloudflare-ipfs.com/ipfs/${event.artwork}` : '';
-    const ticketImageUrl = drop.ticket.artwork
-      ? `https://cloudflare-ipfs.com/ipfs/${drop.ticket.artwork}`
-      : eventImageUrl ?? '';
+    const eventImageUrl = event.artwork ? `${CLOUDFLARE_IPFS}/${event.artwork}` : '';
+    const ticketImageUrl = drop.ticket.artwork ? `${CLOUDFLARE_IPFS}/${drop.ticket.artwork}` : eventImageUrl ?? '';
 
     const workerPayload: PurchaseWorkerPayload = {
       name: null,
@@ -142,8 +139,8 @@ export async function purchaseTickets({
       data.tickets.forEach((t) => purchases.push({ secretKey: t.secret_key }));
     } else {
       /*
-        TODO: We'll need to think through how we redirect to Stripe after exiting this loop. 
-        We need to make sure any and all free tickets are handled first before redirecting 
+        TODO: We'll need to think through how we redirect to Stripe after exiting this loop.
+        We need to make sure any and all free tickets are handled first before redirecting
         to Stripe.
       */
       console.error(response);

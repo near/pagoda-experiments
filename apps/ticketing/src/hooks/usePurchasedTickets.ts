@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Account } from 'near-api-js';
 
 import { useNearStore } from '@/stores/near';
-import { KEYPOM_EVENTS_CONTRACT_ID } from '@/utils/common';
+import { KEYPOM_EVENTS_CONTRACT_ID } from '@/utils/config';
 import { EventDrop, FunderEventMetadata, TicketMetadataExtra } from '@/utils/helpers';
 
 export function usePurchasedTickets(secretKeys: string[]) {
