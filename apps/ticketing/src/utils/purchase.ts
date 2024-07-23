@@ -47,13 +47,6 @@ type PurchaseTicketOptions = {
   viewAccount: Account | null;
 };
 
-type PurchaseWorkerResponse = {
-  tickets: {
-    public_key: string;
-    secret_key: string;
-  }[];
-};
-
 type PurchasedTicket = {
   secretKey: string;
 };
@@ -138,8 +131,13 @@ export async function purchaseTickets({
     });
 
     if (response.ok) {
-      const data = (await response.json()) as PurchaseWorkerResponse;
-      data.tickets.forEach((t) => purchases.push({ secretKey: t.secret_key }));
+      const data = await response.json();
+      if (!ticketIsFree) {
+        // redirect to stripe for checkout
+        window.location.href = data.stripe_url;
+      } else {
+        data.tickets.forEach((t: { secret_key: any }) => purchases.push({ secretKey: t.secret_key }));
+      }
     } else {
       /*
         TODO: We'll need to think through how we redirect to Stripe after exiting this loop. 
