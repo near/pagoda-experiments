@@ -26,6 +26,7 @@ import {
   Ticket,
   Trash,
 } from '@phosphor-icons/react';
+import { useMutation } from '@tanstack/react-query';
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -47,6 +48,7 @@ import {
   TicketInfoFormMetadata,
   yoctoToNear,
 } from '@/utils/helpers';
+import { createStripeEvent } from '@/utils/stripe';
 import { NextPageWithLayout } from '@/utils/types';
 
 const CreateEvent: NextPageWithLayout = () => {
@@ -74,6 +76,22 @@ const CreateEvent: NextPageWithLayout = () => {
     control: form.control,
     name: 'tickets',
     rules: { required: 'Please add at least one ticket configuration', minLength: 1 },
+  });
+
+  const { mutate, isSuccess, isPending } = useMutation({
+    mutationFn: createStripeEvent,
+    onSuccess: () => {
+      setUploadedToStripe(true);
+      console.log('Event Uploaded to Stripe');
+      localStorage.removeItem('EVENT_INFO_SUCCESS_DATA');
+    },
+    onError: (error: any) => {
+      console.error('Error uploading to stripe: ', error);
+      handleClientError({
+        title: 'Error Uploading to Stripe',
+        error,
+      });
+    },
   });
 
   useStripe(account?.accountId, attemptToConnect);
@@ -108,40 +126,15 @@ const CreateEvent: NextPageWithLayout = () => {
   }, [form]);
 
   useEffect(() => {
-    //TODO - prevent `/stripe/create-event` from being called twice and throwing a misleading error messaage
     const checkForEventCreationSuccess = async () => {
       const eventData = localStorage.getItem('EVENT_INFO_SUCCESS_DATA');
-      if (eventData && viewAccount && !stripeUploaded) {
-        const { eventId, eventName, stripeAccountId, priceByDropId } = JSON.parse(eventData);
-        let response: Response | undefined;
-        try {
-          response = await fetch(`${EVENTS_WORKER_BASE}/stripe/create-event`, {
-            method: 'POST',
-            body: JSON.stringify({
-              priceByDropId,
-              stripeAccountId,
-              eventId,
-              eventName,
-            }),
-          });
-
-          if (response.ok) {
-            setUploadedToStripe(true);
-            console.log('Event Uploaded to Stripe');
-          }
-        } catch (e) {
-          console.error('Error uploading to stripe: ', e);
-          handleClientError({
-            title: 'Error Uploading to Stripe',
-            error: e,
-          });
-        }
-
-        localStorage.removeItem('EVENT_INFO_SUCCESS_DATA');
+      if (eventData && viewAccount && !stripeUploaded && !isSuccess && !isPending) {
+        const parsedEventData = JSON.parse(eventData);
+        mutate(parsedEventData);
       }
     };
     checkForEventCreationSuccess();
-  }, [router, stripeUploaded, viewAccount]);
+  }, [isPending, isSuccess, mutate, router, stripeUploaded, viewAccount]);
 
   const placeHolderTicket: TicketInfoFormMetadata = {
     name: 'General Admission',
@@ -164,13 +157,13 @@ const CreateEvent: NextPageWithLayout = () => {
   }, [errorCode, form]);
 
   useEffect(() => {
-    if (transactionHashes) {
+    if (transactionHashes && account?.accountId) {
       const checkTransactionStatusForEvent = async () => {
         const txHash = transactionHashes as string;
         const provider = near?.connection.provider;
 
         try {
-          const result = (await provider!.txStatus(txHash, account?.accountId!)) as FinalExecutionOutcome;
+          const result = (await provider!.txStatus(txHash, account.accountId!)) as FinalExecutionOutcome;
           if (result.status && typeof result.status === 'object' && 'SuccessValue' in result.status) {
             openToast({
               type: 'success',
