@@ -28,9 +28,7 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
   const getLayout = Component.getLayout ?? ((page) => page);
   useEffect(() => {
     const handleShowWalletSelector = (e: MessageEvent<{ showWalletSelector: boolean }>) => {
-      console.log('handleShowWalletSelector is firing');
       if (e.data.showWalletSelector) {
-        console.log('modal?.show() is firing');
         modal?.show();
       }
     };
