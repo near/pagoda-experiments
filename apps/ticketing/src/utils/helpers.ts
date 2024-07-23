@@ -22,7 +22,7 @@ export interface TicketInfoFormMetadata {
   priceFiat?: string;
   description?: string | undefined;
   artwork?: FileList;
-  salesValidThrough?: DateAndTimeInfo;
+  salesValidThrough: DateAndTimeInfo;
   passValidThrough?: DateAndTimeInfo;
 }
 
@@ -51,7 +51,7 @@ export interface TicketMetadataExtra {
   priceNear?: string;
   priceFiat?: string;
   maxSupply?: number;
-  salesValidThrough?: DateAndTimeInfo;
+  salesValidThrough: DateAndTimeInfo;
   passValidThrough?: DateAndTimeInfo;
 }
 
@@ -268,10 +268,7 @@ export const estimateCosts = ({ formData }: { formData: FormSchema }) => {
   const drop_ids: string[] = [];
   const drop_configs: any = [];
   const asset_datas: any = [];
-  const ticket_information: Record<
-    string,
-    { max_tickets: number; price: string; sale_start?: number; sale_end?: number }
-  > = {};
+  const ticket_information: Record<string, { max_tickets: number; price: string }> = {};
 
   for (const ticket of formData.tickets) {
     const dropId = `${Date.now().toString()}-${ticket.name.replaceAll(' ', '').toLocaleLowerCase()}`;
@@ -279,11 +276,6 @@ export const estimateCosts = ({ formData }: { formData: FormSchema }) => {
     ticket_information[`${dropId}`] = {
       max_tickets: ticket.maxSupply ?? 0,
       price: parseNearAmount(ticket.priceNear || '0')!.toString(),
-      sale_start: Date.now() || undefined,
-      sale_end: Date.parse(formData.date) || undefined,
-      // ------------ pattern for allowing start and end sales date individually for each ticket
-      // sale_start: ticket.salesValidThrough.startDate || undefined,
-      // sale_end: ticket.salesValidThrough.endDate || undefined,
     };
 
     const dropConfig = {
@@ -302,7 +294,7 @@ export const estimateCosts = ({ formData }: { formData: FormSchema }) => {
       },
     ];
 
-    drop_ids.push(dropId);
+    drop_ids.push(dropId); //why do we do all this if we're just calculating & returning the estimated costs?
     asset_datas.push(assetData);
     drop_configs.push(dropConfig);
   }
@@ -378,7 +370,7 @@ export const createPayload = async ({
   const asset_datas: any = [];
   const ticket_information: Record<
     string,
-    { max_tickets: number; price: string; sale_start?: number; sale_end?: number }
+    { max_tickets: number; price: string; sale_start: number; sale_end: number }
   > = {};
 
   for (const ticket of formData.tickets) {
@@ -397,7 +389,11 @@ export const createPayload = async ({
       // price: parseNearAmount(ticket.price)!.toString(),
       priceNear: ticket.priceNear,
       priceFiat: ticket.priceFiat,
-      salesValidThrough: ticket.salesValidThrough,
+      salesValidThrough: {
+        ...ticket.salesValidThrough,
+        startDate: Date.parse(ticket.salesValidThrough.startDate.toString()),
+        endDate: Date.parse(ticket.salesValidThrough.endDate!.toString()),
+      },
       passValidThrough: ticket.passValidThrough,
       maxSupply: ticket.maxSupply,
       limitPerUser: ticket.maxPurchases,
@@ -414,11 +410,8 @@ export const createPayload = async ({
     ticket_information[`${dropId}`] = {
       max_tickets: ticket.maxSupply ?? 0,
       price: parseNearAmount(ticket.priceNear || '0')!.toString(),
-      sale_start: Date.now() || undefined,
-      sale_end: Date.parse(formData.date) || undefined,
-      // ------------ pattern for allowing start and end sales date individually for each ticket
-      // sale_start: ticket.salesValidThrough.startDate || undefined,
-      // sale_end: ticket.salesValidThrough.endDate || undefined,
+      sale_start: Date.parse(ticket.salesValidThrough.startDate.toString()),
+      sale_end: Date.parse(ticket.salesValidThrough.endDate!.toString()),
     };
 
     const dropConfig = {
