@@ -1,4 +1,3 @@
-import { Action } from '@near-wallet-selector/core';
 import { AssistiveText } from '@pagoda/ui/src/components/AssistiveText';
 import { Badge } from '@pagoda/ui/src/components/Badge';
 import { Button } from '@pagoda/ui/src/components/Button';
@@ -39,15 +38,8 @@ import { useStripe } from '@/hooks/useStripe';
 import { useNearStore } from '@/stores/near';
 import { useStripeStore } from '@/stores/stripe';
 import { useWalletStore } from '@/stores/wallet';
-import { EVENTS_WORKER_BASE, KEYPOM_EVENTS_CONTRACT_ID } from '@/utils/config';
-import {
-  createPayload,
-  estimateCosts,
-  FormSchema,
-  serializeMediaForWorker,
-  TicketInfoFormMetadata,
-  yoctoToNear,
-} from '@/utils/helpers';
+import { createNewEvent } from '@/utils/event';
+import { estimateCosts, FormSchema, TicketInfoFormMetadata, yoctoToNear } from '@/utils/helpers';
 import { createStripeEvent } from '@/utils/stripe';
 import { NextPageWithLayout } from '@/utils/types';
 
@@ -78,7 +70,7 @@ const CreateEvent: NextPageWithLayout = () => {
     rules: { required: 'Please add at least one ticket configuration', minLength: 1 },
   });
 
-  const { mutate, isSuccess, isPending } = useMutation({
+  const createStripeEventMutation = useMutation({
     mutationFn: createStripeEvent,
     onSuccess: () => {
       setUploadedToStripe(true);
@@ -91,6 +83,25 @@ const CreateEvent: NextPageWithLayout = () => {
         title: 'Error Uploading to Stripe',
         error,
       });
+    },
+  });
+
+  const createEventMutation = useMutation({
+    mutationFn: createNewEvent,
+    onSuccess: () => {
+      if (stripeAccountId) {
+        openToast({
+          type: 'success',
+          title: 'Uploading to Stripe',
+          description: 'Please wait while we upload your event to Stripe',
+        });
+      } else {
+        router.push('/events');
+      }
+    },
+    onError: (error: any) => {
+      console.error('Error creating event: ', error);
+      handleClientError({ title: 'Event Creation Failed', error });
     },
   });
 
@@ -128,13 +139,27 @@ const CreateEvent: NextPageWithLayout = () => {
   useEffect(() => {
     const checkForEventCreationSuccess = async () => {
       const eventData = localStorage.getItem('EVENT_INFO_SUCCESS_DATA');
-      if (eventData && viewAccount && !stripeUploaded && !isSuccess && !isPending) {
-        const parsedEventData = JSON.parse(eventData);
-        mutate(parsedEventData);
+      if (
+        eventData &&
+        viewAccount &&
+        !stripeUploaded &&
+        !createStripeEventMutation.isSuccess &&
+        !createStripeEventMutation.isPending
+      ) {
+        const parsedEventData = JSON.parse(eventData) as FormSchema;
+        createStripeEventMutation.mutate(parsedEventData);
       }
     };
     checkForEventCreationSuccess();
-  }, [isPending, isSuccess, mutate, router, stripeUploaded, viewAccount]);
+  }, [
+    createStripeEventMutation,
+    createStripeEventMutation.isPending,
+    createStripeEventMutation.isSuccess,
+    createStripeEventMutation.mutate,
+    router,
+    stripeUploaded,
+    viewAccount,
+  ]);
 
   const placeHolderTicket: TicketInfoFormMetadata = {
     name: 'General Admission',
@@ -163,7 +188,7 @@ const CreateEvent: NextPageWithLayout = () => {
         const provider = near?.connection.provider;
 
         try {
-          const result = (await provider!.txStatus(txHash, account.accountId!)) as FinalExecutionOutcome;
+          const result = (await provider!.txStatus(txHash, account.accountId)) as FinalExecutionOutcome;
           if (result.status && typeof result.status === 'object' && 'SuccessValue' in result.status) {
             openToast({
               type: 'success',
@@ -184,93 +209,13 @@ const CreateEvent: NextPageWithLayout = () => {
   }, [account?.accountId, near?.connection.provider, router, transactionHashes]);
 
   const onValidSubmit: SubmitHandler<FormSchema> = async (formData) => {
-    try {
-      localStorage.setItem('EVENT_INFO_DATA', JSON.stringify(formData));
-
-      if (!wallet || !account) {
-        openToast({
-          type: 'error',
-          title: 'Wallet not connected',
-          description: 'Please connect your wallet to create an event',
-        });
-        return;
-      }
-
-      let ipfsResponse: Response | undefined;
-      try {
-        const serializedData = await serializeMediaForWorker(formData);
-        const url = `${EVENTS_WORKER_BASE}/ipfs-pin`;
-        ipfsResponse = await fetch(url, {
-          method: 'POST',
-          body: JSON.stringify({ base64Data: serializedData }),
-        });
-      } catch (error) {
-        console.error('Failed to pin media on IPFS', error);
-      }
-
-      if (ipfsResponse?.ok) {
-        const resBody = await ipfsResponse.json();
-        const cids: string[] = resBody.cids;
-
-        const eventArtworkCid: string = cids[0] as string;
-        const ticketArtworkCids: string[] = [];
-        for (let i = 0; i < cids.length - 1; i++) {
-          ticketArtworkCids.push(cids[i + 1] as string);
-        }
-
-        const eventId = Date.now().toString();
-        localStorage.setItem('EVENT_INFO_SUCCESS_DATA', JSON.stringify({ eventId }));
-        if (!stripeAccountId) throw Error('Stripe Account ID is not available');
-
-        const { actions, dropIds }: { actions: Action[]; dropIds: string[] } = await createPayload({
-          accountId: account.accountId,
-          formData,
-          stripeAccountId,
-          eventId,
-          eventArtworkCid,
-          ticketArtworkCids,
-        });
-
-        const priceByDropId: Record<string, number> = {};
-        for (let i = 0; i < formData.tickets.length; i++) {
-          const ticketDropId = dropIds[i];
-          if (formData.tickets[i]?.priceFiat) {
-            priceByDropId[ticketDropId || `${eventId}-${i}`] = Math.round(
-              parseFloat(formData.tickets[i]?.priceFiat || ''),
-            );
-          }
-          {
-            priceByDropId[ticketDropId || `${eventId}-${i}`] = 0;
-          }
-        }
-        const stripeAccountInfo = {
-          stripeAccountId,
-          eventId,
-          eventName: formData.name,
-          priceByDropId,
-        };
-
-        localStorage.setItem('EVENT_INFO_SUCCESS_DATA', JSON.stringify(stripeAccountInfo));
-
-        await wallet.signAndSendTransaction({
-          signerId: wallet.id,
-          receiverId: KEYPOM_EVENTS_CONTRACT_ID,
-          actions,
-        });
-
-        if (stripeAccountId) {
-          openToast({
-            type: 'success',
-            title: 'Uploading to Stripe',
-            description: 'Please wait while we upload your event to Stripe',
-          });
-        } else {
-          router.push('/events');
-        }
-      }
-    } catch (error) {
-      handleClientError({ title: 'Event Creation Failed', error });
-    }
+    localStorage.setItem('EVENT_INFO_DATA', JSON.stringify(formData));
+    createEventMutation.mutate({
+      formData,
+      accountId: account?.accountId,
+      stripeAccountId,
+      wallet,
+    });
   };
 
   const handleConnectStripe = async () => {

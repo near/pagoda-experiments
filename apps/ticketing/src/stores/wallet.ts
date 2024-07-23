@@ -1,24 +1,7 @@
-import type { AccountState, Wallet, WalletSelector, WalletSelectorState } from '@near-wallet-selector/core';
-import type { SignMessageMethod } from '@near-wallet-selector/core/src/lib/wallet';
-import type { WalletSelectorModal } from '@near-wallet-selector/modal-ui';
 import { create } from 'zustand';
 
 import { KEYPOM_CONTRACT_ID } from '@/utils/config';
-
-type WalletStore = {
-  account: AccountState | null;
-  hasResolved: boolean;
-  modal: WalletSelectorModal | null;
-  selector: WalletSelector | null;
-  state: WalletSelectorState | null;
-  wallet: (Wallet & SignMessageMethod) | null;
-
-  setAccount: (account: AccountState | null) => void;
-  setSelector: (selector: WalletSelector | null, modal: WalletSelectorModal | null) => void;
-  setState: (state: WalletSelectorState | null) => void;
-  setWallet: (wallet: (Wallet & SignMessageMethod) | null) => void;
-  showFastAuthModal: () => void;
-};
+import type { WalletStore } from '@/utils/types';
 
 export const useWalletStore = create<WalletStore>((set, get) => ({
   account: null,
