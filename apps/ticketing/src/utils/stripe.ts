@@ -1,4 +1,4 @@
-import { EVENTS_WORKER_BASE } from './common';
+import { EVENTS_WORKER_BASE } from './config';
 import { FormSchema, serializeMediaForWorker } from './helpers';
 
 export const createStripeEvent = async (eventData: FormSchema) => {

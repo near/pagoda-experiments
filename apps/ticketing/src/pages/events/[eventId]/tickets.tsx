@@ -15,6 +15,7 @@ import { openToast } from '@pagoda/ui/src/components/Toast';
 import { Tooltip } from '@pagoda/ui/src/components/Tooltip';
 import { handleClientError } from '@pagoda/ui/src/utils/error';
 import { ArrowLeft, ArrowRight, Clock, Envelope, MapPinArea, Minus, Plus, Ticket } from '@phosphor-icons/react';
+import { useMutation } from '@tanstack/react-query';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
@@ -66,6 +67,25 @@ const GetTickets: NextPageWithLayout = () => {
     return result + price;
   }, 0);
 
+  const { mutate, isPending } = useMutation({
+    mutationFn: purchaseTickets,
+    onSuccess: (data, variables) => {
+      const { purchases } = data;
+      const { email } = variables;
+      openToast({
+        type: 'success',
+        title: `${purchases.length} ${pluralize(purchases.length, 'ticket')} purchased`,
+        description: `${pluralize(purchases.length, 'Ticket')} emailed to: ${email}`,
+      });
+
+      router.push(`/tickets/purchased#${purchases.map((purchase) => purchase.secretKey).join(',')}`);
+    },
+    onError: (error: any) => {
+      console.error('Checkout Failed: ', error);
+      handleClientError({ title: 'Checkout Failed', error });
+    },
+  });
+
   useEffect(() => {
     if (drops.data && !dropsForEvent) {
       openToast({
@@ -85,28 +105,15 @@ const GetTickets: NextPageWithLayout = () => {
   }, [dropsForEvent, form]);
 
   const onValidSubmit: SubmitHandler<FormSchema> = async (formData) => {
-    try {
-      if (!event.data || !dropsForEvent || !viewAccount) return;
-
-      const { purchases } = await purchaseTickets({
-        event: event.data,
-        dropsForEvent,
-        publisherAccountId,
-        email: formData.email,
-        tickets: formData.tickets,
-        viewAccount,
-      });
-
-      openToast({
-        type: 'success',
-        title: `${purchases.length} ${pluralize(purchases.length, 'ticket')} purchased`,
-        description: `${pluralize(purchases.length, 'Ticket')} emailed to: ${formData.email}`,
-      });
-
-      router.push(`/tickets/purchased#${purchases.map((purchase) => purchase.secretKey).join(',')}`);
-    } catch (error) {
-      handleClientError({ title: 'Checkout Failed', error });
-    }
+    if (!event.data || !dropsForEvent) return;
+    mutate({
+      event: event.data,
+      dropsForEvent,
+      publisherAccountId,
+      email: formData.email,
+      tickets: formData.tickets,
+      viewAccount,
+    });
   };
 
   if (!event.data || !dropsForEvent) {
@@ -292,7 +299,7 @@ const GetTickets: NextPageWithLayout = () => {
                   label="Checkout"
                   variant="affirmative"
                   iconRight={<ArrowRight />}
-                  loading={form.formState.isSubmitting}
+                  loading={form.formState.isSubmitting || isPending}
                 />
               </Flex>
             </Flex>

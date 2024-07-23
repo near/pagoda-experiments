@@ -54,4 +54,5 @@ export type WalletStore = {
   setSelector: (selector: WalletSelector | null, modal: WalletSelectorModal | null) => void;
   setState: (state: WalletSelectorState | null) => void;
   setWallet: (wallet: (Wallet & SignMessageMethod) | null) => void;
+  showFastAuthModal: () => void;
 };

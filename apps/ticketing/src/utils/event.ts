@@ -1,6 +1,6 @@
 import { Action } from '@near-wallet-selector/core';
 
-import { KEYPOM_EVENTS_CONTRACT_ID } from './common';
+import { KEYPOM_EVENTS_CONTRACT_ID } from './config';
 import { FormSchema } from './helpers';
 import { createPayload } from './helpers';
 import { pinMediaToIPFS } from './stripe';
