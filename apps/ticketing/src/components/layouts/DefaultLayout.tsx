@@ -20,8 +20,8 @@ type Props = {
 export const DefaultLayout = ({ children, signInRequired }: Props) => {
   const account = useWalletStore((store) => store.account);
   const hasResolved = useWalletStore((store) => store.hasResolved);
-  const modal = useWalletStore((store) => store.modal);
   const needsToSignIn = signInRequired && hasResolved && !account;
+  const showFastAuthModal = useWalletStore((store) => store.showFastAuthModal);
 
   return (
     <div className={s.wrapper}>
@@ -39,7 +39,7 @@ export const DefaultLayout = ({ children, signInRequired }: Props) => {
                     variant="affirmative"
                     iconLeft={<Wallet />}
                     label="Connect Wallet"
-                    onClick={() => modal?.show()}
+                    onClick={showFastAuthModal}
                   />
                 </Flex>
               </Container>

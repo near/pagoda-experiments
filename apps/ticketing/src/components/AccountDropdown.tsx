@@ -7,8 +7,6 @@ import { useWalletStore } from '@/stores/wallet';
 
 export const AccountDropdown = () => {
   const account = useWalletStore((store) => store.account);
-  // this is not used but will be required in the future
-  // const modal = useWalletStore((store) => store.modal);
   const wallet = useWalletStore((store) => store.wallet);
   const showFastAuthModal = useWalletStore((store) => store.showFastAuthModal);
 
