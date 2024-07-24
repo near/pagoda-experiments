@@ -8,6 +8,7 @@ import s from './QrCodeScanner.module.scss';
 
 type Props = {
   onScanSuccess: (data: string) => any;
+  processing: boolean;
 };
 
 export const QrCodeScanner = (props: Props) => {
@@ -89,7 +90,7 @@ export const QrCodeScanner = (props: Props) => {
   }, []);
 
   return (
-    <div className={s.scanner}>
+    <div className={s.scanner} data-processing={props.processing}>
       <video className={s.video} ref={videoRef} />
       <div className={s.spinner}>
         <Spinner />

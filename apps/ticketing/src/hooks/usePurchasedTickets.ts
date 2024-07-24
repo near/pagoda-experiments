@@ -57,10 +57,12 @@ export function usePurchasedTickets(secretKeys: string[]) {
   return query;
 }
 
-async function fetchDetailsForPurchasedTicket(secretKey: string, viewAccount: Account) {
+export async function fetchDetailsForPurchasedTicket(secretKey: string, viewAccount: Account | null | undefined) {
+  if (!viewAccount) throw new Error('viewAccount has not been initialized yet');
+
   const publicKey = getPubFromSecret(secretKey);
 
-  const keyInfo: { drop_id: string } = await viewAccount!.viewFunction({
+  const keyInfo: { drop_id: string; uses_remaining: number } = await viewAccount!.viewFunction({
     contractId: KEYPOM_EVENTS_CONTRACT_ID,
     methodName: 'get_key_information',
     args: { key: publicKey },
@@ -83,5 +85,6 @@ async function fetchDetailsForPurchasedTicket(secretKey: string, viewAccount: Ac
     publicKey,
     secretKey,
     title: metadata.title || 'General Admission',
+    usesRemaining: keyInfo.uses_remaining || 0,
   };
 }

@@ -9,12 +9,16 @@ import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
 import { Text } from '@pagoda/ui/src/components/Text';
 import { openToast } from '@pagoda/ui/src/components/Toast';
 import { CalendarDots, Clock, QrCode } from '@phosphor-icons/react';
+import { useMutation } from '@tanstack/react-query';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
+import { useRef } from 'react';
 
 import { QrCodeScanner } from '@/components/QrCodeScanner';
 import { useEvent } from '@/hooks/useEvents';
 import { useDefaultLayout } from '@/hooks/useLayout';
+import { fetchDetailsForPurchasedTicket } from '@/hooks/usePurchasedTickets';
+import { useNearStore } from '@/stores/near';
 import { displayEventDate } from '@/utils/date';
 import { parseEventIdQueryParam } from '@/utils/event-id';
 import { NextPageWithLayout } from '@/utils/types';
@@ -23,25 +27,71 @@ const ScanEventTickets: NextPageWithLayout = () => {
   const router = useRouter();
   const { publisherAccountId, eventId } = parseEventIdQueryParam(router.query.eventId);
   const event = useEvent(publisherAccountId, eventId);
+  const viewAccount = useNearStore((store) => store.viewAccount);
+  const verifiedSecretKeys = useRef<string[]>([]);
 
-  const onScanSuccess = (data: string) => {
-    console.log(`TODO: Verify ticket is valid for current event: ${data}`);
+  const verifyMutation = useMutation({
+    mutationFn: async (secretKey: string): Promise<{ isVerified: boolean; message?: string }> => {
+      console.log('Verifying secret key...', secretKey);
 
-    const isValid = true;
+      try {
+        const hasBeenVerified = verifiedSecretKeys.current.includes(secretKey);
 
-    if (isValid) {
+        if (hasBeenVerified) {
+          // Return early before making any API requests if we know we've already scanned the ticket
+          return {
+            isVerified: true,
+            message: 'Ticket has already been scanned',
+          };
+        }
+
+        const details = await fetchDetailsForPurchasedTicket(secretKey, viewAccount);
+        const matchesEvent = details.extra.eventId === eventId;
+        const hasBeenUsed = details.usesRemaining !== 2; // This logic was copied from Keypom. Not sure why we check against 2 instead of checking greater than 0...
+
+        if (hasBeenUsed) {
+          return {
+            isVerified: true,
+            message: 'Ticket has already been scanned',
+          };
+        }
+
+        if (!matchesEvent) {
+          return {
+            isVerified: false,
+            message: 'Ticket is not associated with current event',
+          };
+        }
+
+        return {
+          isVerified: true,
+        };
+      } catch (error) {
+        console.error(error);
+      }
+
+      return {
+        isVerified: false,
+        message: 'Failed to load ticket information',
+      };
+    },
+  });
+
+  const onScanSuccess = async (secretKey: string) => {
+    const { isVerified, message } = await verifyMutation.mutateAsync(secretKey);
+
+    if (isVerified) {
       openToast({
         type: 'success',
         title: 'Ticket Verified',
-        description: data,
+        description: message,
         duration: 1000,
       });
     } else {
       openToast({
         type: 'error',
         title: 'Invalid Ticket',
-        description: data,
-        duration: 1000,
+        description: message,
       });
     }
   };
@@ -74,7 +124,7 @@ const ScanEventTickets: NextPageWithLayout = () => {
             </Flex>
 
             <Card>
-              <QrCodeScanner onScanSuccess={onScanSuccess} />
+              <QrCodeScanner onScanSuccess={onScanSuccess} processing={verifyMutation.isPending} />
 
               <HR style={{ margin: 0 }} />
 

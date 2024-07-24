@@ -10,12 +10,12 @@ const DROP_ITEMS_PER_QUERY = 5;
 
 export type DropsByEventId = NonNullable<Awaited<ReturnType<typeof useDrops>>['data']>;
 
-export function useDrops(accountId: string | undefined) {
+export function useDrops(publisherAccountId: string | undefined) {
   const viewAccount = useNearStore((store) => store.viewAccount);
 
   const query = useQuery({
-    enabled: !!viewAccount && !!accountId,
-    queryKey: ['drops', accountId],
+    enabled: !!viewAccount && !!publisherAccountId,
+    queryKey: ['drops', publisherAccountId],
     queryFn: async () => {
       try {
         /*
@@ -26,7 +26,7 @@ export function useDrops(accountId: string | undefined) {
         const numberOfDrops: number = await viewAccount!.viewFunction({
           contractId: KEYPOM_EVENTS_CONTRACT_ID,
           methodName: 'get_drop_supply_for_funder',
-          args: { account_id: accountId },
+          args: { account_id: publisherAccountId },
         });
 
         const totalQueries = Math.ceil(numberOfDrops / DROP_ITEMS_PER_QUERY);
@@ -38,7 +38,7 @@ export function useDrops(accountId: string | undefined) {
               contractId: KEYPOM_EVENTS_CONTRACT_ID,
               methodName: 'get_drops_for_funder',
               args: {
-                account_id: accountId,
+                account_id: publisherAccountId,
                 from_index: (pageIndex * DROP_ITEMS_PER_QUERY).toString(),
                 limit: DROP_ITEMS_PER_QUERY,
               },
