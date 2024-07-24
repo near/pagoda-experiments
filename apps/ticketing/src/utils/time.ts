@@ -15,13 +15,13 @@ export const validateDateAndTime = (
     const { valid: startValid, message: startMessage } = validateStartDateAndTime(requiredInfoObj);
 
     if (!startValid) {
-      /// If we're checking for event over, we only need to verify that the single day events haven't closed
+      // If we're checking for event over, we only need to verify that the single day events haven't closed
       if (checkEventOver) {
         if (startMessage === `Ticket sales have closed`) {
           valid = false;
           message = startMessage;
         }
-      } /// Otherwise, we should just set the valid normally since it wasn't valid
+      } // Otherwise, we should just set the valid normally since it wasn't valid
       else {
         valid = false;
         message = startMessage;

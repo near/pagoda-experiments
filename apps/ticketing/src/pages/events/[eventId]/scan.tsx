@@ -12,13 +12,12 @@ import { CalendarDots, Clock, QrCode } from '@phosphor-icons/react';
 import { useMutation } from '@tanstack/react-query';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useRef } from 'react';
 
 import { QrCodeScanner } from '@/components/QrCodeScanner';
 import { useEvent } from '@/hooks/useEvents';
 import { useDefaultLayout } from '@/hooks/useLayout';
-import { fetchDetailsForPurchasedTicket } from '@/hooks/usePurchasedTickets';
 import { useNearStore } from '@/stores/near';
+import { verifyAndClaimTicket, VerifyAndClaimTicketResult } from '@/utils/claim';
 import { displayEventDate } from '@/utils/date';
 import { parseEventIdQueryParam } from '@/utils/event-id';
 import { NextPageWithLayout } from '@/utils/types';
@@ -28,69 +27,49 @@ const ScanEventTickets: NextPageWithLayout = () => {
   const { publisherAccountId, eventId } = parseEventIdQueryParam(router.query.eventId);
   const event = useEvent(publisherAccountId, eventId);
   const viewAccount = useNearStore((store) => store.viewAccount);
-  const verifiedSecretKeys = useRef<string[]>([]);
+  const near = useNearStore((store) => store.near);
+  const keyStore = useNearStore((store) => store.keyStore);
 
-  const verifyMutation = useMutation({
-    mutationFn: async (secretKey: string): Promise<{ isVerified: boolean; message?: string }> => {
-      console.log('Verifying secret key...', secretKey);
-
+  const mutation = useMutation({
+    mutationFn: async (secretKey: string): Promise<VerifyAndClaimTicketResult> => {
       try {
-        const hasBeenVerified = verifiedSecretKeys.current.includes(secretKey);
-
-        if (hasBeenVerified) {
-          // Return early before making any API requests if we know we've already scanned the ticket
-          return {
-            isVerified: true,
-            message: 'Ticket has already been scanned',
-          };
+        if (!near || !keyStore || !viewAccount) {
+          throw new Error('Near connection has not initialized yet');
         }
 
-        const details = await fetchDetailsForPurchasedTicket(secretKey, viewAccount);
-        const matchesEvent = details.extra.eventId === eventId;
-        const hasBeenUsed = details.usesRemaining !== 2; // This logic was copied from Keypom. Not sure why we check against 2 instead of checking greater than 0...
-
-        if (hasBeenUsed) {
-          return {
-            isVerified: true,
-            message: 'Ticket has already been scanned',
-          };
-        }
-
-        if (!matchesEvent) {
-          return {
-            isVerified: false,
-            message: 'Ticket is not associated with current event',
-          };
-        }
-
-        return {
-          isVerified: true,
-        };
+        return await verifyAndClaimTicket({
+          eventId,
+          keyStore,
+          near,
+          secretKey,
+          viewAccount,
+        });
       } catch (error) {
         console.error(error);
       }
 
       return {
         isVerified: false,
-        message: 'Failed to load ticket information',
+        message: 'Failed to verify ticket for unknown reason',
       };
     },
   });
 
   const onScanSuccess = async (secretKey: string) => {
-    const { isVerified, message } = await verifyMutation.mutateAsync(secretKey);
+    if (mutation.isPending) return;
+
+    const { isVerified, message } = await mutation.mutateAsync(secretKey);
 
     if (isVerified) {
       openToast({
         type: 'success',
         title: 'Ticket Verified',
         description: message,
-        duration: 1000,
       });
     } else {
       openToast({
         type: 'error',
-        title: 'Invalid Ticket',
+        title: 'Ticket Verification Failure',
         description: message,
       });
     }
@@ -124,7 +103,7 @@ const ScanEventTickets: NextPageWithLayout = () => {
             </Flex>
 
             <Card>
-              <QrCodeScanner onScanSuccess={onScanSuccess} processing={verifyMutation.isPending} />
+              <QrCodeScanner onScanSuccess={onScanSuccess} processing={mutation.isPending} />
 
               <HR style={{ margin: 0 }} />
 
