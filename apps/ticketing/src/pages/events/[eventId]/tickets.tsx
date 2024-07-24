@@ -24,7 +24,7 @@ import { useDrops } from '@/hooks/useDrops';
 import { useEvent } from '@/hooks/useEvents';
 import { useDefaultLayout } from '@/hooks/useLayout';
 import { useNearStore } from '@/stores/near';
-import { CLOUDFLARE_IPFS } from '@/utils/common';
+import { CLOUDFLARE_IPFS } from '@/utils/config';
 import { displayEventDate } from '@/utils/date';
 import { formatDollar, formatTicketPrice } from '@/utils/dollar';
 import { formatEventIdQueryParam, parseEventIdQueryParam } from '@/utils/event-id';

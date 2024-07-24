@@ -1,5 +1,5 @@
 /*
-  NOTE: This page supports rendering single or multiple purchased tickets based on 
+  NOTE: This page supports rendering single or multiple purchased tickets based on
   the number of comma separated values that exist in the URL hash:
 
   - Single ticket: /tickets/purchased#1
@@ -29,7 +29,7 @@ import { AddToAppleWallet } from '@/components/AddToAppleWallet';
 import { AddToGoogleWallet } from '@/components/AddToGoogleWallet';
 import { useDefaultLayout } from '@/hooks/useLayout';
 import { usePurchasedTickets } from '@/hooks/usePurchasedTickets';
-import { CLOUDFLARE_IPFS } from '@/utils/common';
+import { CLOUDFLARE_IPFS } from '@/utils/config';
 import { displayEventDate } from '@/utils/date';
 import { formatEventIdQueryParam } from '@/utils/event-id';
 import { convertToSafeFilename } from '@/utils/file';
@@ -45,10 +45,10 @@ const PurchasedTickets: NextPageWithLayout = () => {
 
   useEffect(() => {
     /*
-      NOTE: The secret keys are stored and read from "location.hash" instead of 
-      a query param to help provide an extra layer of privacy since URI fragments 
+      NOTE: The secret keys are stored and read from "location.hash" instead of
+      a query param to help provide an extra layer of privacy since URI fragments
       are never sent to the server (they're client side only).
-      
+
       https://en.wikipedia.org/wiki/URI_fragment
     */
 
