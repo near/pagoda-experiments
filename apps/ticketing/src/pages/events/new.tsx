@@ -146,6 +146,12 @@ const CreateEvent: NextPageWithLayout = () => {
   const placeHolderTicket: TicketInfoFormMetadata = {
     name: 'General Admission',
     denomination: 'Near',
+    salesValidThrough: {
+      startDate: Date.now(), // Milliseconds from Unix Epoch
+      startTime: '00:00', // Raw 24 hour time string such as 18:00
+      endDate: new Date().setDate(Date.now() + 14), // Milliseconds from start date
+      endTime: '00:00',
+    },
   };
 
   useEffect(() => {
@@ -454,6 +460,24 @@ const CreateEvent: NextPageWithLayout = () => {
                           required: 'Please enter a value',
                           min: 1,
                           valueAsNumber: true,
+                        })}
+                      />
+                    </Flex>
+                    <Flex stack="phone">
+                      <Input
+                        label="Sales Start Date"
+                        type="date"
+                        error={form.formState.errors.date?.message}
+                        {...form.register(`tickets.${index}.salesValidThrough.startDate`, {
+                          required: 'Please enter a date',
+                        })}
+                      />
+                      <Input
+                        label="Sales End Date"
+                        type="date"
+                        error={form.formState.errors.date?.message}
+                        {...form.register(`tickets.${index}.salesValidThrough.endDate`, {
+                          required: 'Please enter a date',
                         })}
                       />
                     </Flex>

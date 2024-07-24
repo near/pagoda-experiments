@@ -21,7 +21,7 @@ export interface TicketInfoFormMetadata {
   priceFiat?: string;
   description?: string | undefined;
   artwork?: FileList;
-  salesValidThrough?: DateAndTimeInfo;
+  salesValidThrough: DateAndTimeInfo;
   passValidThrough?: DateAndTimeInfo;
 }
 
@@ -50,7 +50,7 @@ export interface TicketMetadataExtra {
   priceNear?: string;
   priceFiat?: string;
   maxSupply?: number;
-  salesValidThrough?: DateAndTimeInfo;
+  salesValidThrough: DateAndTimeInfo;
   passValidThrough?: DateAndTimeInfo;
 }
 
@@ -310,10 +310,8 @@ export const createPayload = async ({
   const drop_ids: string[] = [];
   const drop_configs: any = [];
   const asset_datas: any = [];
-  const marketTicketInfo: Record<
-    string,
-    { max_tickets: number; price: string; sale_start?: number; sale_end?: number }
-  > = {};
+  const marketTicketInfo: Record<string, { max_tickets: number; price: string; sale_start: number; sale_end: number }> =
+    {};
 
   for (const ticket of formData.tickets) {
     const dropId = `${Date.now().toString()}-${ticket.name.replaceAll(' ', '').toLocaleLowerCase()}`;
@@ -330,7 +328,11 @@ export const createPayload = async ({
       dateCreated: Date.now().toString(),
       priceNear: ticket.priceNear,
       priceFiat: ticket.priceFiat,
-      salesValidThrough: ticket.salesValidThrough,
+      salesValidThrough: {
+        ...ticket.salesValidThrough,
+        startDate: Date.parse(ticket.salesValidThrough.startDate.toString()),
+        endDate: Date.parse(ticket.salesValidThrough.endDate!.toString()),
+      },
       passValidThrough: ticket.passValidThrough,
       maxSupply: ticket.maxSupply,
       limitPerUser: ticket.maxPurchases,
@@ -347,8 +349,8 @@ export const createPayload = async ({
     marketTicketInfo[`${dropId}`] = {
       max_tickets: ticket.maxSupply ?? 0,
       price: parseNearAmount(ticket.priceNear || '0')!.toString(),
-      sale_start: Date.now() || undefined,
-      sale_end: Date.parse(formData.date) || undefined,
+      sale_start: Date.parse(ticket.salesValidThrough.startDate.toString()),
+      sale_end: Date.parse(ticket.salesValidThrough.endDate!.toString()),
     };
 
     const dropConfig = {
