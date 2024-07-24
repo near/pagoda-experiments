@@ -2,7 +2,7 @@ import { handleClientError } from '@pagoda/ui/src/utils/error';
 import { useQuery } from '@tanstack/react-query';
 
 import { useNearStore } from '@/stores/near';
-import { KEYPOM_EVENTS_CONTRACT_ID } from '@/utils/common';
+import { KEYPOM_EVENTS_CONTRACT_ID } from '@/utils/config';
 import { FunderEventMetadata } from '@/utils/helpers';
 
 export function useEvents(accountId: string | undefined) {

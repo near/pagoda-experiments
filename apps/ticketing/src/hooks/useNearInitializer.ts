@@ -3,8 +3,7 @@ import { useRef } from 'react';
 import { useEffect } from 'react';
 
 import { useNearStore } from '@/stores/near';
-import { KEYPOM_CONTRACT_ID } from '@/utils/common';
-import { NETWORK_ID, NETWORK_NODE_URL } from '@/utils/config';
+import { KEYPOM_CONTRACT_ID, NETWORK_ID, NETWORK_NODE_URL } from '@/utils/config';
 
 export function useNearInitializer() {
   const connectPromise = useRef<Promise<Near> | null>(null);

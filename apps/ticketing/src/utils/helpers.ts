@@ -2,9 +2,8 @@ import { type Action } from '@near-wallet-selector/core';
 import { utils } from 'near-api-js';
 import { parseNearAmount } from 'near-api-js/lib/utils/format';
 
-import { KEYPOM_MARKETPLACE_CONTRACT_ID } from './common';
+import { KEYPOM_MARKETPLACE_CONTRACT_ID } from './config';
 import { getByteSize } from './crypto-helpers';
-import { localStorageGet } from './local-storage';
 
 export interface DateAndTimeInfo {
   startDate: number; // Milliseconds from Unix Epoch
@@ -232,11 +231,6 @@ function arrayBufferToBase64(buffer: any) {
 export const estimateCosts = ({ formData }: { formData: FormSchema }) => {
   const eventId = Date.now().toString();
 
-  const masterKey = localStorageGet('MASTER_KEY') ?? '';
-  if (!masterKey) {
-    console.warn('Missing local storage value MASTER_KEY inside createPayload()');
-  }
-
   const eventMetadata: FunderEventMetadata = {
     name: formData.name,
     dateCreated: Date.now().toString(),
@@ -253,56 +247,26 @@ export const estimateCosts = ({ formData }: { formData: FormSchema }) => {
     id: eventId.toString(),
   };
 
-  // if (formData.questions.length > 0) {
-  //   const { publicKey, privateKey } = await generateKeyPair();
-  //   const saltBytes = window.crypto.getRandomValues(new Uint8Array(16));
-  //   const saltBase64 = uint8ArrayToBase64(saltBytes);
-  //   const symmetricKey = await deriveKeyFromPassword(masterKey, saltBase64);
-  //   const { encryptedPrivateKeyBase64, ivBase64 } = await encryptPrivateKey(privateKey, symmetricKey);
-  //   eventMetadata.pubKey = await exportPublicKeyToBase64(publicKey);
-  //   eventMetadata.encPrivKey = encryptedPrivateKeyBase64;
-  //   eventMetadata.iv = ivBase64;
-  //   eventMetadata.salt = saltBase64;
-  // }
-
-  const drop_ids: string[] = [];
-  const drop_configs: any = [];
-  const asset_datas: any = [];
-  const ticket_information: Record<string, { max_tickets: number; price: string }> = {};
+  const marketTicketInfo: Record<
+    string,
+    { max_tickets: number; price: string; sale_start?: number; sale_end?: number }
+  > = {};
 
   for (const ticket of formData.tickets) {
     const dropId = `${Date.now().toString()}-${ticket.name.replaceAll(' ', '').toLocaleLowerCase()}`;
 
-    ticket_information[`${dropId}`] = {
+    marketTicketInfo[`${dropId}`] = {
       max_tickets: ticket.maxSupply ?? 0,
       price: parseNearAmount(ticket.priceNear || '0')!.toString(),
+      sale_start: Date.now() || undefined,
+      sale_end: Date.parse(formData.date) || undefined,
     };
-
-    const dropConfig = {
-      metadata: JSON.stringify(ticket),
-      add_key_allowlist: [KEYPOM_MARKETPLACE_CONTRACT_ID],
-      transfer_key_allowlist: [KEYPOM_MARKETPLACE_CONTRACT_ID],
-    };
-
-    const assetData = [
-      {
-        uses: 2,
-        assets: [null],
-        config: {
-          permissions: 'claim',
-        },
-      },
-    ];
-
-    drop_ids.push(dropId); //why do we do all this if we're just calculating & returning the estimated costs?
-    asset_datas.push(assetData);
-    drop_configs.push(dropConfig);
   }
 
   const { costBreakdown } = calculateDepositCost({
     eventMetadata,
     eventTickets: formData.tickets,
-    marketTicketInfo: ticket_information,
+    marketTicketInfo,
   });
 
   return costBreakdown;
@@ -323,11 +287,6 @@ export const createPayload = async ({
   eventId: string;
   stripeAccountId: string;
 }): Promise<{ actions: Action[]; dropIds: string[] }> => {
-  const masterKey = localStorageGet('MASTER_KEY') ?? '';
-  if (!masterKey) {
-    console.warn('Missing local storage value MASTER_KEY inside createPayload()');
-  }
-
   const funderMetadata: FunderMetadata = {};
 
   const eventMetadata: FunderEventMetadata = {
@@ -343,32 +302,15 @@ export const createPayload = async ({
     },
     artwork: eventArtworkCid,
     sellable: formData.sellable,
-    // questions: formData.questions.map((question: { question: any; isRequired: any; }) => ({
-    //   question: question.question,
-    //   required: question.isRequired || false,
-    // })),
     id: eventId.toString(),
   };
-
-  // if (formData.questions.length > 0) {
-  //   const { publicKey, privateKey } = await generateKeyPair();
-  //   const saltBytes = window.crypto.getRandomValues(new Uint8Array(16));
-  //   const saltBase64 = uint8ArrayToBase64(saltBytes);
-  //   const symmetricKey = await deriveKeyFromPassword(masterKey, saltBase64);
-  //   const { encryptedPrivateKeyBase64, ivBase64 } = await encryptPrivateKey(privateKey, symmetricKey);
-
-  //   eventMetadata.pubKey = await exportPublicKeyToBase64(publicKey);
-  //   eventMetadata.encPrivKey = encryptedPrivateKeyBase64;
-  //   eventMetadata.iv = ivBase64;
-  //   eventMetadata.salt = saltBase64;
-  // }
 
   funderMetadata[eventId] = eventMetadata;
 
   const drop_ids: string[] = [];
   const drop_configs: any = [];
   const asset_datas: any = [];
-  const ticket_information: Record<
+  const marketTicketInfo: Record<
     string,
     { max_tickets: number; price: string; sale_start: number; sale_end: number }
   > = {};
@@ -386,7 +328,6 @@ export const createPayload = async ({
 
     const ticketExtra: TicketMetadataExtra = {
       dateCreated: Date.now().toString(),
-      // price: parseNearAmount(ticket.price)!.toString(),
       priceNear: ticket.priceNear,
       priceFiat: ticket.priceFiat,
       salesValidThrough: {
@@ -407,7 +348,7 @@ export const createPayload = async ({
       extra: JSON.stringify(ticketExtra),
     };
 
-    ticket_information[`${dropId}`] = {
+    marketTicketInfo[`${dropId}`] = {
       max_tickets: ticket.maxSupply ?? 0,
       price: parseNearAmount(ticket.priceNear || '0')!.toString(),
       sale_start: Date.parse(ticket.salesValidThrough.startDate.toString()),
@@ -438,7 +379,7 @@ export const createPayload = async ({
   const { costBreakdown } = calculateDepositCost({
     eventMetadata,
     eventTickets: formData.tickets,
-    marketTicketInfo: ticket_information,
+    marketTicketInfo,
   });
 
   const actions: Action[] = [
@@ -458,7 +399,7 @@ export const createPayload = async ({
               event_id: eventId,
               funder_id: accountId,
               max_markup: 100, // Actual ticket price without any markup
-              ticket_information,
+              ticket_information: marketTicketInfo,
               stripe_status: !!stripeAccountId,
               stripe_account_id: stripeAccountId,
             }),
