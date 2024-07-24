@@ -15,7 +15,7 @@ import { useRouter } from 'next/router';
 
 import { useDefaultLayout } from '@/hooks/useLayout';
 import { useWalletStore } from '@/stores/wallet';
-import { CLOUDFLARE_IPFS } from '@/utils/common';
+import { CLOUDFLARE_IPFS } from '@/utils/config';
 import { HOSTNAME } from '@/utils/config';
 import { displayEventDate } from '@/utils/date';
 import { parseEventIdQueryParam } from '@/utils/event-id';
@@ -24,8 +24,8 @@ import { fetchEventFromJsonRpc } from '@/utils/rpc';
 import type { EventDetails, NextPageWithLayout } from '@/utils/types';
 
 /*
-  NOTE: This page is a bit of an outlier. Due to this particular page being frequently shared 
-  via social media, it's important to fetch the event data on the server side so that we can 
+  NOTE: This page is a bit of an outlier. Due to this particular page being frequently shared
+  via social media, it's important to fetch the event data on the server side so that we can
   properly render meta tags to populate dynamic preview content when shared.
 */
 

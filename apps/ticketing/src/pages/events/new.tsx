@@ -38,7 +38,7 @@ import { useStripe } from '@/hooks/useStripe';
 import { useNearStore } from '@/stores/near';
 import { useStripeStore } from '@/stores/stripe';
 import { useWalletStore } from '@/stores/wallet';
-import { EVENTS_WORKER_BASE, KEYPOM_EVENTS_CONTRACT_ID } from '@/utils/common';
+import { EVENTS_WORKER_BASE, KEYPOM_EVENTS_CONTRACT_ID } from '@/utils/config';
 import {
   createPayload,
   estimateCosts,

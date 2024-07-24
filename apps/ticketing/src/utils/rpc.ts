@@ -1,5 +1,4 @@
-import { KEYPOM_EVENTS_CONTRACT_ID } from './common';
-import { NETWORK_NODE_URL } from './config';
+import { KEYPOM_EVENTS_CONTRACT_ID, NETWORK_NODE_URL } from './config';
 import { FunderEventMetadata } from './helpers';
 
 function encodeJsonRpcArgs(args: Record<any, any>) {
