@@ -310,10 +310,8 @@ export const createPayload = async ({
   const drop_ids: string[] = [];
   const drop_configs: any = [];
   const asset_datas: any = [];
-  const marketTicketInfo: Record<
-    string,
-    { max_tickets: number; price: string; sale_start: number; sale_end: number }
-  > = {};
+  const marketTicketInfo: Record<string, { max_tickets: number; price: string; sale_start: number; sale_end: number }> =
+    {};
 
   for (const ticket of formData.tickets) {
     const dropId = `${Date.now().toString()}-${ticket.name.replaceAll(' ', '').toLocaleLowerCase()}`;
