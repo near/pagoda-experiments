@@ -86,7 +86,7 @@ const GetTickets: NextPageWithLayout = () => {
 
   const onValidSubmit: SubmitHandler<FormSchema> = async (formData) => {
     try {
-      if (!event.data || !dropsForEvent) return;
+      if (!event.data || !dropsForEvent || !viewAccount) return;
 
       const { purchases } = await purchaseTickets({
         event: event.data,

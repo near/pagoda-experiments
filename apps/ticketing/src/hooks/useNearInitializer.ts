@@ -7,15 +7,20 @@ import { KEYPOM_CONTRACT_ID, NETWORK_ID, NETWORK_NODE_URL } from '@/utils/config
 
 export function useNearInitializer() {
   const connectPromise = useRef<Promise<Near> | null>(null);
+  const setKeyStore = useNearStore((store) => store.setKeyStore);
   const setNear = useNearStore((store) => store.setNear);
   const setViewAccount = useNearStore((store) => store.setViewAccount);
 
   useEffect(() => {
     const initialize = async () => {
       if (!connectPromise.current) {
+        const keyStore = new keyStores.BrowserLocalStorageKeyStore();
+
+        setKeyStore(keyStore);
+
         connectPromise.current = connect({
           networkId: NETWORK_ID,
-          keyStore: new keyStores.BrowserLocalStorageKeyStore(),
+          keyStore,
           nodeUrl: NETWORK_NODE_URL,
         });
       }
@@ -28,5 +33,5 @@ export function useNearInitializer() {
     };
 
     initialize();
-  }, [setNear, setViewAccount]);
+  }, [setNear, setViewAccount, setKeyStore]);
 }

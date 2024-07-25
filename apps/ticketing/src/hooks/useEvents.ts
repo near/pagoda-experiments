@@ -13,7 +13,9 @@ export function useEvents(accountId: string | undefined) {
     queryKey: ['events', accountId],
     queryFn: async () => {
       try {
-        const response = await viewAccount!.viewFunction({
+        if (!viewAccount) throw new Error('View account has not initialized yet');
+
+        const response = await viewAccount.viewFunction({
           contractId: KEYPOM_EVENTS_CONTRACT_ID,
           methodName: 'get_funder_info',
           args: { account_id: accountId },
@@ -50,7 +52,9 @@ export function useEvent(accountId: string | undefined, eventId: string | undefi
           on the client side.
         */
 
-        const response = await viewAccount!.viewFunction({
+        if (!viewAccount) throw new Error('View account has not initialized yet');
+
+        const response = await viewAccount.viewFunction({
           contractId: KEYPOM_EVENTS_CONTRACT_ID,
           methodName: 'get_funder_info',
           args: { account_id: accountId },

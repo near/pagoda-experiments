@@ -90,7 +90,7 @@ const Events: NextPageWithLayout = () => {
           </Table.Head>
 
           <Table.Body>
-            {!events && <Table.PlaceholderRows />}
+            {!events.data && <Table.PlaceholderRows />}
 
             {events.data?.length === 0 && (
               <Table.Row>
