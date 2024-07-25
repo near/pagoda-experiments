@@ -86,24 +86,7 @@ const CreateEvent: NextPageWithLayout = () => {
     },
   });
 
-  const createEventMutation = useMutation({
-    mutationFn: createNewEvent,
-    onSuccess: () => {
-      if (stripeAccountId) {
-        openToast({
-          type: 'success',
-          title: 'Uploading to Stripe',
-          description: 'Please wait while we upload your event to Stripe',
-        });
-      } else {
-        router.push('/events');
-      }
-    },
-    onError: (error: any) => {
-      console.error('Error creating event: ', error);
-      handleClientError({ title: 'Event Creation Failed', error });
-    },
-  });
+  const createEventMutation = useMutation({ mutationFn: createNewEvent });
 
   useStripe(account?.accountId, attemptToConnect);
 
@@ -210,12 +193,27 @@ const CreateEvent: NextPageWithLayout = () => {
 
   const onValidSubmit: SubmitHandler<FormSchema> = async (formData) => {
     localStorage.setItem('EVENT_INFO_DATA', JSON.stringify(formData));
-    createEventMutation.mutate({
-      formData,
-      accountId: account?.accountId,
-      stripeAccountId,
-      wallet,
-    });
+    try {
+      await createEventMutation.mutateAsync({
+        formData,
+        accountId: account?.accountId,
+        stripeAccountId,
+        wallet,
+      });
+
+      if (stripeAccountId) {
+        openToast({
+          type: 'success',
+          title: 'Uploading to Stripe',
+          description: 'Please wait while we upload your event to Stripe',
+        });
+      } else {
+        router.push('/events');
+      }
+    } catch (error) {
+      console.error('Error creating event: ', error);
+      handleClientError({ title: 'Event Creation Failed', error });
+    }
   };
 
   const handleConnectStripe = async () => {
