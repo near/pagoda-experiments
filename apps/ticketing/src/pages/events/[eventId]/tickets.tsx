@@ -88,7 +88,7 @@ const GetTickets: NextPageWithLayout = () => {
   }, [dropsForEvent, form]);
 
   const onValidSubmit: SubmitHandler<FormSchema> = async (formData) => {
-    if (!event.data || !dropsForEvent) return;
+    if (!event.data || !dropsForEvent || !viewAccount) return;
     try {
       const { email, tickets } = formData;
       const { purchases } = await mutation.mutateAsync({
@@ -108,7 +108,6 @@ const GetTickets: NextPageWithLayout = () => {
 
       router.push(`/tickets/purchased#${purchases.map((purchase) => purchase.secretKey).join(',')}`);
     } catch (error) {
-      console.error('Checkout Failed: ', error);
       handleClientError({ title: 'Checkout Failed', error });
     }
   };
