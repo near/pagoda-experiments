@@ -67,24 +67,7 @@ const GetTickets: NextPageWithLayout = () => {
     return result + price;
   }, 0);
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: purchaseTickets,
-    onSuccess: (data, variables) => {
-      const { purchases } = data;
-      const { email } = variables;
-      openToast({
-        type: 'success',
-        title: `${purchases.length} ${pluralize(purchases.length, 'ticket')} purchased`,
-        description: `${pluralize(purchases.length, 'Ticket')} emailed to: ${email}`,
-      });
-
-      router.push(`/tickets/purchased#${purchases.map((purchase) => purchase.secretKey).join(',')}`);
-    },
-    onError: (error: any) => {
-      console.error('Checkout Failed: ', error);
-      handleClientError({ title: 'Checkout Failed', error });
-    },
-  });
+  const mutation = useMutation({ mutationFn: purchaseTickets });
 
   useEffect(() => {
     if (drops.data && !dropsForEvent) {
@@ -106,14 +89,28 @@ const GetTickets: NextPageWithLayout = () => {
 
   const onValidSubmit: SubmitHandler<FormSchema> = async (formData) => {
     if (!event.data || !dropsForEvent) return;
-    mutate({
-      event: event.data,
-      dropsForEvent,
-      publisherAccountId,
-      email: formData.email,
-      tickets: formData.tickets,
-      viewAccount,
-    });
+    try {
+      const { email, tickets } = formData;
+      const { purchases } = await mutation.mutateAsync({
+        event: event.data,
+        dropsForEvent,
+        publisherAccountId,
+        email,
+        tickets,
+        viewAccount,
+      });
+
+      openToast({
+        type: 'success',
+        title: `${purchases.length} ${pluralize(purchases.length, 'ticket')} purchased`,
+        description: `${pluralize(purchases.length, 'Ticket')} emailed to: ${email}`,
+      });
+
+      router.push(`/tickets/purchased#${purchases.map((purchase) => purchase.secretKey).join(',')}`);
+    } catch (error) {
+      console.error('Checkout Failed: ', error);
+      handleClientError({ title: 'Checkout Failed', error });
+    }
   };
 
   if (!event.data || !dropsForEvent) {
@@ -299,7 +296,7 @@ const GetTickets: NextPageWithLayout = () => {
                   label="Checkout"
                   variant="affirmative"
                   iconRight={<ArrowRight />}
-                  loading={form.formState.isSubmitting || isPending}
+                  loading={form.formState.isSubmitting}
                 />
               </Flex>
             </Flex>
