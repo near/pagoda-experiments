@@ -15,6 +15,7 @@ import { openToast } from '@pagoda/ui/src/components/Toast';
 import { Tooltip } from '@pagoda/ui/src/components/Tooltip';
 import { handleClientError } from '@pagoda/ui/src/utils/error';
 import { ArrowLeft, ArrowRight, Clock, Envelope, MapPinArea, Minus, Plus, Ticket } from '@phosphor-icons/react';
+import { useMutation } from '@tanstack/react-query';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
@@ -66,6 +67,8 @@ const GetTickets: NextPageWithLayout = () => {
     return result + price;
   }, 0);
 
+  const mutation = useMutation({ mutationFn: purchaseTickets });
+
   useEffect(() => {
     if (drops.data && !dropsForEvent) {
       openToast({
@@ -85,22 +88,22 @@ const GetTickets: NextPageWithLayout = () => {
   }, [dropsForEvent, form]);
 
   const onValidSubmit: SubmitHandler<FormSchema> = async (formData) => {
+    if (!event.data || !dropsForEvent || !viewAccount) return;
     try {
-      if (!event.data || !dropsForEvent || !viewAccount) return;
-
-      const { purchases } = await purchaseTickets({
+      const { email, tickets } = formData;
+      const { purchases } = await mutation.mutateAsync({
         event: event.data,
         dropsForEvent,
         publisherAccountId,
-        email: formData.email,
-        tickets: formData.tickets,
+        email,
+        tickets,
         viewAccount,
       });
 
       openToast({
         type: 'success',
         title: `${purchases.length} ${pluralize(purchases.length, 'ticket')} purchased`,
-        description: `${pluralize(purchases.length, 'Ticket')} emailed to: ${formData.email}`,
+        description: `${pluralize(purchases.length, 'Ticket')} emailed to: ${email}`,
       });
 
       router.push(`/tickets/purchased#${purchases.map((purchase) => purchase.secretKey).join(',')}`);
