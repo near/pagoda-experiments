@@ -15,10 +15,12 @@ export function usePurchasedTickets(secretKeys: string[]) {
     queryKey: ['purchased-tickets', secretKeys.join(',')],
     queryFn: async () => {
       try {
+        if (!viewAccount) throw new Error('View account has not initialized yet');
+
         const tickets: Awaited<ReturnType<typeof fetchDetailsForPurchasedTicket>>[] = [];
 
         for (const secretKey of secretKeys) {
-          const ticket = await fetchDetailsForPurchasedTicket(secretKey, viewAccount!);
+          const ticket = await fetchDetailsForPurchasedTicket(secretKey, viewAccount);
           tickets.push(ticket);
         }
 
@@ -28,7 +30,7 @@ export function usePurchasedTickets(secretKeys: string[]) {
           throw new Error('No matching tickets found for secret keys');
         }
 
-        const funderInfo = await viewAccount!.viewFunction({
+        const funderInfo = await viewAccount.viewFunction({
           contractId: KEYPOM_EVENTS_CONTRACT_ID,
           methodName: 'get_funder_info',
           args: { account_id: firstTicket.drop.funder_id },
@@ -58,17 +60,17 @@ export function usePurchasedTickets(secretKeys: string[]) {
 }
 
 export async function fetchDetailsForPurchasedTicket(secretKey: string, viewAccount: Account | null | undefined) {
-  if (!viewAccount) throw new Error('viewAccount has not been initialized yet');
+  if (!viewAccount) throw new Error('View account has not initialized yet');
 
   const publicKey = getPubFromSecret(secretKey);
 
-  const keyInfo: { drop_id: string; uses_remaining: number } = await viewAccount!.viewFunction({
+  const keyInfo: { drop_id: string; uses_remaining: number } = await viewAccount.viewFunction({
     contractId: KEYPOM_EVENTS_CONTRACT_ID,
     methodName: 'get_key_information',
     args: { key: publicKey },
   });
 
-  const drop: EventDrop = await viewAccount!.viewFunction({
+  const drop: EventDrop = await viewAccount.viewFunction({
     contractId: KEYPOM_EVENTS_CONTRACT_ID,
     methodName: 'get_drop_information',
     args: { drop_id: keyInfo.drop_id },

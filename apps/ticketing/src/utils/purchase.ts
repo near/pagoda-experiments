@@ -1,4 +1,3 @@
-import assert from 'assert';
 import { Account } from 'near-api-js';
 
 import { DropsByEventId } from '@/hooks/useDrops';
@@ -43,7 +42,7 @@ type PurchaseTicketOptions = {
     dropId: string;
     quantity?: number;
   }[];
-  viewAccount: Account | null;
+  viewAccount: Account;
 };
 
 type PurchaseWorkerResponse = {
@@ -116,9 +115,8 @@ export async function purchaseTickets({
       (!drop.ticket.extra?.priceFiat || drop.ticket.extra.priceFiat === '0') &&
       (!drop.ticket.extra?.priceNear || drop.ticket.extra.priceNear === '0');
 
-    assert(viewAccount, 'Expected View account to be initiatlized');
     let response: Response | undefined;
-    let stripeAccountId = await viewAccount!.viewFunction({
+    let stripeAccountId = await viewAccount.viewFunction({
       contractId: KEYPOM_MARKETPLACE_CONTRACT_ID,
       methodName: 'get_stripe_id_for_account',
       args: { account_id: publisherAccountId },

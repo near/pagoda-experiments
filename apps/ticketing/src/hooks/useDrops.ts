@@ -23,7 +23,9 @@ export function useDrops(publisherAccountId: string | undefined) {
           Each drop contains a decent amount of JSON.
         */
 
-        const numberOfDrops: number = await viewAccount!.viewFunction({
+        if (!viewAccount) throw new Error('View account has not initialized yet');
+
+        const numberOfDrops: number = await viewAccount.viewFunction({
           contractId: KEYPOM_EVENTS_CONTRACT_ID,
           methodName: 'get_drop_supply_for_funder',
           args: { account_id: publisherAccountId },
@@ -34,7 +36,7 @@ export function useDrops(publisherAccountId: string | undefined) {
 
         const pagedDrops = await Promise.all(
           pages.map(async (pageIndex) => {
-            const drops: EventDrop[] = await viewAccount!.viewFunction({
+            const drops: EventDrop[] = await viewAccount.viewFunction({
               contractId: KEYPOM_EVENTS_CONTRACT_ID,
               methodName: 'get_drops_for_funder',
               args: {
@@ -46,7 +48,7 @@ export function useDrops(publisherAccountId: string | undefined) {
 
             const mappedDrops = await Promise.all(
               drops.map(async (drop) => {
-                const sold: number = await viewAccount!.viewFunction({
+                const sold: number = await viewAccount.viewFunction({
                   contractId: KEYPOM_EVENTS_CONTRACT_ID,
                   methodName: 'get_key_supply_for_drop',
                   args: { drop_id: drop.drop_id },

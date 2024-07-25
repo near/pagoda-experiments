@@ -49,7 +49,9 @@ export const useStripeStore = create<StripeStore>((set) => ({
       queryKey: ['stripe', accountId],
       queryFn: async () => {
         try {
-          let stripeAccountId = await viewAccount!.viewFunction({
+          if (!viewAccount) throw new Error('View account has not initialized yet');
+
+          let stripeAccountId = await viewAccount.viewFunction({
             contractId: KEYPOM_MARKETPLACE_CONTRACT_ID,
             methodName: 'get_stripe_id_for_account',
             args: { account_id: accountId },
