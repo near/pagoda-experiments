@@ -19,7 +19,7 @@ import { useDefaultLayout } from '@/hooks/useLayout';
 import { useNearStore } from '@/stores/near';
 import { verifyAndClaimTicket, VerifyAndClaimTicketResult } from '@/utils/claim';
 import { displayEventDate } from '@/utils/date';
-import { parseEventIdQueryParam } from '@/utils/event-id';
+import { parseEventIdQueryParam } from '@/utils/event';
 import { NextPageWithLayout } from '@/utils/types';
 
 const ScanEventTickets: NextPageWithLayout = () => {

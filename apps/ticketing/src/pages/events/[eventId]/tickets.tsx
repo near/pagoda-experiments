@@ -28,7 +28,7 @@ import { useNearStore } from '@/stores/near';
 import { CLOUDFLARE_IPFS } from '@/utils/config';
 import { displayEventDate } from '@/utils/date';
 import { formatDollar, formatTicketPrice } from '@/utils/dollar';
-import { formatEventIdQueryParam, parseEventIdQueryParam } from '@/utils/event-id';
+import { formatEventIdQueryParam, parseEventIdQueryParam } from '@/utils/event';
 import { stringToNumber } from '@/utils/number';
 import { pluralize } from '@/utils/pluralize';
 import { purchaseTickets } from '@/utils/purchase';
