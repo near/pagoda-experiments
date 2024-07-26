@@ -18,7 +18,7 @@ import { useWalletStore } from '@/stores/wallet';
 import { CLOUDFLARE_IPFS } from '@/utils/config';
 import { HOSTNAME } from '@/utils/config';
 import { displayEventDate } from '@/utils/date';
-import { parseEventIdQueryParam } from '@/utils/event-id';
+import { parseEventIdQueryParam } from '@/utils/event';
 import { FunderEventMetadata } from '@/utils/helpers';
 import { fetchEventFromJsonRpc } from '@/utils/rpc';
 import type { EventDetails, NextPageWithLayout } from '@/utils/types';

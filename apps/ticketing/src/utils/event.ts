@@ -6,6 +6,23 @@ import { createPayload } from './helpers';
 import { pinMediaToIPFS } from './stripe';
 import type { WalletStore } from './types';
 
+export function formatEventIdQueryParam(publisherAccountId: string, eventId: string) {
+  return `${publisherAccountId}:${eventId}`;
+}
+
+export function parseEventIdQueryParam(id: string | string[] | undefined) {
+  if (!id || Array.isArray(id)) {
+    id = '';
+  }
+
+  const [publisherAccountId, eventId] = id.split(':');
+
+  return {
+    eventId: eventId ?? '',
+    publisherAccountId: publisherAccountId ?? '',
+  };
+}
+
 export const createNewEvent = async ({
   formData,
   stripeAccountId,
