@@ -17,6 +17,7 @@ import {
   Tooltip,
 } from '@near-pagoda/ui';
 import { ArrowLeft, ArrowRight, Clock, Envelope, MapPinArea, Minus, Plus, Ticket } from '@phosphor-icons/react';
+import { useMutation } from '@tanstack/react-query';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
@@ -29,7 +30,7 @@ import { useNearStore } from '@/stores/near';
 import { CLOUDFLARE_IPFS } from '@/utils/config';
 import { displayEventDate } from '@/utils/date';
 import { formatDollar, formatTicketPrice } from '@/utils/dollar';
-import { formatEventIdQueryParam, parseEventIdQueryParam } from '@/utils/event-id';
+import { formatEventIdQueryParam, parseEventIdQueryParam } from '@/utils/event';
 import { stringToNumber } from '@/utils/number';
 import { pluralize } from '@/utils/pluralize';
 import { purchaseTickets } from '@/utils/purchase';
@@ -68,6 +69,8 @@ const GetTickets: NextPageWithLayout = () => {
     return result + price;
   }, 0);
 
+  const mutation = useMutation({ mutationFn: purchaseTickets });
+
   useEffect(() => {
     if (drops.data && !dropsForEvent) {
       openToast({
@@ -87,22 +90,22 @@ const GetTickets: NextPageWithLayout = () => {
   }, [dropsForEvent, form]);
 
   const onValidSubmit: SubmitHandler<FormSchema> = async (formData) => {
+    if (!event.data || !dropsForEvent || !viewAccount) return;
     try {
-      if (!event.data || !dropsForEvent) return;
-
-      const { purchases } = await purchaseTickets({
+      const { email, tickets } = formData;
+      const { purchases } = await mutation.mutateAsync({
         event: event.data,
         dropsForEvent,
         publisherAccountId,
-        email: formData.email,
-        tickets: formData.tickets,
+        email,
+        tickets,
         viewAccount,
       });
 
       openToast({
         type: 'success',
         title: `${purchases.length} ${pluralize(purchases.length, 'ticket')} purchased`,
-        description: `${pluralize(purchases.length, 'Ticket')} emailed to: ${formData.email}`,
+        description: `${pluralize(purchases.length, 'Ticket')} emailed to: ${email}`,
       });
 
       router.push(`/tickets/purchased#${purchases.map((purchase) => purchase.secretKey).join(',')}`);

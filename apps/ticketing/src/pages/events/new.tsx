@@ -15,7 +15,6 @@ import {
   Text,
   Tooltip,
 } from '@near-pagoda/ui';
-import { Action } from '@near-wallet-selector/core';
 import {
   ArrowRight,
   CalendarPlus,
@@ -28,6 +27,7 @@ import {
   Ticket,
   Trash,
 } from '@phosphor-icons/react';
+import { useMutation } from '@tanstack/react-query';
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -40,15 +40,9 @@ import { useStripe } from '@/hooks/useStripe';
 import { useNearStore } from '@/stores/near';
 import { useStripeStore } from '@/stores/stripe';
 import { useWalletStore } from '@/stores/wallet';
-import { EVENTS_WORKER_BASE, KEYPOM_EVENTS_CONTRACT_ID } from '@/utils/config';
-import {
-  createPayload,
-  estimateCosts,
-  FormSchema,
-  serializeMediaForWorker,
-  TicketInfoFormMetadata,
-  yoctoToNear,
-} from '@/utils/helpers';
+import { createNewEvent } from '@/utils/event';
+import { estimateCosts, FormSchema, TicketInfoFormMetadata, yoctoToNear } from '@/utils/helpers';
+import { createStripeEvent } from '@/utils/stripe';
 import { NextPageWithLayout } from '@/utils/types';
 
 const CreateEvent: NextPageWithLayout = () => {
@@ -77,6 +71,24 @@ const CreateEvent: NextPageWithLayout = () => {
     name: 'tickets',
     rules: { required: 'Please add at least one ticket configuration', minLength: 1 },
   });
+
+  const createStripeEventMutation = useMutation({
+    mutationFn: createStripeEvent,
+    onSuccess: () => {
+      setUploadedToStripe(true);
+      console.log('Event Uploaded to Stripe');
+      localStorage.removeItem('EVENT_INFO_SUCCESS_DATA');
+    },
+    onError: (error: any) => {
+      console.error('Error uploading to stripe: ', error);
+      handleClientError({
+        title: 'Error Uploading to Stripe',
+        error,
+      });
+    },
+  });
+
+  const createEventMutation = useMutation({ mutationFn: createNewEvent });
 
   useStripe(account?.accountId, attemptToConnect);
 
@@ -110,40 +122,29 @@ const CreateEvent: NextPageWithLayout = () => {
   }, [form]);
 
   useEffect(() => {
-    //TODO - prevent `/stripe/create-event` from being called twice and throwing a misleading error messaage
     const checkForEventCreationSuccess = async () => {
       const eventData = localStorage.getItem('EVENT_INFO_SUCCESS_DATA');
-      if (eventData && viewAccount && !stripeUploaded) {
-        const { eventId, eventName, stripeAccountId, priceByDropId } = JSON.parse(eventData);
-        let response: Response | undefined;
-        try {
-          response = await fetch(`${EVENTS_WORKER_BASE}/stripe/create-event`, {
-            method: 'POST',
-            body: JSON.stringify({
-              priceByDropId,
-              stripeAccountId,
-              eventId,
-              eventName,
-            }),
-          });
-
-          if (response.ok) {
-            setUploadedToStripe(true);
-            console.log('Event Uploaded to Stripe');
-          }
-        } catch (e) {
-          console.error('Error uploading to stripe: ', e);
-          handleClientError({
-            title: 'Error Uploading to Stripe',
-            error: e,
-          });
-        }
-
-        localStorage.removeItem('EVENT_INFO_SUCCESS_DATA');
+      if (
+        eventData &&
+        viewAccount &&
+        !stripeUploaded &&
+        !createStripeEventMutation.isSuccess &&
+        !createStripeEventMutation.isPending
+      ) {
+        const parsedEventData = JSON.parse(eventData) as FormSchema;
+        createStripeEventMutation.mutate(parsedEventData);
       }
     };
     checkForEventCreationSuccess();
-  }, [router, stripeUploaded, viewAccount]);
+  }, [
+    createStripeEventMutation,
+    createStripeEventMutation.isPending,
+    createStripeEventMutation.isSuccess,
+    createStripeEventMutation.mutate,
+    router,
+    stripeUploaded,
+    viewAccount,
+  ]);
 
   const placeHolderTicket: TicketInfoFormMetadata = {
     name: 'General Admission',
@@ -166,13 +167,13 @@ const CreateEvent: NextPageWithLayout = () => {
   }, [errorCode, form]);
 
   useEffect(() => {
-    if (transactionHashes) {
+    if (transactionHashes && account?.accountId) {
       const checkTransactionStatusForEvent = async () => {
         const txHash = transactionHashes as string;
         const provider = near?.connection.provider;
 
         try {
-          const result = (await provider!.txStatus(txHash, account?.accountId!)) as FinalExecutionOutcome;
+          const result = (await provider!.txStatus(txHash, account.accountId)) as FinalExecutionOutcome;
           if (result.status && typeof result.status === 'object' && 'SuccessValue' in result.status) {
             openToast({
               type: 'success',
@@ -193,91 +194,26 @@ const CreateEvent: NextPageWithLayout = () => {
   }, [account?.accountId, near?.connection.provider, router, transactionHashes]);
 
   const onValidSubmit: SubmitHandler<FormSchema> = async (formData) => {
+    localStorage.setItem('EVENT_INFO_DATA', JSON.stringify(formData));
     try {
-      localStorage.setItem('EVENT_INFO_DATA', JSON.stringify(formData));
+      await createEventMutation.mutateAsync({
+        formData,
+        accountId: account?.accountId,
+        stripeAccountId,
+        wallet,
+      });
 
-      if (!wallet || !account) {
+      if (stripeAccountId) {
         openToast({
-          type: 'error',
-          title: 'Wallet not connected',
-          description: 'Please connect your wallet to create an event',
+          type: 'success',
+          title: 'Uploading to Stripe',
+          description: 'Please wait while we upload your event to Stripe',
         });
-        return;
-      }
-
-      let ipfsResponse: Response | undefined;
-      try {
-        const serializedData = await serializeMediaForWorker(formData);
-        const url = `${EVENTS_WORKER_BASE}/ipfs-pin`;
-        ipfsResponse = await fetch(url, {
-          method: 'POST',
-          body: JSON.stringify({ base64Data: serializedData }),
-        });
-      } catch (error) {
-        console.error('Failed to pin media on IPFS', error);
-      }
-
-      if (ipfsResponse?.ok) {
-        const resBody = await ipfsResponse.json();
-        const cids: string[] = resBody.cids;
-
-        const eventArtworkCid: string = cids[0] as string;
-        const ticketArtworkCids: string[] = [];
-        for (let i = 0; i < cids.length - 1; i++) {
-          ticketArtworkCids.push(cids[i + 1] as string);
-        }
-
-        const eventId = Date.now().toString();
-        localStorage.setItem('EVENT_INFO_SUCCESS_DATA', JSON.stringify({ eventId }));
-        if (!stripeAccountId) throw Error('Stripe Account ID is not available');
-
-        const { actions, dropIds }: { actions: Action[]; dropIds: string[] } = await createPayload({
-          accountId: account.accountId,
-          formData,
-          stripeAccountId,
-          eventId,
-          eventArtworkCid,
-          ticketArtworkCids,
-        });
-
-        const priceByDropId: Record<string, number> = {};
-        for (let i = 0; i < formData.tickets.length; i++) {
-          const ticketDropId = dropIds[i];
-          if (formData.tickets[i]?.priceFiat) {
-            priceByDropId[ticketDropId || `${eventId}-${i}`] = Math.round(
-              parseFloat(formData.tickets[i]?.priceFiat || ''),
-            );
-          }
-          {
-            priceByDropId[ticketDropId || `${eventId}-${i}`] = 0;
-          }
-        }
-        const stripeAccountInfo = {
-          stripeAccountId,
-          eventId,
-          eventName: formData.name,
-          priceByDropId,
-        };
-
-        localStorage.setItem('EVENT_INFO_SUCCESS_DATA', JSON.stringify(stripeAccountInfo));
-
-        await wallet.signAndSendTransaction({
-          signerId: wallet.id,
-          receiverId: KEYPOM_EVENTS_CONTRACT_ID,
-          actions,
-        });
-
-        if (stripeAccountId) {
-          openToast({
-            type: 'success',
-            title: 'Uploading to Stripe',
-            description: 'Please wait while we upload your event to Stripe',
-          });
-        } else {
-          router.push('/events');
-        }
+      } else {
+        router.push('/events');
       }
     } catch (error) {
+      console.error('Error creating event: ', error);
       handleClientError({ title: 'Event Creation Failed', error });
     }
   };

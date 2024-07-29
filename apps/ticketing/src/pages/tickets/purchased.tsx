@@ -33,7 +33,7 @@ import { useDefaultLayout } from '@/hooks/useLayout';
 import { usePurchasedTickets } from '@/hooks/usePurchasedTickets';
 import { CLOUDFLARE_IPFS } from '@/utils/config';
 import { displayEventDate } from '@/utils/date';
-import { formatEventIdQueryParam } from '@/utils/event-id';
+import { formatEventIdQueryParam } from '@/utils/event';
 import { convertToSafeFilename } from '@/utils/file';
 import type { NextPageWithLayout } from '@/utils/types';
 

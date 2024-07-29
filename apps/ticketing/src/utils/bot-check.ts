@@ -33,44 +33,41 @@ export async function botCheck() {
   return bot;
 }
 
-function fetchIPDetails(apiKey: string) {
+async function fetchIPDetails(apiKey: string) {
   const url = `https://pro.ip-api.com/json/?fields=17035263&key=${String(apiKey)}`;
 
-  return fetch(url)
-    .then((response) => response.json())
-    .then((data) => {
-      const browserInfo = getBrowserInfo();
-      const osInfo = getOSVersion();
-      const info = {
-        browserDetails: {
-          browserName: browserInfo.name,
-          browserMajorVersion: browserInfo.version.split('.')[0],
-          browserFullVersion: browserInfo.version,
-          os: osInfo.os,
-          osVersion: osInfo.osVersion,
-          userAgent: navigator.userAgent,
-        },
-        ip: data.query,
-        mobile: data.mobile,
-        proxy: data.proxy,
-        hosting: data.hosting,
-        ipLocation: {
-          timezone: data.timezone,
-          city: {
-            name: data.city,
-          },
-          country: {
-            code: data.countryCode,
-            name: data.country,
-          },
-          continent: {
-            code: data.continentCode,
-          },
-        },
-      };
-
-      return btoa(JSON.stringify(info));
-    });
+  const response = await fetch(url);
+  const data = await response.json();
+  const browserInfo = getBrowserInfo();
+  const osInfo = getOSVersion();
+  const info = {
+    browserDetails: {
+      browserName: browserInfo.name,
+      browserMajorVersion: browserInfo.version.split('.')[0],
+      browserFullVersion: browserInfo.version,
+      os: osInfo.os,
+      osVersion: osInfo.osVersion,
+      userAgent: navigator.userAgent,
+    },
+    ip: data.query,
+    mobile: data.mobile,
+    proxy: data.proxy,
+    hosting: data.hosting,
+    ipLocation: {
+      timezone: data.timezone,
+      city: {
+        name: data.city,
+      },
+      country: {
+        code: data.countryCode,
+        name: data.country,
+      },
+      continent: {
+        code: data.continentCode,
+      },
+    },
+  };
+  return btoa(JSON.stringify(info));
 }
 
 function getOSVersion() {

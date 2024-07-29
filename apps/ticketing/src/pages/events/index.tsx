@@ -23,7 +23,7 @@ import { useWalletStore } from '@/stores/wallet';
 import { HOSTNAME } from '@/utils/config';
 import { displayEventDate, parseEventDate } from '@/utils/date';
 import { formatTicketPrice } from '@/utils/dollar';
-import { formatEventIdQueryParam } from '@/utils/event-id';
+import { formatEventIdQueryParam } from '@/utils/event';
 import { NextPageWithLayout } from '@/utils/types';
 
 type EventSortType = 'DATE_ASC' | 'DATE_DES';
@@ -92,7 +92,7 @@ const Events: NextPageWithLayout = () => {
           </Table.Head>
 
           <Table.Body>
-            {!events && <Table.PlaceholderRows />}
+            {!events.data && <Table.PlaceholderRows />}
 
             {events.data?.length === 0 && (
               <Table.Row>

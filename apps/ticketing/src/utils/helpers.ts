@@ -3,7 +3,7 @@ import { utils } from 'near-api-js';
 import { parseNearAmount } from 'near-api-js/lib/utils/format';
 
 import { KEYPOM_MARKETPLACE_CONTRACT_ID } from './config';
-import { getByteSize } from './crypto-helpers';
+import { arrayBufferToBase64, getByteSize } from './crypto-helpers';
 
 export interface DateAndTimeInfo {
   startDate: number; // Milliseconds from Unix Epoch
@@ -216,16 +216,6 @@ export async function serializeMediaForWorker(formData: FormSchema) {
   }
 
   return arrayBuffers;
-}
-
-function arrayBufferToBase64(buffer: any) {
-  let binary = '';
-  const bytes = new Uint8Array(buffer);
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i] ?? 0);
-  }
-  return window.btoa(binary);
 }
 
 export const estimateCosts = ({ formData }: { formData: FormSchema }) => {

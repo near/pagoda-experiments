@@ -11,39 +11,68 @@ import {
   Text,
 } from '@near-pagoda/ui';
 import { CalendarDots, Clock, QrCode } from '@phosphor-icons/react';
+import { useMutation } from '@tanstack/react-query';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
 import { QrCodeScanner } from '@/components/QrCodeScanner';
 import { useEvent } from '@/hooks/useEvents';
 import { useDefaultLayout } from '@/hooks/useLayout';
+import { useNearStore } from '@/stores/near';
+import { verifyAndClaimTicket, VerifyAndClaimTicketResult } from '@/utils/claim';
 import { displayEventDate } from '@/utils/date';
-import { parseEventIdQueryParam } from '@/utils/event-id';
+import { parseEventIdQueryParam } from '@/utils/event';
 import { NextPageWithLayout } from '@/utils/types';
 
 const ScanEventTickets: NextPageWithLayout = () => {
   const router = useRouter();
   const { publisherAccountId, eventId } = parseEventIdQueryParam(router.query.eventId);
   const event = useEvent(publisherAccountId, eventId);
+  const viewAccount = useNearStore((store) => store.viewAccount);
+  const near = useNearStore((store) => store.near);
+  const keyStore = useNearStore((store) => store.keyStore);
 
-  const onScanSuccess = (data: string) => {
-    console.log(`TODO: Verify ticket is valid for current event: ${data}`);
+  const mutation = useMutation({
+    mutationFn: async (secretKey: string): Promise<VerifyAndClaimTicketResult> => {
+      try {
+        if (!near || !keyStore || !viewAccount) {
+          throw new Error('Near connection has not initialized yet');
+        }
 
-    const isValid = true;
+        return await verifyAndClaimTicket({
+          eventId,
+          keyStore,
+          near,
+          secretKey,
+          viewAccount,
+        });
+      } catch (error) {
+        console.error(error);
+      }
 
-    if (isValid) {
+      return {
+        isVerified: false,
+        message: 'Failed to verify ticket for unknown reason',
+      };
+    },
+  });
+
+  const onScanSuccess = async (secretKey: string) => {
+    if (mutation.isPending) return;
+
+    const { isVerified, message } = await mutation.mutateAsync(secretKey);
+
+    if (isVerified) {
       openToast({
         type: 'success',
         title: 'Ticket Verified',
-        description: data,
-        duration: 1000,
+        description: message,
       });
     } else {
       openToast({
         type: 'error',
-        title: 'Invalid Ticket',
-        description: data,
-        duration: 1000,
+        title: 'Ticket Verification Failure',
+        description: message,
       });
     }
   };
@@ -76,7 +105,7 @@ const ScanEventTickets: NextPageWithLayout = () => {
             </Flex>
 
             <Card>
-              <QrCodeScanner onScanSuccess={onScanSuccess} />
+              <QrCodeScanner onScanSuccess={onScanSuccess} processing={mutation.isPending} />
 
               <HR style={{ margin: 0 }} />
 
