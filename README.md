@@ -1,14 +1,10 @@
 # Pagoda Experiments
 
-This monorepo contains multiple product experiments built on the blockchain. These products will be aimed at a mix of end users and developers.
+This monorepo contains product experiments built on the blockchain.
 
 ## Apps
 
 - Ticketing (`apps/ticketing`): https://github.com/near/near-discovery/issues/1165
-
-## Packages
-
-- Pagoda UI (`packages/ui`). Our DIG components have been ported over and refactored into a shareable package for all of our apps in this monorepo. We'll continue to add more components to this package as we discover new components that should be reusable between apps. Each component should have a corresponding `README.md` file that gives examples and options for using the component.
 
 ## Getting Started
 
@@ -42,8 +38,6 @@ pnpm dev
 ```
 
 _NOTE: You'll most likely see a warning when starting up the server: `React does not recognize the fetchPriority prop`. You can safely ignore this for now. There's a fix for Next JS that hasn't been released quite yet: https://github.com/vercel/next.js/issues/65161_
-
-Since each app compiles imports from `packages/ui` on its own via Next JS's [externalDir](https://stackoverflow.com/a/72842944) config option, you don't need to run any additional commands when needing to make changes inside `packages/ui`. Simply boot up one of the development servers inside the `apps` folder. Any changes to `packages/ui` will be detected and hot reloaded automatically by the Next JS development server.
 
 ### Environment Variables
 
