@@ -1,8 +1,4 @@
-import { Button } from '@pagoda/ui/src/components/Button';
-import { Container } from '@pagoda/ui/src/components/Container';
-import { Flex } from '@pagoda/ui/src/components/Flex';
-import { Section } from '@pagoda/ui/src/components/Section';
-import { Text } from '@pagoda/ui/src/components/Text';
+import { Button, Container, Flex, Section, Text } from '@near-pagoda/ui';
 import { Wallet } from '@phosphor-icons/react';
 import type { ReactNode } from 'react';
 

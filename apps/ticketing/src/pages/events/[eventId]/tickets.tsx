@@ -1,19 +1,21 @@
-import { AssistiveText } from '@pagoda/ui/src/components/AssistiveText';
-import { Button } from '@pagoda/ui/src/components/Button';
-import { Card } from '@pagoda/ui/src/components/Card';
-import { Container } from '@pagoda/ui/src/components/Container';
-import { Flex } from '@pagoda/ui/src/components/Flex';
-import { Form } from '@pagoda/ui/src/components/Form';
-import { Grid } from '@pagoda/ui/src/components/Grid';
-import { HR } from '@pagoda/ui/src/components/HorizontalRule';
-import { Input } from '@pagoda/ui/src/components/Input';
-import { PlaceholderSection } from '@pagoda/ui/src/components/Placeholder';
-import { Section } from '@pagoda/ui/src/components/Section';
-import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
-import { Text } from '@pagoda/ui/src/components/Text';
-import { openToast } from '@pagoda/ui/src/components/Toast';
-import { Tooltip } from '@pagoda/ui/src/components/Tooltip';
-import { handleClientError } from '@pagoda/ui/src/utils/error';
+import {
+  AssistiveText,
+  Button,
+  Card,
+  Container,
+  Flex,
+  Form,
+  Grid,
+  handleClientError,
+  HR,
+  Input,
+  openToast,
+  PlaceholderSection,
+  Section,
+  SvgIcon,
+  Text,
+  Tooltip,
+} from '@near-pagoda/ui';
 import { ArrowLeft, ArrowRight, Clock, Envelope, MapPinArea, Minus, Plus, Ticket } from '@phosphor-icons/react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';

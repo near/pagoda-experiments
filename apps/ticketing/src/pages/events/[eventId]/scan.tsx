@@ -1,13 +1,15 @@
-import { Button } from '@pagoda/ui/src/components/Button';
-import { Card } from '@pagoda/ui/src/components/Card';
-import { Container } from '@pagoda/ui/src/components/Container';
-import { Flex } from '@pagoda/ui/src/components/Flex';
-import { HR } from '@pagoda/ui/src/components/HorizontalRule';
-import { PlaceholderSection } from '@pagoda/ui/src/components/Placeholder';
-import { Section } from '@pagoda/ui/src/components/Section';
-import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
-import { Text } from '@pagoda/ui/src/components/Text';
-import { openToast } from '@pagoda/ui/src/components/Toast';
+import {
+  Button,
+  Card,
+  Container,
+  Flex,
+  HR,
+  openToast,
+  PlaceholderSection,
+  Section,
+  SvgIcon,
+  Text,
+} from '@near-pagoda/ui';
 import { CalendarDots, Clock, QrCode } from '@phosphor-icons/react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';

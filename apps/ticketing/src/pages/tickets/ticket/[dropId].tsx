@@ -4,7 +4,7 @@
   redirect will allow us to keep using their worker in the mean time.
 */
 
-import { Section } from '@pagoda/ui/src/components/Section';
+import { Section } from '@near-pagoda/ui';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';

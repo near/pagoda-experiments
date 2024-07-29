@@ -1,18 +1,20 @@
-import { Button } from '@pagoda/ui/src/components/Button';
-import { Container } from '@pagoda/ui/src/components/Container';
-import { Flex } from '@pagoda/ui/src/components/Flex';
-import { Grid } from '@pagoda/ui/src/components/Grid';
-import { HR } from '@pagoda/ui/src/components/HorizontalRule';
-import { MetaTags } from '@pagoda/ui/src/components/MetaTags';
-import { Section } from '@pagoda/ui/src/components/Section';
-import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
-import { Text } from '@pagoda/ui/src/components/Text';
-import { Tooltip } from '@pagoda/ui/src/components/Tooltip';
-import { copyTextToClipboard } from '@pagoda/ui/src/utils/clipboard';
+import {
+  Button,
+  Container,
+  copyTextToClipboard,
+  Flex,
+  Grid,
+  HR,
+  Section,
+  SvgIcon,
+  Text,
+  Tooltip,
+} from '@near-pagoda/ui';
 import { Clock, ImageSquare, Link, MapPinArea, Pencil, Ticket } from '@phosphor-icons/react';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import { useRouter } from 'next/router';
 
+import { MetaTags } from '@/components/MetaTags';
 import { useDefaultLayout } from '@/hooks/useLayout';
 import { useWalletStore } from '@/stores/wallet';
 import { CLOUDFLARE_IPFS } from '@/utils/config';

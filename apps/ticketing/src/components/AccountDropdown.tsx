@@ -1,6 +1,4 @@
-import { Button } from '@pagoda/ui/src/components/Button';
-import * as Dropdown from '@pagoda/ui/src/components/Dropdown';
-import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
+import { Button, Dropdown, SvgIcon } from '@near-pagoda/ui';
 import { Gear, User, X } from '@phosphor-icons/react';
 
 import { useWalletStore } from '@/stores/wallet';
