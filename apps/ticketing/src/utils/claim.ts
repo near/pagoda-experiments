@@ -1,5 +1,5 @@
 import { getPubFromSecret } from '@keypom/core';
-import { openToast } from '@pagoda/ui/src/components/Toast';
+import { openToast } from '@near-pagoda/ui';
 import { Account, KeyPair, Near } from 'near-api-js';
 import { BrowserLocalStorageKeyStore } from 'near-api-js/lib/key_stores';
 

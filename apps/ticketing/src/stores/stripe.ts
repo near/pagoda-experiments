@@ -1,4 +1,4 @@
-import { handleClientError } from '@pagoda/ui/src/utils/error';
+import { handleClientError } from '@near-pagoda/ui';
 import { useQuery } from '@tanstack/react-query';
 import { v4 as uuidv4 } from 'uuid';
 import { create } from 'zustand';

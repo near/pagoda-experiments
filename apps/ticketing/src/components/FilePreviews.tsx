@@ -1,4 +1,4 @@
-import { Flex } from '@pagoda/ui/src/components/Flex';
+import { Flex } from '@near-pagoda/ui';
 
 import { convertFileListToPreviewUrls } from '@/utils/file';
 

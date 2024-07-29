@@ -1,11 +1,4 @@
-import { Button } from '@pagoda/ui/src/components/Button';
-import { Card } from '@pagoda/ui/src/components/Card';
-import { Flex } from '@pagoda/ui/src/components/Flex';
-import { Grid } from '@pagoda/ui/src/components/Grid';
-import { HR } from '@pagoda/ui/src/components/HorizontalRule';
-import { Section } from '@pagoda/ui/src/components/Section';
-import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
-import { Text } from '@pagoda/ui/src/components/Text';
+import { Button, Card, Flex, Grid, HR, Section, SvgIcon, Text } from '@near-pagoda/ui';
 import { CalendarDots, HandPeace, Plus, Ticket } from '@phosphor-icons/react';
 
 import { useDefaultLayout } from '@/hooks/useLayout';

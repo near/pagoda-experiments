@@ -6,18 +6,20 @@
   - Multiple tickets: /tickets/purchased#1,2,3
 */
 
-import { Button } from '@pagoda/ui/src/components/Button';
-import { Card } from '@pagoda/ui/src/components/Card';
-import { Container } from '@pagoda/ui/src/components/Container';
-import { Flex } from '@pagoda/ui/src/components/Flex';
-import { Grid } from '@pagoda/ui/src/components/Grid';
-import { HR } from '@pagoda/ui/src/components/HorizontalRule';
-import { PlaceholderSection } from '@pagoda/ui/src/components/Placeholder';
-import { Section } from '@pagoda/ui/src/components/Section';
-import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
-import { Text } from '@pagoda/ui/src/components/Text';
-import { openToast } from '@pagoda/ui/src/components/Toast';
-import { Tooltip } from '@pagoda/ui/src/components/Tooltip';
+import {
+  Button,
+  Card,
+  Container,
+  Flex,
+  Grid,
+  HR,
+  openToast,
+  PlaceholderSection,
+  Section,
+  SvgIcon,
+  Text,
+  Tooltip,
+} from '@near-pagoda/ui';
 import { CalendarDots, Clock, DownloadSimple, MapPinArea, Ticket } from '@phosphor-icons/react';
 import html2canvas from 'html2canvas';
 import Head from 'next/head';

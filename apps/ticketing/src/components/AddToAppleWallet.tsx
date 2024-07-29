@@ -1,4 +1,4 @@
-import { openToast } from '@pagoda/ui/src/components/Toast';
+import { openToast } from '@near-pagoda/ui';
 import { MouseEventHandler } from 'react';
 
 import { usePurchasedTickets } from '@/hooks/usePurchasedTickets';

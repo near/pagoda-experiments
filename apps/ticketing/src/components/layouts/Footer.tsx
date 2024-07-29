@@ -1,5 +1,4 @@
-import { Container } from '@pagoda/ui/src/components/Container';
-import { Text } from '@pagoda/ui/src/components/Text';
+import { Container, Text } from '@near-pagoda/ui';
 
 import NearLogoSvg from '@/svg/near-logo.svg';
 

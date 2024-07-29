@@ -1,5 +1,4 @@
-import { openToast } from '@pagoda/ui/src/components/Toast';
-import { useDebouncedFunction } from '@pagoda/ui/src/hooks/debounce';
+import { openToast, useDebouncedFunction } from '@near-pagoda/ui';
 import { Spinner } from '@phosphor-icons/react';
 import QrScanner from 'qr-scanner';
 import { useEffect, useRef } from 'react';

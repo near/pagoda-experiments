@@ -1,14 +1,16 @@
-import { Badge } from '@pagoda/ui/src/components/Badge';
-import { Button } from '@pagoda/ui/src/components/Button';
-import * as Dropdown from '@pagoda/ui/src/components/Dropdown';
-import { Flex } from '@pagoda/ui/src/components/Flex';
-import { Section } from '@pagoda/ui/src/components/Section';
-import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
-import * as Table from '@pagoda/ui/src/components/Table';
-import { Text } from '@pagoda/ui/src/components/Text';
-import { Tooltip } from '@pagoda/ui/src/components/Tooltip';
-import { copyTextToClipboard } from '@pagoda/ui/src/utils/clipboard';
-import { unreachable } from '@pagoda/ui/src/utils/unreachable';
+import {
+  Badge,
+  Button,
+  copyTextToClipboard,
+  Dropdown,
+  Flex,
+  Section,
+  SvgIcon,
+  Table,
+  Text,
+  Tooltip,
+  unreachable,
+} from '@near-pagoda/ui';
 import { CalendarDots, Link, List, Pencil, Plus, QrCode } from '@phosphor-icons/react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';

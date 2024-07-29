@@ -1,5 +1,4 @@
-import { Container } from '@pagoda/ui/src/components/Container';
-import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
+import { Container, SvgIcon } from '@near-pagoda/ui';
 import { CalendarDots, PlusCircle, QrCode } from '@phosphor-icons/react';
 import Link from 'next/link';
 

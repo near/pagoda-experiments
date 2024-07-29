@@ -1,9 +1,9 @@
-import '@pagoda/ui/src/styles/reset.css';
-import '@pagoda/ui/src/styles/theme.css';
+import '@near-pagoda/ui/globals.css';
+import '@near-pagoda/ui/theme.css';
+import '@near-pagoda/ui/lib.css';
 import '@near-wallet-selector/modal-ui/styles.css';
-import '@pagoda/ui/src/styles/globals.css';
 
-import { Toaster } from '@pagoda/ui/src/components/Toast';
+import { Toaster } from '@near-pagoda/ui';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';

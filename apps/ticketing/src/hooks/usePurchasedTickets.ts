@@ -1,5 +1,5 @@
 import { getPubFromSecret } from '@keypom/core';
-import { handleClientError } from '@pagoda/ui/src/utils/error';
+import { handleClientError } from '@near-pagoda/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Account } from 'near-api-js';
 

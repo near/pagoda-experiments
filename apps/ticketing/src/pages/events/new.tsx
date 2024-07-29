@@ -1,18 +1,20 @@
-import { AssistiveText } from '@pagoda/ui/src/components/AssistiveText';
-import { Badge } from '@pagoda/ui/src/components/Badge';
-import { Button } from '@pagoda/ui/src/components/Button';
-import { Card } from '@pagoda/ui/src/components/Card';
-import { Container } from '@pagoda/ui/src/components/Container';
-import { Flex } from '@pagoda/ui/src/components/Flex';
-import { Form } from '@pagoda/ui/src/components/Form';
-import { Input } from '@pagoda/ui/src/components/Input';
-import { InputTextarea } from '@pagoda/ui/src/components/InputTextarea';
-import { Section } from '@pagoda/ui/src/components/Section';
-import { SvgIcon } from '@pagoda/ui/src/components/SvgIcon';
-import { Text } from '@pagoda/ui/src/components/Text';
-import { openToast } from '@pagoda/ui/src/components/Toast';
-import { Tooltip } from '@pagoda/ui/src/components/Tooltip';
-import { handleClientError } from '@pagoda/ui/src/utils/error';
+import {
+  AssistiveText,
+  Badge,
+  Button,
+  Card,
+  Container,
+  Flex,
+  Form,
+  handleClientError,
+  Input,
+  InputTextarea,
+  openToast,
+  Section,
+  SvgIcon,
+  Text,
+  Tooltip,
+} from '@near-pagoda/ui';
 import {
   ArrowRight,
   CalendarPlus,
