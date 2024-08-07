@@ -18,8 +18,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.6(@near-js/accounts@1.0.4)(@near-js/crypto@1.2.1)(@near-js/keystores-browser@0.0.9)(@near-js/keystores@0.0.9)(@near-js/providers@0.1.1)(@near-js/transactions@1.1.2)(@near-js/types@0.0.4)(@near-js/utils@0.1.0)(@near-js/wallet-account@1.1.1)(near-api-js@2.1.4)
       '@near-pagoda/ui':
-        specifier: ^0.2.1
-        version: 0.2.1(@types/react-dom@18.3.0)(@types/react@18.3.2)(next@14.2.3(@babel/core@7.24.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.77.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zustand@4.5.2(@types/react@18.3.2)(react@18.3.1))
+        specifier: ^0.2.7
+        version: 0.2.7(@types/react-dom@18.3.0)(@types/react@18.3.2)(next@14.2.3(@babel/core@7.24.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.77.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zustand@4.5.2(@types/react@18.3.2)(react@18.3.1))
       '@near-wallet-selector/core':
         specifier: ^8.9.7
         version: 8.9.7(near-api-js@2.1.4)
@@ -1126,8 +1126,8 @@ packages:
   '@near-js/wallet-account@1.1.1':
     resolution: {integrity: sha512-NnoJKtogBQ7Qz+AP+LdF70BP8Az6UXQori7OjPqJLMo73bn6lh5Ywvegwd1EB7ZEVe4BRt9+f9QkbU5M8ANfAw==}
 
-  '@near-pagoda/ui@0.2.1':
-    resolution: {integrity: sha512-Tgq7kicA3GMcHYQEpdA/Y+RH9ZJ97c7cydaacaS/66Vuxnc8/2rqtz4yFUTXlijG9D7MEObjlWSb8I/GhkJZVg==}
+  '@near-pagoda/ui@0.2.7':
+    resolution: {integrity: sha512-oupmpQs2K0zUGfVH3vuhBBaH2X5QTrEagb7MSUCUKNT4ZrB3NGqypxqwTmcWdhPUTLRgDrvf2sDln4at0b41+w==}
     engines: {node: '>=20', pnpm: 9.1.1}
     peerDependencies:
       next: '>=13'
@@ -5578,7 +5578,7 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@near-pagoda/ui@0.2.1(@types/react-dom@18.3.0)(@types/react@18.3.2)(next@14.2.3(@babel/core@7.24.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.77.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zustand@4.5.2(@types/react@18.3.2)(react@18.3.1))':
+  '@near-pagoda/ui@0.2.7(@types/react-dom@18.3.0)(@types/react@18.3.2)(next@14.2.3(@babel/core@7.24.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.77.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zustand@4.5.2(@types/react@18.3.2)(react@18.3.1))':
     dependencies:
       '@phosphor-icons/react': 2.1.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-accordion': 1.2.0(@types/react-dom@18.3.0)(@types/react@18.3.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)

@@ -20,7 +20,7 @@ export interface TicketInfoFormMetadata {
   priceNear?: string;
   priceFiat?: string;
   description?: string | undefined;
-  artwork?: FileList;
+  artwork?: File[];
   salesValidThrough: DateAndTimeInfo;
   passValidThrough?: DateAndTimeInfo;
 }
@@ -93,7 +93,7 @@ export type FormSchema = {
   description?: string;
   location: string;
   date: string;
-  eventArtwork?: FileList;
+  eventArtwork?: File[];
   sellable: boolean;
 
   tickets: TicketInfoFormMetadata[];

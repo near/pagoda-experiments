@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   Container,
+  FileInput,
   Flex,
   Form,
   handleClientError,
@@ -32,9 +33,8 @@ import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
+import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 
-import { FilePreviews } from '@/components/FilePreviews';
 import { useProducerLayout } from '@/hooks/useLayout';
 import { useStripe } from '@/hooks/useStripe';
 import { useNearStore } from '@/stores/near';
@@ -44,6 +44,8 @@ import { createNewEvent } from '@/utils/event';
 import { estimateCosts, FormSchema, TicketInfoFormMetadata, yoctoToNear } from '@/utils/helpers';
 import { createStripeEvent } from '@/utils/stripe';
 import { NextPageWithLayout } from '@/utils/types';
+
+const MAX_ARTWORK_FILE_SIZE_BYTES = 2_000_000; // 2 MB is an arbitrary maximum to encourage event creators keep their images from being too large
 
 const CreateEvent: NextPageWithLayout = () => {
   const wallet = useWalletStore((store) => store.wallet);
@@ -329,15 +331,19 @@ const CreateEvent: NextPageWithLayout = () => {
                     />
                   </Flex>
 
-                  <Card>
-                    <Flex stack as="label">
-                      <Text size="text-xs" weight={600} color="sand12">
-                        Event Artwork
-                      </Text>
-                      <FilePreviews fileList={form.watch('eventArtwork')} />
-                      <input type="file" {...form.register('eventArtwork')} />
-                    </Flex>
-                  </Card>
+                  <Controller
+                    control={form.control}
+                    name="eventArtwork"
+                    render={({ field, fieldState }) => (
+                      <FileInput
+                        label="Event Artwork"
+                        accept="image/*"
+                        maxFileSizeBytes={MAX_ARTWORK_FILE_SIZE_BYTES}
+                        error={fieldState.error?.message}
+                        {...field}
+                      />
+                    )}
+                  />
                 </Card>
 
                 {fields.map((field, index) => (
@@ -420,15 +426,19 @@ const CreateEvent: NextPageWithLayout = () => {
                       />
                     </Flex>
 
-                    <Card>
-                      <Flex stack as="label">
-                        <Text size="text-xs" weight={600} color="sand12">
-                          Ticket Artwork
-                        </Text>
-                        <FilePreviews fileList={form.watch(`tickets.${index}.artwork` as const)} />
-                        <input type="file" {...form.register(`tickets.${index}.artwork`)} />
-                      </Flex>
-                    </Card>
+                    <Controller
+                      control={form.control}
+                      name={`tickets.${index}.artwork` as const}
+                      render={({ field, fieldState }) => (
+                        <FileInput
+                          label="Ticket Artwork"
+                          accept="image/*"
+                          maxFileSizeBytes={MAX_ARTWORK_FILE_SIZE_BYTES}
+                          error={fieldState.error?.message}
+                          {...field}
+                        />
+                      )}
+                    />
 
                     <Tooltip asChild content="Remove Ticket Option">
                       <Button
