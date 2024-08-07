@@ -45,7 +45,7 @@ import { estimateCosts, FormSchema, TicketInfoFormMetadata, yoctoToNear } from '
 import { createStripeEvent } from '@/utils/stripe';
 import { NextPageWithLayout } from '@/utils/types';
 
-const MAX_ARTWORK_FILE_SIZE_BYTES = 2_000_000; // 2 MB is an arbitrary maximum to encourage event creators keep their images from being too large
+const MAX_ARTWORK_FILE_SIZE_BYTES = 5_000_000; // 5 MB is an arbitrary maximum to encourage event creators keep their images from being too large
 
 const CreateEvent: NextPageWithLayout = () => {
   const wallet = useWalletStore((store) => store.wallet);
