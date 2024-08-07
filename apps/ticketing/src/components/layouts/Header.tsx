@@ -1,12 +1,12 @@
 import { Container, SvgIcon } from '@near-pagoda/ui';
 import { CalendarDots, PlusCircle, QrCode } from '@phosphor-icons/react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 import { useWalletStore } from '@/stores/wallet';
 
 import { AccountDropdown } from '../AccountDropdown';
 import s from './Header.module.scss';
-import { useRouter } from 'next/router';
 
 export const Header = () => {
   const account = useWalletStore((store) => store.account);
