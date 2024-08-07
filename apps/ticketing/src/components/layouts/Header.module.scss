@@ -12,6 +12,10 @@
   }
 }
 
+.disabled {
+  pointer-events: none
+}
+
 .container {
   display: flex;
   align-items: center;
