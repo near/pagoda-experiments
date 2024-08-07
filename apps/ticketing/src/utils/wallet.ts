@@ -1,5 +1,5 @@
 import { setupBitteWallet } from '@near-wallet-selector/bitte-wallet';
-import { WalletSelectorParams } from '@near-wallet-selector/core';
+import { WalletModuleFactory, WalletSelectorParams } from '@near-wallet-selector/core';
 import { setupMeteorWallet } from '@near-wallet-selector/meteor-wallet';
 import { setupMintbaseWallet } from '@near-wallet-selector/mintbase-wallet';
 import { setupMyNearWallet } from '@near-wallet-selector/my-near-wallet';
@@ -26,7 +26,7 @@ const modules = [
 
 export const WALLET_SELECTOR_PARAMS: WalletSelectorParams = {
   network: NETWORK_ID,
-  modules,
+  modules: modules as WalletModuleFactory[],
 };
 
 export type EventDataForWallet = {
