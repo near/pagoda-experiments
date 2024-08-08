@@ -7,6 +7,7 @@ export function parseEventDate(event: FunderEventMetadata) {
     const segments = event.date.startTime.split(':');
     const hours = Number(segments[0]);
     const minutes = Number(segments[1]);
+    // console.log('hours', { hours, minutes, segments, date: date.toString() });
     date.setHours(hours);
     date.setMinutes(minutes);
   }
@@ -37,6 +38,7 @@ export function displayEventDate(event: FunderEventMetadata) {
 }
 
 function convertFrom24To12HourTime(time: string) {
+  if (typeof time !== 'string') return;
   // 23:30 => 11:30 PM
   // 00:30 => 12:30 AM
 

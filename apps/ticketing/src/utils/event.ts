@@ -1,8 +1,8 @@
 import { Action } from '@near-wallet-selector/core';
+import type { UseFormGetValues } from 'react-hook-form';
 
 import { KEYPOM_EVENTS_CONTRACT_ID } from './config';
-import { FormSchema } from './helpers';
-import { createPayload } from './helpers';
+import { createPayload, FormSchema } from './helpers';
 import { pinMediaToIPFS } from './stripe';
 import type { WalletStore } from './types';
 
@@ -34,7 +34,6 @@ export const createNewEvent = async ({
   wallet: WalletStore['wallet'];
   accountId: string | undefined;
 }) => {
-  console.log('createNewEvent', { formData, stripeAccountId, wallet, accountId });
   if (!wallet || !accountId) {
     throw new Error('Wallet not connected');
   }
@@ -95,3 +94,78 @@ export const createNewEvent = async ({
     console.error('Failed to create event', error);
   }
 };
+
+export const isValidFutureDate = (value: string) => {
+  const today = new Date().toISOString().split('T')[0];
+  return today !== undefined && value >= today;
+};
+
+export const createValidationRules = (getValues: UseFormGetValues<FormSchema>) => ({
+  name: {
+    required: 'Please enter a name',
+    validate: (value: FormSchema['name']) => value.trim() !== '' || 'Name cannot be empty',
+    setValueAs: (value: string) => value.trim(),
+  },
+  description: {
+    validate: (value: FormSchema['description']) => {
+      if (!value) return true;
+      (value && value.trim() !== '') || 'Description cannot be empty';
+    },
+    setValueAs: (value: string) => value.trim(),
+  },
+  location: {
+    required: 'Please enter a location',
+    validate: (value: FormSchema['location']) => value.trim() !== '' || 'Location cannot be empty',
+    setValueAs: (value: string) => value.trim(),
+  },
+  date: {
+    required: 'Please enter a date',
+    validate: (value: FormSchema['date']) => (value && isValidFutureDate(value)) || 'Date must be in the future',
+  },
+  startTime: {
+    validate: (value: FormSchema['startTime']) => {
+      const endTime = getValues('endTime');
+      if (!endTime) return true; // cannot compare if there is no endTime
+      if (!value) return true; // cannot compare if there is no startTime
+      return value < endTime || 'Start Time must be earlier than End Time';
+    },
+  },
+  endTime: {
+    validate: (value: FormSchema['endTime']) => {
+      const startTime = getValues('startTime');
+      console.log('endTime', { value });
+      if (!startTime) return true; // cannot compare if there is no startTime
+      if (!value) return true; // cannot compare if there is no endTime
+      return value > startTime || 'End Time must be later than Start Time';
+    },
+  },
+  tickets: {
+    name: {
+      required: 'Ticket Name cannot be empty',
+      validate: (value: string) => value.trim() !== '' || 'Ticket Name cannot be empty',
+      setValueAs: (value: string) => value.trim(),
+    },
+    priceFiat: {
+      min: {
+        value: 0,
+        message: 'Price cannot be negative',
+      },
+    },
+    maxSupply: {
+      required: 'Please enter a value',
+      min: {
+        value: 1,
+        message: 'Supply must be at least 1',
+      },
+      valueAsNumber: true,
+    },
+    maxPurchases: {
+      required: 'Please enter a value',
+      min: {
+        value: 1,
+        message: 'Quantity limit must be at least 1',
+      },
+      valueAsNumber: true,
+    },
+  },
+});
