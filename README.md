@@ -8,7 +8,7 @@ This monorepo contains product experiments built on the blockchain.
 
 ## Getting Started
 
-This project requires [pnpm](https://pnpm.io/installation) version `9.1.1`. The strict version requirement will help keep our lockfile consistent as more developers contribute.
+This project requires [pnpm](https://pnpm.io/installation) version `9.7.0`. The strict version requirement will help keep our lockfile consistent as more developers contribute.
 
 This project also requires Node 20. If you use `nvm`, simply run:
 
@@ -20,8 +20,8 @@ nvm use
 Make sure you have the correct version of `pnpm` installed:
 
 ```bash
-pnpm -v # This should output 9.1.1
-npm install -g pnpm@9.1.1 # Install the correct version if needed
+pnpm -v # This should output 9.7.0
+npm install -g pnpm@9.7.0 # Install the correct version if needed
 ```
 
 Install all dependencies in the monorepo root:
