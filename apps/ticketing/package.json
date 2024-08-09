@@ -16,12 +16,16 @@
   },
   "dependencies": {
     "@keypom/core": "^1.0.0",
+<<<<<<< HEAD
     "@near-pagoda/ui": "^0.3.0",
     "@near-wallet-selector/core": "^8.9.11",
+=======
+    "@near-pagoda/ui": "^0.2.7",
+>>>>>>> a340d63 (chore: prep for rebase)
     "@near-wallet-selector/bitte-wallet": "^8.9.11",
+    "@near-wallet-selector/core": "^8.9.12",
     "@near-wallet-selector/here-wallet": "8.9.7",
     "@near-wallet-selector/meteor-wallet": "^8.9.7",
-    "@near-wallet-selector/mintbase-wallet": "^8.9.11",
     "@near-wallet-selector/modal-ui": "^8.9.7",
     "@near-wallet-selector/my-near-wallet": "^8.9.7",
     "@near-wallet-selector/nightly": "^8.9.7",
@@ -59,9 +63,17 @@
     "prettier": "^3",
     "typescript": "^5"
   },
+<<<<<<< HEAD
   "engines": {
     "node": ">=20",
     "pnpm": "9.1.1"
   },
   "packageManager": "pnpm@9.1.1"
+=======
+  "pnpm": {
+    " overrides": {
+      "@near-wallet-selector/core": "8.9.11"
+    }
+  }
+>>>>>>> a340d63 (chore: prep for rebase)
 }

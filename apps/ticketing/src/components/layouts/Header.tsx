@@ -13,7 +13,6 @@ export const Header = () => {
   const router = useRouter();
   const eventRoute = router.pathname.includes('/events');
   const isDisabled = eventRoute ? s.disabled : '';
-  console.log('eventRoute', eventRoute);
   return (
     <header className={s.header}>
       <div className={isDisabled}>
