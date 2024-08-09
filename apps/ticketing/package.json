@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@keypom/core": "^1.0.0",
-    "@near-pagoda/ui": "^0.2.7",
+    "@near-pagoda/ui": "^0.3.0",
     "@near-wallet-selector/core": "^8.9.7",
     "@near-wallet-selector/here-wallet": "8.9.7",
     "@near-wallet-selector/meteor-wallet": "^8.9.7",
@@ -57,5 +57,10 @@
     "eslint-plugin-simple-import-sort": "^12.1.0",
     "prettier": "^3",
     "typescript": "^5"
-  }
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": "9.1.1"
+  },
+  "packageManager": "pnpm@9.1.1"
 }
