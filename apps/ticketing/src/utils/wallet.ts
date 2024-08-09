@@ -1,7 +1,6 @@
 import { setupBitteWallet } from '@near-wallet-selector/bitte-wallet';
 import { WalletModuleFactory, WalletSelectorParams } from '@near-wallet-selector/core';
 import { setupMeteorWallet } from '@near-wallet-selector/meteor-wallet';
-import { setupMintbaseWallet } from '@near-wallet-selector/mintbase-wallet';
 import { setupMyNearWallet } from '@near-wallet-selector/my-near-wallet';
 import { setupNightly } from '@near-wallet-selector/nightly';
 import { setupFastAuthWallet } from 'near-fastauth-wallet';
@@ -12,7 +11,6 @@ import { NETWORK_ID } from './config';
 import type { FunderEventMetadata, TicketMetadataExtra } from './helpers';
 const modules = [
   setupMyNearWallet(),
-  setupMintbaseWallet(),
   setupBitteWallet(),
   setupMeteorWallet(),
   setupNightly(),
