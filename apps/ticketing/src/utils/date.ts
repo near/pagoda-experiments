@@ -7,7 +7,6 @@ export function parseEventDate(event: FunderEventMetadata) {
     const segments = event.date.startTime.split(':');
     const hours = Number(segments[0]);
     const minutes = Number(segments[1]);
-    // console.log('hours', { hours, minutes, segments, date: date.toString() });
     date.setHours(hours);
     date.setMinutes(minutes);
   }

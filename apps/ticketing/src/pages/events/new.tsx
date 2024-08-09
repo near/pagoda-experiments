@@ -402,13 +402,17 @@ const CreateEvent: NextPageWithLayout = () => {
                         error={form.formState.errors.tickets?.[index]?.salesValidThrough?.startDate?.message}
                         {...form.register(`tickets.${index}.salesValidThrough.startDate`, {
                           required: 'Please enter a start date',
-                          validate: (value: FormSchema['tickets'][number]['salesValidThrough']['startDate']) => {
-                            const today = new Date().getTime();
+                          validate: (value: number) => {
+                            const eventDateString = form.getValues('date');
                             const endDate = form.getValues(`tickets.${index}.salesValidThrough.endDate`);
+
                             if (!value) return 'Start Date is required';
-                            if (today !== undefined && value < today) return 'Start Date cannot be earlier than today';
-                            if (!endDate) return true;
-                            return value < endDate || 'Sales Start Date must be earlier than Sales End Date';
+                            const eventDate = new Date(eventDateString).getTime();
+
+                            if (value > eventDate) return 'Sales Start Date cannot be later than the event date';
+                            if (endDate && value >= endDate)
+                              return 'Sales Start Date must be earlier than Sales End Date';
+                            return true;
                           },
                           setValueAs: (value: string) => new Date(value).getTime(),
                         })}
@@ -433,7 +437,6 @@ const CreateEvent: NextPageWithLayout = () => {
                             if (value > eventDate) {
                               return 'Sales End Date must not be later than the event date';
                             }
-
                             return true;
                           },
                           setValueAs: (value: string) => new Date(value).getTime(),

@@ -133,7 +133,6 @@ export const createValidationRules = (getValues: UseFormGetValues<FormSchema>) =
   endTime: {
     validate: (value: FormSchema['endTime']) => {
       const startTime = getValues('startTime');
-      console.log('endTime', { value });
       if (!startTime) return true; // cannot compare if there is no startTime
       if (!value) return true; // cannot compare if there is no endTime
       return value > startTime || 'End Time must be later than Start Time';

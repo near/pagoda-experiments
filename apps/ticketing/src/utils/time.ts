@@ -12,7 +12,6 @@ export const validateDateAndTime = (
 
   if (typeof requiredInfo === 'object') {
     const requiredInfoObj = requiredInfo as DateAndTimeInfo;
-    console.log('requiredInfoObj', requiredInfoObj);
     const { valid: startValid, message: startMessage } = validateStartDateAndTime(requiredInfoObj);
 
     if (!startValid) {
@@ -39,7 +38,6 @@ export const validateDateAndTime = (
 };
 
 const validateStartDateAndTime = (requiredDateAndTime: DateAndTimeInfo): { valid: boolean; message: string } => {
-  console.log('requiredDateAndTime', requiredDateAndTime);
   // Get the current DateTime
   const now = DateTime.now();
   const nowDateOnly = now.startOf('day');
@@ -87,7 +85,6 @@ const validateStartDateAndTime = (requiredDateAndTime: DateAndTimeInfo): { valid
 };
 
 const validateEndDateAndTime = (requiredDateAndTime: DateAndTimeInfo): { valid: boolean; message: string } => {
-  console.log('validateEndDateAndTime | requiredDateAndTime', requiredDateAndTime);
   // Get the current DateTime
   const now = DateTime.now();
   const nowDateOnly = now.startOf('day');
