@@ -48,8 +48,8 @@ export async function verifyAndClaimTicket({
     const details = await fetchDetailsForPurchasedTicket(secretKey, viewAccount);
     const matchesEvent = details.extra.eventId === eventId;
     /*
-        If remaining uses is less than 2, we assume the ticket has been scanned/verified. 
-        The additional use is to ensure that once the key is scanned and the attendee is 
+        If remaining uses is less than 2, we assume the ticket has been scanned/verified.
+        The additional use is to ensure that once the key is scanned and the attendee is
         admitted into the event, the key and its metadata are not deleted/lost:
       */
     const hasBeenUsed = details.usesRemaining < 2;
@@ -81,8 +81,8 @@ export async function verifyAndClaimTicket({
     verifiedSecretKeys.push(secretKey);
 
     /*
-      NOTE: We purposefully don't await on claimTicket() below since it can take awhile to process. 
-      At this point, we've already verified the ticket is valid, so we can return a successful 
+      NOTE: We purposefully don't await on claimTicket() below since it can take awhile to process.
+      At this point, we've already verified the ticket is valid, so we can return a successful
       verification notification and assume the claiming logic will eventually finish.
     */
 

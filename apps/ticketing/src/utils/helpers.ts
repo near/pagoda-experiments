@@ -320,8 +320,8 @@ export const createPayload = async ({
       priceFiat: ticket.priceFiat,
       salesValidThrough: {
         ...ticket.salesValidThrough,
-        startDate: Date.parse(ticket.salesValidThrough.startDate.toString()),
-        endDate: Date.parse(ticket.salesValidThrough.endDate!.toString()),
+        startDate: ticket.salesValidThrough.startDate,
+        endDate: ticket.salesValidThrough.endDate,
       },
       passValidThrough: ticket.passValidThrough,
       maxSupply: ticket.maxSupply,
@@ -339,8 +339,8 @@ export const createPayload = async ({
     marketTicketInfo[`${dropId}`] = {
       max_tickets: ticket.maxSupply ?? 0,
       price: parseNearAmount(ticket.priceNear || '0')!.toString(),
-      sale_start: Date.parse(ticket.salesValidThrough.startDate.toString()),
-      sale_end: Date.parse(ticket.salesValidThrough.endDate!.toString()),
+      sale_start: ticket.salesValidThrough.startDate,
+      sale_end: ticket.salesValidThrough.endDate!,
     };
 
     const dropConfig = {

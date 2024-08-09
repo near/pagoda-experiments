@@ -403,16 +403,14 @@ const CreateEvent: NextPageWithLayout = () => {
                         {...form.register(`tickets.${index}.salesValidThrough.startDate`, {
                           required: 'Please enter a start date',
                           validate: (value: FormSchema['tickets'][number]['salesValidThrough']['startDate']) => {
-                            // TODO: fix data types
-                            const today = new Date().toISOString().split('T')[0];
+                            const today = new Date().getTime();
                             const endDate = form.getValues(`tickets.${index}.salesValidThrough.endDate`);
                             if (!value) return 'Start Date is required';
-                            console.log({ today, value });
-                            if (today !== undefined && value < Date.parse(today))
-                              return 'Start Date cannot be earlier than today';
+                            if (today !== undefined && value < today) return 'Start Date cannot be earlier than today';
                             if (!endDate) return true;
                             return value < endDate || 'Sales Start Date must be earlier than Sales End Date';
                           },
+                          setValueAs: (value: string) => new Date(value).getTime(),
                         })}
                       />
                       <Input
@@ -423,10 +421,22 @@ const CreateEvent: NextPageWithLayout = () => {
                           required: 'Please enter an end date',
                           validate: (value: FormSchema['tickets'][number]['salesValidThrough']['endDate']) => {
                             const startDate = form.getValues(`tickets.${index}.salesValidThrough.startDate`);
+                            const eventDateString = form.getValues('date');
+
                             if (!value) return 'End Date is required';
                             if (!startDate) return true;
-                            return value > startDate || 'Sales End Date must be later than Sales Start Date';
+
+                            const eventDate = new Date(eventDateString).getTime();
+                            if (value <= startDate) {
+                              return 'Sales End Date must be later than Sales Start Date';
+                            }
+                            if (value > eventDate) {
+                              return 'Sales End Date must not be later than the event date';
+                            }
+
+                            return true;
                           },
+                          setValueAs: (value: string) => new Date(value).getTime(),
                         })}
                       />
                     </Flex>
