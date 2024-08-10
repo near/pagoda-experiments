@@ -62,5 +62,10 @@
     "node": ">=20",
     "pnpm": "9.1.1"
   },
-  "packageManager": "pnpm@9.1.1"
+  "packageManager": "pnpm@9.1.1",
+  "pnpm": {
+    "overrides": {
+      "@near-wallet-selector/core": "8.9.12"
+    }
+  }
 }
