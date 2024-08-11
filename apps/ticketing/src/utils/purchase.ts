@@ -81,7 +81,7 @@ export async function purchaseTickets({
     //const buyerAnswers = await encryptWithPublicKey(JSON.stringify({ questions: {} }), publicKey); // TODO: Eventually support questions in our UI and record answers here
 
     const eventImageUrl = event.artwork ? `${CLOUDFLARE_IPFS}/${event.artwork}` : '';
-    const ticketImageUrl = drop.ticket.artwork ? `${CLOUDFLARE_IPFS}/${drop.ticket.artwork}` : eventImageUrl ?? '';
+    const ticketImageUrl = drop.ticket.artwork ? `${CLOUDFLARE_IPFS}/${drop.ticket.artwork}` : (eventImageUrl ?? '');
 
     const workerPayload: PurchaseWorkerPayload = {
       name: null,

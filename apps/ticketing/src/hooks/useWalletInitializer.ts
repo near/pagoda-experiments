@@ -22,8 +22,7 @@ export function useWalletInitializer() {
       }
 
       const selector = await setupPromise.current;
-
-      const modal = setupModal(selector, {
+      const modal = setupModal(selector as any, {
         contractId: KEYPOM_CONTRACT_ID,
         description: 'Sign in to start creating and managing your own events.',
         theme: 'auto',
