@@ -37,6 +37,7 @@ export function displayEventDate(event: FunderEventMetadata) {
 }
 
 function convertFrom24To12HourTime(time: string) {
+  if (typeof time !== 'string') return;
   // 23:30 => 11:30 PM
   // 00:30 => 12:30 AM
 

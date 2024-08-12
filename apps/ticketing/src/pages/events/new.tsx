@@ -40,7 +40,7 @@ import { useStripe } from '@/hooks/useStripe';
 import { useNearStore } from '@/stores/near';
 import { useStripeStore } from '@/stores/stripe';
 import { useWalletStore } from '@/stores/wallet';
-import { createNewEvent } from '@/utils/event';
+import { createNewEvent, createValidationRules } from '@/utils/event';
 import { estimateCosts, FormSchema, TicketInfoFormMetadata, yoctoToNear } from '@/utils/helpers';
 import { createStripeEvent } from '@/utils/stripe';
 import { NextPageWithLayout } from '@/utils/types';
@@ -227,6 +227,8 @@ const CreateEvent: NextPageWithLayout = () => {
     }
   };
 
+  const validationRules = createValidationRules(form.getValues);
+
   return (
     <>
       <Head>
@@ -286,33 +288,27 @@ const CreateEvent: NextPageWithLayout = () => {
                     label="Name"
                     iconLeft={<Tag />}
                     error={form.formState.errors.name?.message}
-                    {...form.register('name', {
-                      required: 'Please enter a name',
-                    })}
+                    {...form.register('name', validationRules.name)}
                   />
 
                   <InputTextarea
                     label="Description"
                     error={form.formState.errors.description?.message}
-                    {...form.register('description')}
+                    {...form.register('description', validationRules.description)}
                   />
 
                   <Input
                     label="Location"
                     iconLeft={<MapPinArea />}
                     error={form.formState.errors.location?.message}
-                    {...form.register('location', {
-                      required: 'Please enter a location',
-                    })}
+                    {...form.register('location', validationRules.location)}
                   />
 
                   <Input
                     label="Date"
                     type="date"
                     error={form.formState.errors.date?.message}
-                    {...form.register('date', {
-                      required: 'Please enter a date',
-                    })}
+                    {...form.register('date', validationRules.date)}
                   />
 
                   <Flex stack="phone">
@@ -320,14 +316,14 @@ const CreateEvent: NextPageWithLayout = () => {
                       label="Start Time"
                       type="time"
                       error={form.formState.errors.startTime?.message}
-                      {...form.register('startTime')}
+                      {...form.register('startTime', validationRules.startTime)}
                     />
 
                     <Input
                       label="End Time"
                       type="time"
                       error={form.formState.errors.endTime?.message}
-                      {...form.register('endTime')}
+                      {...form.register('endTime', validationRules.endTime)}
                     />
                   </Flex>
 
@@ -353,7 +349,7 @@ const CreateEvent: NextPageWithLayout = () => {
                         label="Ticket Name"
                         placeholder="General Admission"
                         iconLeft={<Tag />}
-                        {...form.register(`tickets.${index}.name`)}
+                        {...form.register(`tickets.${index}.name`, validationRules.tickets.name)}
                       />
                     </Flex>
 
@@ -376,7 +372,7 @@ const CreateEvent: NextPageWithLayout = () => {
                           allowNegative: false,
                         }}
                         error={form.formState.errors.tickets?.[index]?.priceFiat?.message}
-                        {...form.register(`tickets.${index}.priceFiat`, { min: 0 })}
+                        {...form.register(`tickets.${index}.priceFiat`, validationRules.tickets.priceFiat)}
                       />
 
                       <Input
@@ -386,11 +382,7 @@ const CreateEvent: NextPageWithLayout = () => {
                           allowNegative: false,
                         }}
                         error={form.formState.errors.tickets?.[index]?.maxSupply?.message}
-                        {...form.register(`tickets.${index}.maxSupply`, {
-                          required: 'Please enter a value',
-                          min: 1,
-                          valueAsNumber: true,
-                        })}
+                        {...form.register(`tickets.${index}.maxSupply`, validationRules.tickets.maxSupply)}
                       />
 
                       <Input
@@ -400,28 +392,30 @@ const CreateEvent: NextPageWithLayout = () => {
                           allowNegative: false,
                         }}
                         error={form.formState.errors.tickets?.[index]?.maxPurchases?.message}
-                        {...form.register(`tickets.${index}.maxPurchases`, {
-                          required: 'Please enter a value',
-                          min: 1,
-                          valueAsNumber: true,
-                        })}
+                        {...form.register(`tickets.${index}.maxPurchases`, validationRules.tickets.maxPurchases)}
                       />
                     </Flex>
                     <Flex stack="phone">
                       <Input
                         label="Sales Start Date"
                         type="date"
-                        error={form.formState.errors.date?.message}
+                        error={form.formState.errors.tickets?.[index]?.salesValidThrough?.startDate?.message}
                         {...form.register(`tickets.${index}.salesValidThrough.startDate`, {
-                          required: 'Please enter a date',
+                          required: 'Please enter a start date',
+                          validate: (value: FormSchema['tickets'][number]['salesValidThrough']['startDate']) =>
+                            validationRules.tickets.salesStartDate.validate(value, index),
+                          setValueAs: (value: string) => new Date(value).getTime(),
                         })}
                       />
                       <Input
                         label="Sales End Date"
                         type="date"
-                        error={form.formState.errors.date?.message}
+                        error={form.formState.errors.tickets?.[index]?.salesValidThrough?.endDate?.message}
                         {...form.register(`tickets.${index}.salesValidThrough.endDate`, {
-                          required: 'Please enter a date',
+                          required: 'Please enter an end date',
+                          validate: (value: FormSchema['tickets'][number]['salesValidThrough']['endDate']) =>
+                            validationRules.tickets.salesEndDate.validate(value!, index),
+                          setValueAs: (value: string) => new Date(value).getTime(),
                         })}
                       />
                     </Flex>
