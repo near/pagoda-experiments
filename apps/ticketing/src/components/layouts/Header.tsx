@@ -12,7 +12,7 @@ export const Header = () => {
   const account = useWalletStore((store) => store.account);
   const router = useRouter();
   const eventRoute = router.pathname.includes('/events');
-  const isDisabled = eventRoute ? s.disabled : '';
+  const isDisabled = eventRoute && !account ? s.disabled : '';
   return (
     <header className={s.header}>
       <div className={isDisabled}>
