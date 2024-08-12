@@ -402,18 +402,8 @@ const CreateEvent: NextPageWithLayout = () => {
                         error={form.formState.errors.tickets?.[index]?.salesValidThrough?.startDate?.message}
                         {...form.register(`tickets.${index}.salesValidThrough.startDate`, {
                           required: 'Please enter a start date',
-                          validate: (value: number) => {
-                            const eventDateString = form.getValues('date');
-                            const endDate = form.getValues(`tickets.${index}.salesValidThrough.endDate`);
-
-                            if (!value) return 'Start Date is required';
-                            const eventDate = new Date(eventDateString).getTime();
-
-                            if (value > eventDate) return 'Sales Start Date cannot be later than the event date';
-                            if (endDate && value >= endDate)
-                              return 'Sales Start Date must be earlier than Sales End Date';
-                            return true;
-                          },
+                          validate: (value: FormSchema['tickets'][number]['salesValidThrough']['startDate']) =>
+                            validationRules.tickets.salesStartDate.validate(value, index),
                           setValueAs: (value: string) => new Date(value).getTime(),
                         })}
                       />
@@ -423,22 +413,8 @@ const CreateEvent: NextPageWithLayout = () => {
                         error={form.formState.errors.tickets?.[index]?.salesValidThrough?.endDate?.message}
                         {...form.register(`tickets.${index}.salesValidThrough.endDate`, {
                           required: 'Please enter an end date',
-                          validate: (value: FormSchema['tickets'][number]['salesValidThrough']['endDate']) => {
-                            const startDate = form.getValues(`tickets.${index}.salesValidThrough.startDate`);
-                            const eventDateString = form.getValues('date');
-
-                            if (!value) return 'End Date is required';
-                            if (!startDate) return true;
-
-                            const eventDate = new Date(eventDateString).getTime();
-                            if (value <= startDate) {
-                              return 'Sales End Date must be later than Sales Start Date';
-                            }
-                            if (value > eventDate) {
-                              return 'Sales End Date must not be later than the event date';
-                            }
-                            return true;
-                          },
+                          validate: (value: FormSchema['tickets'][number]['salesValidThrough']['endDate']) =>
+                            validationRules.tickets.salesEndDate.validate(value!, index),
                           setValueAs: (value: string) => new Date(value).getTime(),
                         })}
                       />

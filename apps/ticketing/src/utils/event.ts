@@ -100,6 +100,39 @@ export const isValidFutureDate = (value: string) => {
   return today !== undefined && value >= today;
 };
 
+const validateSalesStartDate = (
+  value: number,
+  getValues: UseFormGetValues<FormSchema>,
+  index: number,
+): true | string => {
+  const eventDateString = getValues('date');
+  const endDate = getValues(`tickets.${index}.salesValidThrough.endDate`);
+
+  if (!value) return 'Start Date is required';
+  const eventDate = new Date(eventDateString).getTime();
+
+  if (value > eventDate) return 'Sales Start Date cannot be later than the event date';
+  if (endDate && value >= endDate) return 'Sales Start Date must be earlier than Sales End Date';
+  return true;
+};
+
+const validateSalesEndDate = (value: number, getValues: UseFormGetValues<FormSchema>, index: number): true | string => {
+  const startDate = getValues(`tickets.${index}.salesValidThrough.startDate`);
+  const eventDateString = getValues('date');
+
+  if (!value) return 'Sales End Date is required';
+  if (!startDate) return true;
+
+  const eventDate = new Date(eventDateString).getTime();
+  if (value <= startDate) {
+    return 'Sales End Date must be later than Sales Start Date';
+  }
+  if (value > eventDate) {
+    return 'Sales End Date must not be later than the event date';
+  }
+  return true;
+};
+
 export const createValidationRules = (getValues: UseFormGetValues<FormSchema>) => ({
   name: {
     required: 'Please enter a name',
@@ -143,6 +176,12 @@ export const createValidationRules = (getValues: UseFormGetValues<FormSchema>) =
       required: 'Ticket Name cannot be empty',
       validate: (value: string) => value.trim() !== '' || 'Ticket Name cannot be empty',
       setValueAs: (value: string) => value.trim(),
+    },
+    salesStartDate: {
+      validate: (value: number, index: number) => validateSalesStartDate(value, getValues, index),
+    },
+    salesEndDate: {
+      validate: (value: number, index: number) => validateSalesEndDate(value, getValues, index),
     },
     priceFiat: {
       min: {
