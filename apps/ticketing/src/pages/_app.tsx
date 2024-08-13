@@ -3,10 +3,12 @@ import '@near-pagoda/ui/theme.css';
 import '@near-pagoda/ui/lib.css';
 import '@near-wallet-selector/modal-ui/styles.css';
 
-import { Toaster } from '@near-pagoda/ui';
+import { PagodaUiProvider, Toaster } from '@near-pagoda/ui';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 
 import { useNearInitializer } from '@/hooks/useNearInitializer';
@@ -24,6 +26,7 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
   useNearInitializer();
   useWalletInitializer();
   const modal = useWalletStore((store) => store.modal);
+  const router = useRouter();
 
   const getLayout = Component.getLayout ?? ((page) => page);
   useEffect(() => {
@@ -41,15 +44,23 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
   return (
     <>
       <QueryClientProvider client={queryClient}>
-        <Head>
-          <link rel="icon" href="favicon.ico" />
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <title>Ticketing</title>
-        </Head>
+        <PagodaUiProvider
+          value={{
+            routerPrefetch: router.prefetch,
+            routerPush: router.push,
+            Link,
+          }}
+        >
+          <Head>
+            <link rel="icon" href="favicon.ico" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <title>Ticketing</title>
+          </Head>
 
-        {getLayout(<Component {...pageProps} />)}
+          {getLayout(<Component {...pageProps} />)}
 
-        <Toaster />
+          <Toaster />
+        </PagodaUiProvider>
       </QueryClientProvider>
     </>
   );
