@@ -180,3 +180,9 @@ const getTimeAsMinutes = (timeString: string) => {
   const time = DateTime.fromFormat(timeString, 'hh:mm');
   return time.hour * 60 + (time.minute as number);
 };
+
+export const timeToMilliseconds = (time: string): number => {
+  const dateTime = DateTime.fromFormat(time, 'HH:mm');
+
+  return dateTime.diff(DateTime.fromObject({ hour: 0, minute: 0 })).toMillis();
+};
