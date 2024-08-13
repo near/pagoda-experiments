@@ -4,6 +4,7 @@ import type { UseFormGetValues } from 'react-hook-form';
 import { KEYPOM_EVENTS_CONTRACT_ID } from './config';
 import { createPayload, FormSchema } from './helpers';
 import { pinMediaToIPFS } from './stripe';
+import { timeToMilliseconds } from './time';
 import type { WalletStore } from './types';
 
 export function formatEventIdQueryParam(publisherAccountId: string, eventId: string) {
@@ -112,7 +113,7 @@ const validateSalesStartDate = (
   const eventDate = new Date(eventDateString).getTime();
 
   if (value > eventDate) return 'Sales Start Date cannot be later than the event date';
-  if (endDate && value >= endDate) return 'Sales Start Date must be earlier than Sales End Date';
+  if (endDate && value > endDate) return 'Sales Start Date must be earlier than Sales End Date';
   return true;
 };
 
@@ -124,7 +125,7 @@ const validateSalesEndDate = (value: number, getValues: UseFormGetValues<FormSch
   if (!startDate) return true;
 
   const eventDate = new Date(eventDateString).getTime();
-  if (value <= startDate) {
+  if (value < startDate) {
     return 'Sales End Date must be later than Sales Start Date';
   }
   if (value > eventDate) {
@@ -160,7 +161,7 @@ export const createValidationRules = (getValues: UseFormGetValues<FormSchema>) =
       const endTime = getValues('endTime');
       if (!endTime) return true; // cannot compare if there is no endTime
       if (!value) return true; // cannot compare if there is no startTime
-      return value < endTime || 'Start Time must be earlier than End Time';
+      return timeToMilliseconds(value) < timeToMilliseconds(endTime) || 'Start Time must be earlier than End Time';
     },
   },
   endTime: {
@@ -168,7 +169,7 @@ export const createValidationRules = (getValues: UseFormGetValues<FormSchema>) =
       const startTime = getValues('startTime');
       if (!startTime) return true; // cannot compare if there is no startTime
       if (!value) return true; // cannot compare if there is no endTime
-      return value > startTime || 'End Time must be later than Start Time';
+      return timeToMilliseconds(value) > timeToMilliseconds(startTime) || 'End Time must be later than Start Time';
     },
   },
   tickets: {
