@@ -13,8 +13,8 @@ export type EventDetails = {
   name: string;
   location: string;
   date: string; // YYYY-MM-DD
-  startTime?: string; // HH:MM
-  endTime?: string; // HH:MM
+  startTime: string; // HH:MM
+  endTime: string; // HH:MM
   description?: string;
   imageUrl?: string;
   links?: {

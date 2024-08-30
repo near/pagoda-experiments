@@ -1,3 +1,5 @@
+import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import {
   AssistiveText,
   Badge,
@@ -29,6 +31,7 @@ import {
   Trash,
 } from '@phosphor-icons/react';
 import { useMutation } from '@tanstack/react-query';
+import dayjs from 'dayjs';
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -63,6 +66,11 @@ const CreateEvent: NextPageWithLayout = () => {
   // transactionHashes defines success transaction on myNearWallet
   const errorCode = router.query.errorCode;
   const transactionHashes = router.query.transactionHashes as string;
+
+  const [salesStartDateTime, setSalesStart] = useState(dayjs(new Date()).add(1, 'day'));
+  const [salesEndDateTime, setSalesEnd] = useState(dayjs(new Date()).add(2, 'day'));
+  const [eventStartsAt, setEventStartsAt] = useState(dayjs(new Date()).add(1, 'day'));
+  const [eventEndsAt, setEventEndsAt] = useState(dayjs(new Date()).add(2, 'day'));
 
   const form = useForm<FormSchema>({
     defaultValues: {},
@@ -151,6 +159,8 @@ const CreateEvent: NextPageWithLayout = () => {
   const placeHolderTicket: TicketInfoFormMetadata = {
     name: 'General Admission',
     denomination: 'Near',
+    priceNear: '',
+    priceFiat: '',
     salesValidThrough: {
       startDate: Date.now(), // Milliseconds from Unix Epoch
       startTime: '00:00', // Raw 24 hour time string such as 18:00
@@ -227,7 +237,7 @@ const CreateEvent: NextPageWithLayout = () => {
     }
   };
 
-  const validationRules = createValidationRules(form.getValues);
+  const validationRules = createValidationRules();
 
   return (
     <>
@@ -237,195 +247,116 @@ const CreateEvent: NextPageWithLayout = () => {
 
       <Section background="primary-gradient" grow="available">
         <Container size="s" style={{ margin: 'auto' }}>
-          <Form onSubmit={form.handleSubmit(onValidSubmit)}>
-            <Flex stack gap="l">
-              <Flex align="center">
-                <SvgIcon icon={<CalendarPlus />} color="sand12" size="m" />
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <Form onSubmit={form.handleSubmit(onValidSubmit)}>
+              <Flex stack gap="l">
+                <Flex align="center">
+                  <SvgIcon icon={<CalendarPlus />} color="sand12" size="m" />
 
-                <Text as="h3" style={{ marginRight: 'auto' }}>
-                  Create New Event
-                </Text>
-              </Flex>
-
-              <Flex stack>
-                <Card>
-                  <Text size="text-xs" weight={600} color="sand12">
-                    Payment Options
+                  <Text as="h3" style={{ marginRight: 'auto' }}>
+                    Create New Event
                   </Text>
+                </Flex>
 
-                  <Flex align="center">
-                    <Text style={{ marginRight: 'auto' }}>Stripe</Text>
+                <Flex stack>
+                  <Card>
+                    <Text size="text-xs" weight={600} color="sand12">
+                      Payment Options
+                    </Text>
 
-                    {stripeAccountId ? (
-                      <>
-                        <Badge variant="success" label={`Connected To: ${stripeAccountId}`} />
+                    <Flex align="center">
+                      <Text style={{ marginRight: 'auto' }}>Stripe</Text>
 
-                        <Tooltip asChild content="Change Stripe Account">
-                          <Button
-                            variant="primary"
-                            label="Change Stripe Account"
-                            fill="outline"
-                            size="small"
-                            icon={<Gear />}
-                            onClick={handleConnectStripe}
+                      {stripeAccountId ? (
+                        <>
+                          <Badge variant="success" label={`Connected To: ${stripeAccountId}`} />
+
+                          <Tooltip asChild content="Change Stripe Account">
+                            <Button
+                              variant="primary"
+                              label="Change Stripe Account"
+                              fill="outline"
+                              size="small"
+                              icon={<Gear />}
+                              onClick={handleConnectStripe}
+                            />
+                          </Tooltip>
+                        </>
+                      ) : (
+                        <Button
+                          variant="primary"
+                          label="Connect Stripe Account"
+                          fill="outline"
+                          size="small"
+                          onClick={handleConnectStripe}
+                        />
+                      )}
+                    </Flex>
+                  </Card>
+
+                  <Card>
+                    <Input
+                      label="Name"
+                      iconLeft={<Tag />}
+                      error={form.formState.errors.name?.message}
+                      {...form.register('name', validationRules.name)}
+                    />
+
+                    <InputTextarea
+                      label="Description"
+                      error={form.formState.errors.description?.message}
+                      {...form.register('description', validationRules.description)}
+                    />
+
+                    <Input
+                      label="Location"
+                      iconLeft={<MapPinArea />}
+                      error={form.formState.errors.location?.message}
+                      {...form.register('location', validationRules.location)}
+                    />
+
+                    <Flex stack="phone">
+                      <Controller
+                        control={form.control}
+                        name="startTime"
+                        render={({ field: { onChange, ref } }) => (
+                          <DateTimePicker
+                            label="Event Starts At"
+                            disablePast
+                            ref={ref}
+                            defaultValue={eventStartsAt}
+                            onChange={(value) => {
+                              setEventStartsAt(value || eventStartsAt);
+                              onChange(value);
+                            }}
                           />
-                        </Tooltip>
-                      </>
-                    ) : (
-                      <Button
-                        variant="primary"
-                        label="Connect Stripe Account"
-                        fill="outline"
-                        size="small"
-                        onClick={handleConnectStripe}
-                      />
-                    )}
-                  </Flex>
-                </Card>
-
-                <Card>
-                  <Input
-                    label="Name"
-                    iconLeft={<Tag />}
-                    error={form.formState.errors.name?.message}
-                    {...form.register('name', validationRules.name)}
-                  />
-
-                  <InputTextarea
-                    label="Description"
-                    error={form.formState.errors.description?.message}
-                    {...form.register('description', validationRules.description)}
-                  />
-
-                  <Input
-                    label="Location"
-                    iconLeft={<MapPinArea />}
-                    error={form.formState.errors.location?.message}
-                    {...form.register('location', validationRules.location)}
-                  />
-
-                  <Input
-                    label="Date"
-                    type="date"
-                    error={form.formState.errors.date?.message}
-                    {...form.register('date', validationRules.date)}
-                  />
-
-                  <Flex stack="phone">
-                    <Input
-                      label="Start Time"
-                      type="time"
-                      error={form.formState.errors.startTime?.message}
-                      {...form.register('startTime', validationRules.startTime)}
-                    />
-
-                    <Input
-                      label="End Time"
-                      type="time"
-                      error={form.formState.errors.endTime?.message}
-                      {...form.register('endTime', validationRules.endTime)}
-                    />
-                  </Flex>
-
-                  <Controller
-                    control={form.control}
-                    name="eventArtwork"
-                    render={({ field, fieldState }) => (
-                      <FileInput
-                        label="Event Artwork"
-                        accept="image/*"
-                        maxFileSizeBytes={MAX_ARTWORK_FILE_SIZE_BYTES}
-                        error={fieldState.error?.message}
-                        {...field}
-                      />
-                    )}
-                  />
-                </Card>
-
-                {fields.map((field, index) => (
-                  <Card key={field.id}>
-                    <Flex stack="phone">
-                      <Input
-                        label="Ticket Name"
-                        placeholder="General Admission"
-                        iconLeft={<Tag />}
-                        {...form.register(`tickets.${index}.name`, validationRules.tickets.name)}
-                      />
-                    </Flex>
-
-                    {/* <Flex stack="phone" style={{ display: 'block' }}>
-                      <label> Payment Type</label>
-                      <select {...form.register(`tickets.${index}.denomination`)}>
-                        <option value="Near">Near</option>
-                        <option disabled value="USD">
-                          USD
-                        </option>
-                      </select>
-                    </Flex> */}
-
-                    <Flex stack="phone">
-                      <Input
-                        label="Ticket Price (USD)"
-                        placeholder="Free"
-                        iconLeft={<CurrencyDollar />}
-                        number={{
-                          allowNegative: false,
-                        }}
-                        error={form.formState.errors.tickets?.[index]?.priceFiat?.message}
-                        {...form.register(`tickets.${index}.priceFiat`, validationRules.tickets.priceFiat)}
+                        )}
                       />
 
-                      <Input
-                        label="Total Supply"
-                        iconLeft={<Ticket />}
-                        number={{
-                          allowNegative: false,
-                        }}
-                        error={form.formState.errors.tickets?.[index]?.maxSupply?.message}
-                        {...form.register(`tickets.${index}.maxSupply`, validationRules.tickets.maxSupply)}
-                      />
-
-                      <Input
-                        label="Quantity Limit"
-                        iconLeft={<HashStraight />}
-                        number={{
-                          allowNegative: false,
-                        }}
-                        error={form.formState.errors.tickets?.[index]?.maxPurchases?.message}
-                        {...form.register(`tickets.${index}.maxPurchases`, validationRules.tickets.maxPurchases)}
-                      />
-                    </Flex>
-                    <Flex stack="phone">
-                      <Input
-                        label="Sales Start Date"
-                        type="date"
-                        error={form.formState.errors.tickets?.[index]?.salesValidThrough?.startDate?.message}
-                        {...form.register(`tickets.${index}.salesValidThrough.startDate`, {
-                          required: 'Please enter a start date',
-                          validate: (value: FormSchema['tickets'][number]['salesValidThrough']['startDate']) =>
-                            validationRules.tickets.salesStartDate.validate(value, index),
-                          setValueAs: (value: string) => new Date(value).getTime(),
-                        })}
-                      />
-                      <Input
-                        label="Sales End Date"
-                        type="date"
-                        error={form.formState.errors.tickets?.[index]?.salesValidThrough?.endDate?.message}
-                        {...form.register(`tickets.${index}.salesValidThrough.endDate`, {
-                          required: 'Please enter an end date',
-                          validate: (value: FormSchema['tickets'][number]['salesValidThrough']['endDate']) =>
-                            validationRules.tickets.salesEndDate.validate(value!, index),
-                          setValueAs: (value: string) => new Date(value).getTime(),
-                        })}
+                      <Controller
+                        control={form.control}
+                        name="endTime"
+                        render={({ field: { onChange, ref } }) => (
+                          <DateTimePicker
+                            label="Event Ends At"
+                            disablePast
+                            ref={ref}
+                            value={eventEndsAt}
+                            onChange={(value) => {
+                              setEventEndsAt(value || eventEndsAt);
+                              onChange(value);
+                            }}
+                          />
+                        )}
                       />
                     </Flex>
 
                     <Controller
                       control={form.control}
-                      name={`tickets.${index}.artwork` as const}
+                      name="eventArtwork"
                       render={({ field, fieldState }) => (
                         <FileInput
-                          label="Ticket Artwork"
+                          label="Event Artwork"
                           accept="image/*"
                           maxFileSizeBytes={MAX_ARTWORK_FILE_SIZE_BYTES}
                           error={fieldState.error?.message}
@@ -433,62 +364,157 @@ const CreateEvent: NextPageWithLayout = () => {
                         />
                       )}
                     />
-
-                    <Tooltip asChild content="Remove Ticket Option">
-                      <Button
-                        variant="destructive"
-                        label="Remove Option"
-                        fill="outline"
-                        icon={<Trash />}
-                        size="small"
-                        style={{ marginLeft: 'auto' }}
-                        onClick={() => {
-                          remove(index);
-                        }}
-                      />
-                    </Tooltip>
                   </Card>
-                ))}
 
-                <Card>
-                  <AssistiveText variant="error" message={form.formState.errors.tickets?.root?.message} />
+                  {fields.map((field, index) => (
+                    <Card key={field.id}>
+                      <Flex stack="phone">
+                        <Input
+                          label="Ticket Name"
+                          placeholder="General Admission"
+                          iconLeft={<Tag />}
+                          {...form.register(`tickets.${index}.name`, validationRules.tickets.name)}
+                        />
+                      </Flex>
+
+                      <Flex stack="phone">
+                        <Input
+                          label="Ticket Price (USD)"
+                          placeholder="Free"
+                          iconLeft={<CurrencyDollar />}
+                          number={{
+                            allowNegative: false,
+                          }}
+                          error={form.formState.errors.tickets?.[index]?.priceFiat?.message}
+                          {...form.register(`tickets.${index}.priceFiat`, validationRules.tickets.priceFiat)}
+                        />
+
+                        <Input
+                          label="Total Supply"
+                          iconLeft={<Ticket />}
+                          number={{
+                            allowNegative: false,
+                          }}
+                          error={form.formState.errors.tickets?.[index]?.maxSupply?.message}
+                          {...form.register(`tickets.${index}.maxSupply`, validationRules.tickets.maxSupply)}
+                        />
+
+                        <Input
+                          label="Quantity Limit"
+                          iconLeft={<HashStraight />}
+                          number={{
+                            allowNegative: false,
+                          }}
+                          error={form.formState.errors.tickets?.[index]?.maxPurchases?.message}
+                          {...form.register(`tickets.${index}.maxPurchases`, validationRules.tickets.maxPurchases)}
+                        />
+                      </Flex>
+                      <Flex stack="phone">
+                        <Controller
+                          control={form.control}
+                          name={`tickets.${index}.salesValidThrough.startDate` as const}
+                          render={({ field: { onChange, ref } }) => (
+                            <DateTimePicker
+                              label="Sales Start At"
+                              disablePast
+                              ref={ref}
+                              defaultValue={salesStartDateTime}
+                              onChange={(value) => {
+                                setSalesStart(value || salesStartDateTime);
+                                onChange(value);
+                              }}
+                            />
+                          )}
+                        />
+
+                        <Controller
+                          control={form.control}
+                          name={`tickets.${index}.salesValidThrough.endDate` as const}
+                          render={({ field: { onChange, ref } }) => (
+                            <DateTimePicker
+                              label="Sales End At"
+                              disablePast
+                              ref={ref}
+                              value={salesEndDateTime}
+                              onChange={(value) => {
+                                setSalesEnd(value || salesEndDateTime);
+                                onChange(value);
+                              }}
+                            />
+                          )}
+                        />
+                      </Flex>
+
+                      <Controller
+                        control={form.control}
+                        name={`tickets.${index}.artwork` as const}
+                        render={({ field, fieldState }) => (
+                          <FileInput
+                            label="Ticket Artwork"
+                            accept="image/*"
+                            maxFileSizeBytes={MAX_ARTWORK_FILE_SIZE_BYTES}
+                            error={fieldState.error?.message}
+                            {...field}
+                          />
+                        )}
+                      />
+
+                      <Tooltip asChild content="Remove Ticket Option">
+                        <Button
+                          variant="destructive"
+                          label="Remove Option"
+                          fill="outline"
+                          icon={<Trash />}
+                          size="small"
+                          style={{ marginLeft: 'auto' }}
+                          onClick={() => {
+                            remove(index);
+                          }}
+                        />
+                      </Tooltip>
+                    </Card>
+                  ))}
+
+                  <Card>
+                    <AssistiveText variant="error" message={form.formState.errors.tickets?.root?.message} />
+
+                    <Button
+                      variant="secondary"
+                      label="Add Ticket"
+                      iconLeft={<Plus />}
+                      onClick={() => {
+                        append(placeHolderTicket);
+                      }}
+                    />
+                  </Card>
+                </Flex>
+
+                <Flex align="center">
+                  {estimatedNearCost && (
+                    <Tooltip content="The estimated cost (in NEAR) to publish this event">
+                      <Flex align="center" gap="xs" wrap>
+                        <Text size="text-xs" color="sand10">
+                          Estimated Cost:
+                        </Text>
+                        <Text size="text-s" weight={600} color="sand12">
+                          {yoctoToNear(estimatedNearCost)} Ⓝ
+                        </Text>
+                      </Flex>
+                    </Tooltip>
+                  )}
 
                   <Button
-                    variant="secondary"
-                    label="Add Ticket"
-                    iconLeft={<Plus />}
-                    onClick={() => {
-                      append(placeHolderTicket);
-                    }}
+                    type="submit"
+                    variant="affirmative"
+                    label="Create Event"
+                    iconRight={<ArrowRight />}
+                    loading={form.formState.isSubmitting}
+                    style={{ marginLeft: 'auto' }}
                   />
-                </Card>
+                </Flex>
               </Flex>
-
-              <Flex align="center">
-                {estimatedNearCost && (
-                  <Tooltip content="The estimated cost (in NEAR) to publish this event">
-                    <Flex align="center" gap="xs" wrap>
-                      <Text size="text-xs" color="sand10">
-                        Estimated Cost:
-                      </Text>
-                      <Text size="text-s" weight={600} color="sand12">
-                        {yoctoToNear(estimatedNearCost)} Ⓝ
-                      </Text>
-                    </Flex>
-                  </Tooltip>
-                )}
-
-                <Button
-                  type="submit"
-                  variant="affirmative"
-                  label="Create Event"
-                  iconRight={<ArrowRight />}
-                  loading={form.formState.isSubmitting}
-                  style={{ marginLeft: 'auto' }}
-                />
-              </Flex>
-            </Flex>
-          </Form>
+            </Form>
+          </LocalizationProvider>
         </Container>
       </Section>
     </>

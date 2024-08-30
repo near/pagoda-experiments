@@ -1,4 +1,5 @@
 import { type Action } from '@near-wallet-selector/core';
+import dayjs from 'dayjs';
 import { utils } from 'near-api-js';
 import { parseNearAmount } from 'near-api-js/lib/utils/format';
 
@@ -7,9 +8,9 @@ import { arrayBufferToBase64, getByteSize } from './crypto-helpers';
 
 export interface DateAndTimeInfo {
   startDate: number; // Milliseconds from Unix Epoch
-  startTime?: string; // Raw 24 hour time string such as 18:00
-  endDate?: number; // Milliseconds from Unix Epoch
-  endTime?: string; // Raw 24 hour time string such as 18:00
+  startTime: string; // Raw 24 hour time string such as 18:00
+  endDate: number; // Milliseconds from Unix Epoch
+  endTime: string; // Raw 24 hour time string such as 18:00
 }
 
 export interface TicketInfoFormMetadata {
@@ -17,8 +18,8 @@ export interface TicketInfoFormMetadata {
   denomination: string;
   maxSupply?: number;
   maxPurchases?: number;
-  priceNear?: string;
-  priceFiat?: string;
+  priceNear: string;
+  priceFiat: string;
   description?: string | undefined;
   artwork?: File[];
   salesValidThrough: DateAndTimeInfo;
@@ -97,8 +98,8 @@ export type FormSchema = {
   sellable: boolean;
 
   tickets: TicketInfoFormMetadata[];
-  startTime?: string;
-  endTime?: string;
+  startTime: string;
+  endTime: string;
   costBreakdown: CostBreakdown;
   // ticketPrice?: number;
   // ticketQuantityLimit?: number;
@@ -228,10 +229,10 @@ export const estimateCosts = ({ formData }: { formData: FormSchema }) => {
     sellable: formData.sellable,
     location: formData.location,
     date: {
-      startDate: Date.parse(formData.date),
-      startTime: formData.startTime,
-      endDate: Date.parse(formData.endTime || ''),
-      endTime: formData.endTime,
+      startDate: dayjs(formData.startTime).millisecond(),
+      startTime: dayjs(formData.startTime).format('HH:mm'),
+      endDate: dayjs(formData.endTime).millisecond(),
+      endTime: dayjs(formData.endTime).format('HH:mm'),
     },
     artwork: 'bafybeiehk3mzsj2ih4u4fkvmkfrome3kars7xyy3bxh6xfjquws4flglqa',
     id: eventId.toString(),
@@ -247,7 +248,7 @@ export const estimateCosts = ({ formData }: { formData: FormSchema }) => {
 
     marketTicketInfo[`${dropId}`] = {
       max_tickets: ticket.maxSupply ?? 0,
-      price: parseNearAmount(ticket.priceNear || '0')!.toString(),
+      price: parseNearAmount(ticket.priceFiat)!.toString(),
       sale_start: Date.now() || undefined,
       sale_end: Date.parse(formData.date) || undefined,
     };
@@ -285,10 +286,10 @@ export const createPayload = async ({
     description: formData?.description || '',
     location: formData.location,
     date: {
-      startDate: Date.parse(formData.date),
-      startTime: formData.startTime,
-      endDate: Date.parse(formData.endTime || ''),
-      endTime: formData.endTime,
+      startDate: dayjs(formData.startTime).valueOf(),
+      startTime: dayjs(formData.startTime).format('HH:mm'),
+      endDate: dayjs(formData.endTime).valueOf(),
+      endTime: dayjs(formData.endTime).format('HH:mm'),
     },
     artwork: eventArtworkCid,
     sellable: formData.sellable,
@@ -320,8 +321,10 @@ export const createPayload = async ({
       priceFiat: ticket.priceFiat,
       salesValidThrough: {
         ...ticket.salesValidThrough,
-        startDate: ticket.salesValidThrough.startDate,
-        endDate: ticket.salesValidThrough.endDate,
+        startDate: dayjs(ticket.salesValidThrough.startDate).valueOf(),
+        startTime: dayjs(ticket.salesValidThrough.startDate).format('HH:mm'),
+        endDate: dayjs(ticket.salesValidThrough.endDate).valueOf(),
+        endTime: dayjs(ticket.salesValidThrough.endDate).format('HH:mm'),
       },
       passValidThrough: ticket.passValidThrough,
       maxSupply: ticket.maxSupply,
@@ -339,8 +342,8 @@ export const createPayload = async ({
     marketTicketInfo[`${dropId}`] = {
       max_tickets: ticket.maxSupply ?? 0,
       price: parseNearAmount(ticket.priceNear || '0')!.toString(),
-      sale_start: ticket.salesValidThrough.startDate,
-      sale_end: ticket.salesValidThrough.endDate!,
+      sale_start: dayjs(ticket.salesValidThrough.startDate).valueOf(),
+      sale_end: dayjs(ticket.salesValidThrough.endDate).valueOf(),
     };
 
     const dropConfig = {
